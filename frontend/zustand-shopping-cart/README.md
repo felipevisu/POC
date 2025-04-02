@@ -1,3 +1,3 @@
 # POC Zustand Shopping Cart
 
-![Alt text](public/screenshot.png)
+![Screenshoot](public/screenshot.png)
