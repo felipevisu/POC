@@ -52,7 +52,7 @@ const sampleProducts = [
 const categories = ["Animal", "Alien", "Monster"];
 
 const buttonDefault =
-  "px-6 py-2 border-2 border-gray-200 rounded-full cursor-pointer font-bold hover:bg-gray-800";
+  "px-6 py-2 border-2 border-gray-200 rounded-full cursor-pointer font-bold hover:bg-gray-200 hover:text-black";
 
 const buttonActive = buttonDefault + " bg-gray-200 text-black";
 
@@ -115,12 +115,17 @@ function App() {
           {products.map((p) => (
             <div key={p.id} className="">
               <img src={p.image} alt={p.name} className="mb-3 rounded-md" />
-              <div className="flex">
+              <div className="flex items-center">
                 <div className="grow-1">
                   <h4 className="font-bold">{p.name}</h4>
                   <p>{formatToReal(p.price)}</p>
                 </div>
-                <button onClick={() => addToCart(p)}>Add</button>
+                <button
+                  className="cursor-pointer border border-gray-200 px-3 py-1 rounded-full"
+                  onClick={() => addToCart(p)}
+                >
+                  Add
+                </button>
               </div>
             </div>
           ))}
