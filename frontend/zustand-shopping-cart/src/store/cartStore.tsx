@@ -10,10 +10,12 @@ type CartItem = {
 
 type CartStore = {
   items: CartItem[];
+  isOpen: boolean;
   addToCart: (item: Product, quantity?: number) => void;
   removeFromCart: (id: string) => void;
   clearCart: () => void;
   getTotal: () => number;
+  toggleMenu: () => void;
 };
 
 export const createCartStore = () =>
@@ -21,6 +23,7 @@ export const createCartStore = () =>
     persist(
       (set, get) => ({
         items: [],
+        isOpen: false,
         addToCart: (item, quantity = 1) => {
           set((state) => {
             const existingIndex = state.items.findIndex(
@@ -52,6 +55,10 @@ export const createCartStore = () =>
             (sum, i) => sum + i.product.price * i.quantity,
             0
           );
+        },
+
+        toggleMenu: () => {
+          set((state) => ({ ...state, isOpen: !state.isOpen }));
         },
       }),
       {
