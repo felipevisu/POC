@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useProductStore } from "./store/productStore";
 import { useCartStore } from "./store/cartStore";
+import { Cart } from "./components/Cart";
 
 const sampleProducts = [
   { id: "1", name: "Shirt", price: 25, category: "Clothing" },
@@ -11,7 +12,7 @@ const sampleProducts = [
 function App() {
   const { setProducts, setCategory, setSort, filteredProducts } =
     useProductStore();
-  const { items, addToCart, getTotal, removeFromCart } = useCartStore();
+  const { addToCart } = useCartStore((state) => state);
 
   useEffect(() => {
     setProducts(sampleProducts);
@@ -39,21 +40,7 @@ function App() {
         </ul>
       </div>
       <hr />
-      <div>
-        <h3>Cart</h3>
-        <ul>
-          {items.map(({ product, quantity }) => (
-            <li key={product.id}>
-              {product.name} - {quantity} - {product.price} -{" "}
-              {product.price * quantity}
-              <button onClick={() => removeFromCart(product.id)}>Remove</button>
-            </li>
-          ))}
-          <p>
-            Total: <b>{getTotal()}</b>
-          </p>
-        </ul>
-      </div>
+      <Cart />
     </>
   );
 }
