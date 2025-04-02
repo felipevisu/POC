@@ -1,33 +1,59 @@
-import { create } from "zustand";
+import { useEffect } from "react";
+import { useProductStore } from "./store/productStore";
+import { useCartStore } from "./store/cartStore";
 
-import "./App.css";
-
-type State = {
-  count: number;
-};
-
-type Actions = {
-  increment: () => void;
-  decrement: () => void;
-  reset: () => void;
-};
-
-const useStore = create<State & Actions>((set) => ({
-  count: 0,
-  increment: () => set((state) => ({ count: state.count + 1 })),
-  decrement: () => set((state) => ({ count: state.count - 1 })),
-  reset: () => set(() => ({ count: 0 })),
-}));
+const sampleProducts = [
+  { id: "1", name: "Shirt", price: 25, category: "Clothing" },
+  { id: "2", name: "Shoes", price: 80, category: "Footwear" },
+  { id: "3", name: "Hat", price: 15, category: "Accessories" },
+];
 
 function App() {
-  const { count, increment, decrement, reset } = useStore((state) => state);
+  const { setProducts, setCategory, setSort, filteredProducts } =
+    useProductStore();
+  const { items, addToCart, getTotal, removeFromCart } = useCartStore();
+
+  useEffect(() => {
+    setProducts(sampleProducts);
+  }, []);
+
+  const products = filteredProducts();
 
   return (
     <>
-      <p>{count}</p>
-      <button onClick={increment}>increment</button>
-      <button onClick={decrement}>decrement</button>
-      <button onClick={reset}>Reset</button>
+      <div>
+        <h3>Products List</h3>
+        <div>
+          <button onClick={() => setCategory(null)}>All</button>
+          <button onClick={() => setCategory("Clothing")}>Clothing</button>
+          <button onClick={() => setSort("price-asc")}>Price ↑</button>
+          <button onClick={() => setSort("price-desc")}>Price ↓</button>
+        </div>
+        <ul>
+          {products.map((p) => (
+            <li key={p.id}>
+              {p.name} - ${p.price}
+              <button onClick={() => addToCart(p)}>Add</button>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <hr />
+      <div>
+        <h3>Cart</h3>
+        <ul>
+          {items.map(({ product, quantity }) => (
+            <li key={product.id}>
+              {product.name} - {quantity} - {product.price} -{" "}
+              {product.price * quantity}
+              <button onClick={() => removeFromCart(product.id)}>Remove</button>
+            </li>
+          ))}
+          <p>
+            Total: <b>{getTotal()}</b>
+          </p>
+        </ul>
+      </div>
     </>
   );
 }
