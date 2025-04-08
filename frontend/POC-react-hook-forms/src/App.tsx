@@ -1,9 +1,9 @@
-import Form from "./Form";
+import CharacterForm from "./CharacterForm";
 
 function App() {
   return (
     <>
-      <Form />
+      <CharacterForm />
     </>
   );
 }
