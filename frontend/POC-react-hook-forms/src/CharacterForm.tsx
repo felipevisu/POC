@@ -1,10 +1,11 @@
 import {
-  Box,
   Button,
   Checkbox,
   FormControl,
+  FormControlLabel,
   FormHelperText,
   FormLabel,
+  Grid,
   MenuItem,
   Select,
   TextField,
@@ -44,85 +45,107 @@ export default function CharacterForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <Box>
-        <FormControl>
-          <FormLabel>Name</FormLabel>
-          <Controller
-            name="name"
-            control={control}
-            rules={{ required: true, maxLength: 256 }}
-            render={({ field }) => <TextField {...field} />}
-          />
-          {errors.name && (
-            <FormHelperText>This field is required</FormHelperText>
-          )}
-        </FormControl>
-      </Box>
-
-      <Box>
-        <FormControl>
-          <FormLabel>Category</FormLabel>
-          <Controller
-            name="category"
-            control={control}
-            rules={{ required: true }}
-            render={({ field }) => (
-              <Select {...field}>
-                <MenuItem value="monster">Monster</MenuItem>
-                <MenuItem value="animal">Animal</MenuItem>
-                <MenuItem value="alien">Alien</MenuItem>
-              </Select>
+      <Grid container={true} spacing={2}>
+        <Grid size={6}>
+          <FormControl fullWidth={true} error={!!errors.name}>
+            <FormLabel>Name</FormLabel>
+            <Controller
+              name="name"
+              control={control}
+              rules={{ required: true, maxLength: 256 }}
+              render={({ field }) => (
+                <TextField {...field} error={!!errors.name} />
+              )}
+            />
+            {errors.name && (
+              <FormHelperText error={!!errors.name}>
+                This field is required
+              </FormHelperText>
             )}
-          />
+          </FormControl>
+        </Grid>
 
-          {errors.category && (
-            <FormHelperText>This field is required</FormHelperText>
-          )}
-        </FormControl>
-      </Box>
+        <Grid size={6}>
+          <FormControl fullWidth={true} error={!!errors.category}>
+            <FormLabel>Category</FormLabel>
+            <Controller
+              name="category"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Select {...field} fullWidth={true} error={!!errors.category}>
+                  <MenuItem value="monster">Monster</MenuItem>
+                  <MenuItem value="animal">Animal</MenuItem>
+                  <MenuItem value="alien">Alien</MenuItem>
+                </Select>
+              )}
+            />
 
-      <Box>
-        <FormControl>
-          <FormLabel>Stock</FormLabel>
-          <Controller
-            name="stock"
-            control={control}
-            rules={{ required: true, min: 0 }}
-            render={({ field }) => <TextField type="number" {...field} />}
-          />
-          {errors.stock && (
-            <FormHelperText>This field is required</FormHelperText>
-          )}
-        </FormControl>
-      </Box>
+            {errors.category && (
+              <FormHelperText error={!!errors.category}>
+                This field is required
+              </FormHelperText>
+            )}
+          </FormControl>
+        </Grid>
 
-      <Box>
-        <FormControl>
-          <FormLabel>Price</FormLabel>
-          <Controller
-            name="price"
-            control={control}
-            rules={{ required: true, min: 0 }}
-            render={({ field }) => <TextField type="number" {...field} />}
-          />
-          {errors.price && (
-            <FormHelperText>This field is required</FormHelperText>
-          )}
-        </FormControl>
-      </Box>
+        <Grid size={6}>
+          <FormControl fullWidth={true} error={!!errors.stock}>
+            <FormLabel>Stock</FormLabel>
+            <Controller
+              name="stock"
+              control={control}
+              rules={{ required: true, min: 0 }}
+              render={({ field }) => (
+                <TextField type="number" {...field} error={!!errors.stock} />
+              )}
+            />
+            {errors.stock && (
+              <FormHelperText error={!!errors.stock}>
+                This field is required
+              </FormHelperText>
+            )}
+          </FormControl>
+        </Grid>
 
-      <Box>
-        <FormControl>
-          <FormLabel>Enabled</FormLabel>
-          <Controller
-            name="enabled"
-            control={control}
-            render={({ field }) => <Checkbox {...field} />}
-          />
-        </FormControl>
-      </Box>
+        <Grid size={6}>
+          <FormControl fullWidth={true} error={!!errors.price}>
+            <FormLabel>Price</FormLabel>
+            <Controller
+              name="price"
+              control={control}
+              rules={{ required: true, min: 0 }}
+              render={({ field }) => (
+                <TextField type="number" {...field} error={!!errors.price} />
+              )}
+            />
+            {errors.price && (
+              <FormHelperText error={!!errors.price}>
+                This field is required
+              </FormHelperText>
+            )}
+          </FormControl>
+        </Grid>
 
-      <Button type="submit">Submit</Button>
+        <Grid size={6}>
+          <FormControl>
+            <Controller
+              name="enabled"
+              control={control}
+              render={({ field }) => (
+                <FormControlLabel
+                  control={<Checkbox {...field} />}
+                  label="Published"
+                />
+              )}
+            />
+          </FormControl>
+        </Grid>
+      </Grid>
+
+      <Button type="submit" variant="contained" fullWidth={true}>
+        Submit
+      </Button>
     </form>
   );
 }
