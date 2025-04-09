@@ -7,17 +7,11 @@ export default defineConfig({
   plugins: [
     react(),
     federation({
-      name: "product_form",
-      filename: "remoteEntry.js",
-      exposes: {
-        "./ProductForm": "./src/ProductForm.tsx",
+      remotes: {
+        product_list: "http://localhost:5001/assets/remoteEntry.js",
+        product_form: "http://localhost:5002/assets/remoteEntry.js",
       },
       shared: ["react", "react-dom"],
     }),
   ],
-  build: {
-    target: "esnext",
-    minify: false,
-    cssCodeSplit: false,
-  },
 });

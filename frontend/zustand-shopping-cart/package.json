@@ -5,11 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "expose": "vite build && vite preview --port 5001",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@originjs/vite-plugin-federation": "^1.4.0",
     "@tailwindcss/vite": "^4.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

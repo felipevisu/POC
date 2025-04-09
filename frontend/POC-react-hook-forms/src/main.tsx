@@ -1,10 +1,11 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
-import App from "./App.tsx";
+import App from "./ProductForm.tsx";
+import { Inputs } from "./Form.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    <App addProduct={(data: Inputs) => console.log(data)} />
   </StrictMode>
 );

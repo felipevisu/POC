@@ -1,22 +1,21 @@
 import { useEffect } from "react";
-import { sampleProducts } from "../fixtures";
 import { useCartStore } from "../store/cartStore";
-import { useProductStore } from "../store/productStore";
+import { Product, useProductStore } from "../store/productStore";
 import { formatToReal } from "../utils";
 
-export const Products = () => {
+export const Products = ({ products }: { products: Product[] }) => {
   const { setProducts, filteredProducts } = useProductStore((state) => state);
   const { addToCart, toggleMenu } = useCartStore((state) => state);
 
   useEffect(() => {
-    setProducts(sampleProducts);
-  }, [setProducts]);
+    setProducts(products);
+  }, [setProducts, products]);
 
-  const products = filteredProducts();
+  const productList = filteredProducts();
 
   return (
     <div className="grid grid-cols-3 gap-6 p-6 border-b-1 border-gray-500">
-      {products.map((p) => (
+      {productList.map((p) => (
         <div key={p.id} className="">
           <img src={p.image} alt={p.name} className="mb-3 rounded-md" />
           <div className="flex items-center">
