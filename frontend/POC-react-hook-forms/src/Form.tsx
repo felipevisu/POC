@@ -28,11 +28,7 @@ export type Inputs = {
   enabled: boolean;
 };
 
-export type AddProduct = {
-  addProduct: (data: Inputs) => void;
-};
-
-export default function CharacterForm({ addProduct }: AddProduct) {
+export default function CharacterForm() {
   const {
     control,
     handleSubmit,
@@ -48,7 +44,7 @@ export default function CharacterForm({ addProduct }: AddProduct) {
     },
   });
 
-  const onSubmit: SubmitHandler<Inputs> = (data) => addProduct(data);
+  const onSubmit: SubmitHandler<Inputs> = (data) => console.log(data);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>

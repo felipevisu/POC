@@ -9,20 +9,20 @@ const darkTheme = createTheme({
   },
 });
 
-function ProductForm({ addProduct }: AddProduct) {
+function ProductForm() {
   return (
     <Container sx={{ padding: "32px 0" }}>
       <Typography>Add new product</Typography>
-      <CharacterForm addProduct={addProduct} />
+      <CharacterForm />
     </Container>
   );
 }
 
-export default function App({ addProduct }: AddProduct) {
+export default function App() {
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
-      <ProductForm addProduct={addProduct} />
+      <ProductForm />
     </ThemeProvider>
   );
 }

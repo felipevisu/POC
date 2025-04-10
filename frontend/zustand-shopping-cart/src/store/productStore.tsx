@@ -84,3 +84,5 @@ export const useProductStore = <T,>(
     throw new Error("useCartStore must be used within a ProductProvider");
   return useStore(store, selector);
 };
+
+export default useProductStore;

@@ -12,7 +12,10 @@ export default defineConfig({
       name: "product_list",
       filename: "remoteEntry.js",
       exposes: {
-        "./ProductList": "./src/ProductList.tsx",
+        "./productStore": "./src/store/useProductStore.tsx",
+      },
+      remotes: {
+        product_form: "http://localhost:5002/assets/remoteEntry.js",
       },
       shared: ["react", "react-dom"],
     }),
