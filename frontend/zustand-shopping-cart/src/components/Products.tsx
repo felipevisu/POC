@@ -1,15 +1,16 @@
 import { useEffect } from "react";
 import { useCartStore } from "../store/cartStore";
-import { Product, useProductStore } from "../store/productStore";
+import { useProductStore } from "../store/productStore";
 import { formatToReal } from "../utils";
+import { sampleProducts } from "../fixtures";
 
-export const Products = ({ products }: { products: Product[] }) => {
+export const Products = () => {
   const { setProducts, filteredProducts } = useProductStore((state) => state);
   const { addToCart, toggleMenu } = useCartStore((state) => state);
 
   useEffect(() => {
-    setProducts(products);
-  }, [setProducts, products]);
+    setProducts(sampleProducts);
+  }, [setProducts]);
 
   const productList = filteredProducts();
 

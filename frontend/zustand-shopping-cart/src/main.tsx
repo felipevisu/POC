@@ -4,10 +4,9 @@ import { createRoot } from "react-dom/client";
 import App from "./ProductList.tsx";
 
 import "./index.css";
-import { sampleProducts } from "./fixtures.ts";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App products={sampleProducts} />
+    <App />
   </StrictMode>
 );

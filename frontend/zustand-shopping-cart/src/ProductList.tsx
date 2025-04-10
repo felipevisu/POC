@@ -2,14 +2,14 @@ import { Cart } from "./components/Cart";
 import { Filters } from "./components/Filters";
 import { Products } from "./components/Products";
 import { CartProvider } from "./store/cartStore";
-import { Product, ProductProvider } from "./store/productStore";
+import { ProductProvider } from "./store/productStore";
 
-function ProductList({ products }: { products: Product[] }) {
+function ProductList() {
   return (
     <CartProvider>
       <ProductProvider>
         <Filters />
-        <Products products={products} />
+        <Products />
         <Cart />
       </ProductProvider>
     </CartProvider>
