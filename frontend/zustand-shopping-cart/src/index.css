@@ -5,3 +5,8 @@ table th,
 table td {
   padding: 8px;
 }
+
+body {
+  background: black;
+  color: white;
+}
