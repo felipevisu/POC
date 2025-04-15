@@ -14,6 +14,8 @@ export const Products = () => {
 
   const productList = filteredProducts();
 
+  console.log(productList);
+
   return (
     <div className="grid grid-cols-3 gap-6 p-6 border-b-1 border-gray-500">
       {productList.map((p) => (

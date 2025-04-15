@@ -1,13 +1,15 @@
+import { uid } from "./utils";
+
 export const sampleProducts = [
   {
-    id: "1",
+    id: uid(),
     name: "Dirk",
     price: 139.99,
     category: "Alien",
     image: "https://framerusercontent.com/images/lTHltm78QxmlNMOKIlALAcl5w.png",
   },
   {
-    id: "2",
+    id: uid(),
     name: "Midnight Snack",
     price: 129.99,
     category: "Monster",
@@ -15,7 +17,7 @@ export const sampleProducts = [
       "https://framerusercontent.com/images/u6DvFLQyeKpJc81MsM6EDAIs05E.png",
   },
   {
-    id: "3",
+    id: uid(),
     name: "Chicken",
     price: 39.99,
     category: "Animal",
@@ -23,7 +25,7 @@ export const sampleProducts = [
       "https://framerusercontent.com/images/oBzqAXyBQeznPM15vlO8HXGscfE.png",
   },
   {
-    id: "4",
+    id: uid(),
     name: "Fuzzy Slim",
     price: 99.99,
     category: "Monster",
@@ -31,7 +33,7 @@ export const sampleProducts = [
       "https://framerusercontent.com/images/blXZBej4TKhBs3dk0LjfIJRsa3w.png",
   },
   {
-    id: "5",
+    id: uid(),
     name: "Fox",
     price: 67.99,
     category: "Animal",
@@ -39,7 +41,7 @@ export const sampleProducts = [
       "https://framerusercontent.com/images/tqcQfpWeYJtCv53UAEuwQO5rx60.png",
   },
   {
-    id: "6",
+    id: uid(),
     name: "Skarleix",
     price: 39.99,
     category: "Alien",

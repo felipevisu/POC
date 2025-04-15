@@ -1,5 +1,6 @@
 import { createStore, useStore } from "zustand";
 import React, { createContext, useContext, useRef } from "react";
+import { uid } from "../utils";
 
 export type Product = {
   id: string;
@@ -35,7 +36,9 @@ export const createProductStore = () =>
       set((state) => ({ filters: { ...state.filters, category } })),
 
     addProduct: (product: Product) =>
-      set((state) => ({ products: [product, ...state.products] })),
+      set((state) => ({
+        products: [{ ...product, id: uid() }, ...state.products],
+      })),
 
     setSort: (sort) =>
       set((state) => ({ filters: { ...state.filters, sort } })),

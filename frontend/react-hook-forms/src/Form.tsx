@@ -11,8 +11,8 @@ import {
   Select,
   TextField,
 } from "@mui/material";
-import useProductStore from "product_store/useProductStore";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import useProductStore from "product_store/useProductStore";
 
 enum CategoryEnum {
   Monster = "Monster",
@@ -80,9 +80,9 @@ export default function CharacterForm() {
               rules={{ required: true }}
               render={({ field }) => (
                 <Select {...field} fullWidth={true} error={!!errors.category}>
-                  <MenuItem value="monster">Monster</MenuItem>
-                  <MenuItem value="animal">Animal</MenuItem>
-                  <MenuItem value="alien">Alien</MenuItem>
+                  <MenuItem value="Monster">Monster</MenuItem>
+                  <MenuItem value="Animal">Animal</MenuItem>
+                  <MenuItem value="Alien">Alien</MenuItem>
                 </Select>
               )}
             />
