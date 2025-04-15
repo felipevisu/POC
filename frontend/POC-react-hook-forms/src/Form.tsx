@@ -11,6 +11,7 @@ import {
   Select,
   TextField,
 } from "@mui/material";
+import useProductStore from "product_store/useProductStore";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 
 enum CategoryEnum {
@@ -44,7 +45,9 @@ export default function CharacterForm() {
     },
   });
 
-  const onSubmit: SubmitHandler<Inputs> = (data) => console.log(data);
+  const { addProduct } = useProductStore();
+
+  const onSubmit: SubmitHandler<Inputs> = (data) => addProduct(data);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>

@@ -16,7 +16,7 @@ type FilterState = {
   sort: PriceSort | null;
 };
 
-type ProductStore = {
+export type ProductStore = {
   products: Product[];
   filters: FilterState;
   setProducts: (products: Product[]) => void;
@@ -33,6 +33,9 @@ export const createProductStore = () =>
 
     setCategory: (category) =>
       set((state) => ({ filters: { ...state.filters, category } })),
+
+    addProduct: (product: Product) =>
+      set((state) => ({ products: [product, ...state.products] })),
 
     setSort: (sort) =>
       set((state) => ({ filters: { ...state.filters, sort } })),
@@ -55,7 +58,7 @@ export const createProductStore = () =>
     },
   }));
 
-const ProductContext = createContext<ReturnType<
+export const ProductContext = createContext<ReturnType<
   typeof createProductStore
 > | null>(null);
 

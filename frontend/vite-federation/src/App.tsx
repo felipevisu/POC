@@ -1,14 +1,9 @@
 import { lazy, Suspense, useState } from "react";
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Link,
-  useNavigate,
-} from "react-router-dom";
+import { Routes, Route, Link, useNavigate } from "react-router-dom";
 import { sampleProducts } from "./fixtures";
 
 const ProductList = lazy(() => import("product_list/ProductList"));
+const useProductStore = lazy(() => import("product_list/useProductStore"));
 const ProductForm = lazy(() => import("product_form/ProductForm"));
 
 type Product = Record<string, string | number | boolean>;
@@ -21,6 +16,8 @@ export default function App() {
     setProducts([product, ...products]);
     navigate("/");
   };
+
+  console.log(useProductStore());
 
   return (
     <>

@@ -12,6 +12,9 @@ export default defineConfig({
       exposes: {
         "./ProductForm": "./src/ProductForm.tsx",
       },
+      remotes: {
+        product_store: "http://localhost:5001/assets/remoteEntry.js",
+      },
       shared: ["react", "react-dom"],
     }),
   ],
