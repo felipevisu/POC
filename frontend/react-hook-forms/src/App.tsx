@@ -1,5 +1,5 @@
 import { Container, Typography } from "@mui/material";
-import CharacterForm, { AddProduct } from "./Form";
+import CharacterForm from "./Form";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 
@@ -9,20 +9,14 @@ const darkTheme = createTheme({
   },
 });
 
-function ProductForm() {
-  return (
-    <Container sx={{ padding: "32px 0" }}>
-      <Typography>Add new product</Typography>
-      <CharacterForm />
-    </Container>
-  );
-}
-
 export default function App() {
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
-      <ProductForm />
+      <Container sx={{ padding: "32px 0" }}>
+        <Typography>Add new product</Typography>
+        <CharacterForm />
+      </Container>
     </ThemeProvider>
   );
 }

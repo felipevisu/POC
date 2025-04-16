@@ -7,7 +7,7 @@ import { ProductProvider } from "./store/productStore";
 
 const ProductForm = lazy(() => import("product_form/ProductForm"));
 
-function ProductList() {
+export default function App() {
   return (
     <CartProvider>
       <ProductProvider>
@@ -19,5 +19,3 @@ function ProductList() {
     </CartProvider>
   );
 }
-
-export default ProductList;

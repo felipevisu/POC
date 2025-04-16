@@ -12,7 +12,7 @@ export default defineConfig({
       name: "product_list",
       filename: "remoteEntry.js",
       exposes: {
-        "./ProductList": "./src/ProductList.tsx",
+        "./ProductList": "./src/App.tsx",
         "./useProductStore": "./src/store/productStore.tsx",
       },
       remotes: {

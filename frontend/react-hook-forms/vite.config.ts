@@ -10,7 +10,7 @@ export default defineConfig({
       name: "product_form",
       filename: "remoteEntry.js",
       exposes: {
-        "./ProductForm": "./src/ProductForm.tsx",
+        "./ProductForm": "./src/App.tsx",
       },
       remotes: {
         product_store: "http://localhost:5001/assets/remoteEntry.js",
