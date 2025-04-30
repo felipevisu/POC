@@ -3,7 +3,7 @@ package com.example.learningGson;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-public class PrettyPrint {
+public class PrettyPrintExample {
     public static void main(String[] args){
         User user = new User();
         user.name = "Felipe";
