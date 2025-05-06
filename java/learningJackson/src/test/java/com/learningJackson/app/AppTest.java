@@ -41,6 +41,23 @@ public class AppTest {
 
         assertEquals(1, parsedBean.id);
         assertEquals("My Bean", parsedBean.getName());
+    }
 
+    @Test
+    public void whenSerializingUsingJsonPropertyOrder_thenCorrect()
+            throws JsonProcessingException {
+        Person person = new Person("Felipe", "Faria", 0, 30);
+        String result = new ObjectMapper().writeValueAsString(person);
+        assertEquals("{\"firstName\":\"Felipe\",\"lastName\":\"Faria\",\"age\":30,\"children\":0}", result);
+    }
+
+    @Test
+    public void whenSerializingUsingJsonRawValue_thenCorrect()
+            throws JsonProcessingException {
+        RawBean bean = new RawBean();
+        bean.name = "Felipe Faria";
+        bean.json = "{'age': 30}";
+        String result = new ObjectMapper().writeValueAsString(bean);
+        assertTrue(result.contains("{'age': 30}"));
     }
 }
