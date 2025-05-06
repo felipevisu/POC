@@ -5,9 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Unit test for simple App.
@@ -59,5 +63,26 @@ public class AppTest {
         bean.json = "{'age': 30}";
         String result = new ObjectMapper().writeValueAsString(bean);
         assertTrue(result.contains("{'age': 30}"));
+    }
+
+    @Test
+    public void whenSerializingUsingJsonRootName_thenCorrect()
+            throws JsonProcessingException {
+        Person person = new Person("Felipe", "Faria", 0, 30);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.enable(SerializationFeature.WRAP_ROOT_VALUE);
+        String result = mapper.writeValueAsString(person);
+        assertTrue(result.contains("Person"));
+    }
+
+    @Test
+    public void whenSerializingUsingJsonSerialize_thenCorrect()
+            throws JsonProcessingException, ParseException {
+        SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
+        String toParse = "20-12-2014 02:30:00";
+        Date date = df.parse(toParse);
+        Event event = new Event("Party", date);
+        String result = new ObjectMapper().writeValueAsString(event);
+        assertTrue(result.contains(toParse));
     }
 }
