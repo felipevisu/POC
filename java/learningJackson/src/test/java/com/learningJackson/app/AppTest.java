@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.junit.jupiter.api.Test;
@@ -94,5 +95,19 @@ public class AppTest {
                 .readerFor(BeanWithCreator.class)
                 .readValue(json);
         assertEquals("Felipe Faria", bean.name);
+    }
+
+    @Test
+    public void whenDeserializingUsingJsonInject_thenCorrect()
+            throws IOException {
+        String json = "{\"name\":\"Felipe Faria\"}";
+        InjectableValues inject = new InjectableValues.Std()
+                .addValue(int.class, 1);
+        BeanWithInject bean = new ObjectMapper()
+                .reader(inject)
+                .forType(BeanWithInject.class)
+                .readValue(json);
+        assertEquals("Felipe Faria", bean.name);
+        assertEquals(1, bean.id);
     }
 }
