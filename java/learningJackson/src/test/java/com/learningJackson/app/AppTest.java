@@ -85,4 +85,14 @@ public class AppTest {
         String result = new ObjectMapper().writeValueAsString(event);
         assertTrue(result.contains(toParse));
     }
+
+    @Test
+    public void whenDeserializingUsingJsonCreator_thenCorrect()
+            throws IOException {
+        String json = "{\"id\":10,\"theName\":\"Felipe Faria\"}";
+        BeanWithCreator bean = new ObjectMapper()
+                .readerFor(BeanWithCreator.class)
+                .readValue(json);
+        assertEquals("Felipe Faria", bean.name);
+    }
 }
