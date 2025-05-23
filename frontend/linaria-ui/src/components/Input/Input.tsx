@@ -23,6 +23,11 @@ const StyledInput = styled.input`
   font-size: 1rem;
   padding: ${inputSizeMap.md};
 
+  &:focus {
+    box-shadow: 0 0 0 1px #aaa;
+    border-color: #aaa;
+  }
+
   &.input-sm {
     font-size: 0.8rem;
     padding: ${inputSizeMap.sm};
