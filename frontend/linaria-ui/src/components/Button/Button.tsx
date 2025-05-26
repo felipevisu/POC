@@ -122,6 +122,14 @@ type PolymorphicComponentProp<
 > = React.PropsWithChildren<Props & AsProp<C>> &
   Omit<React.ComponentPropsWithoutRef<C>, PropsToOmit<C, Props>>;
 
+type PolymorphicRef<C extends React.ElementType> =
+  React.ComponentPropsWithRef<C>["ref"];
+
+type PolymorphicComponentPropWithRef<
+  C extends React.ElementType = "button",
+  Props = object
+> = PolymorphicComponentProp<C, Props> & { ref?: PolymorphicRef<C> };
+
 const Button = <C extends React.ElementType = "button">({
   as,
   size = "md",
@@ -129,8 +137,9 @@ const Button = <C extends React.ElementType = "button">({
   color = "primary",
   variant = "default",
   className,
+  ref,
   ...rest
-}: PolymorphicComponentProp<C, ButtonProps>) => {
+}: PolymorphicComponentPropWithRef<C, ButtonProps>) => {
   const Component = as || "button";
 
   return (
@@ -143,8 +152,26 @@ const Button = <C extends React.ElementType = "button">({
         { fullWidth },
         className
       )}
+      ref={ref}
       {...rest}
     />
+  );
+};
+
+export const Example = () => {
+  return (
+    <div>
+      {/* By default it's a button, should accept button parameters: type */}
+      <Button type="submit">Submit</Button>
+
+      {/* When defined as link should accept link parameters: href */}
+      <Button as="a" href="https://google.com">
+        Link
+      </Button>
+
+      {/* Trying to pass href without saying it's a link should raise an error */}
+      <Button href="https://google.com">Submit</Button>
+    </div>
   );
 };
 
