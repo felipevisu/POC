@@ -1,6 +1,6 @@
-import { styled } from "@linaria/react";
 import type { Sizes } from "../../types";
 import clsx from "clsx";
+import { css } from "@linaria/core";
 
 type ButtonColors = "primary" | "success" | "info" | "warning" | "error";
 
@@ -28,13 +28,13 @@ const colorClasses: Record<ButtonColors, string> = {
   error: "error",
 };
 
-const buttonColors = {
+const buttonColors: Record<ButtonColors, string> = {
   primary: "purple",
   success: "green",
   info: "dodgerblue",
   warning: "goldenrod",
   error: "red",
-} as const;
+};
 
 const generateButtonStyles = () => {
   return Object.entries(buttonColors)
@@ -66,7 +66,7 @@ const variantClasses: Record<ButtonVariant, string> = {
   outlined: "outlined",
 };
 
-const StyledButton = styled.button`
+const baseButton = css`
   all: unset;
   border-radius: 6px;
   font-size: 1rem;
@@ -103,35 +103,48 @@ const StyledButton = styled.button`
   }
 `;
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+type ButtonProps = {
   size?: Sizes;
   fullWidth?: boolean;
   color?: ButtonColors;
   variant?: ButtonVariant;
-}
+};
 
-const Button = ({
+type AsProp<C extends React.ElementType> = {
+  as?: C;
+};
+
+type PropsToOmit<C extends React.ElementType, P> = keyof (AsProp<C> & P);
+
+type PolymorphicComponentProp<
+  C extends React.ElementType,
+  Props = object
+> = React.PropsWithChildren<Props & AsProp<C>> &
+  Omit<React.ComponentPropsWithoutRef<C>, PropsToOmit<C, Props>>;
+
+const Button = <C extends React.ElementType = "button">({
+  as,
   size = "md",
   fullWidth = false,
   color = "primary",
   variant = "default",
-  children,
   className,
-  ...props
-}: ButtonProps) => {
+  ...rest
+}: PolymorphicComponentProp<C, ButtonProps>) => {
+  const Component = as || "button";
+
   return (
-    <StyledButton
+    <Component
       className={clsx(
+        baseButton,
         sizeClasses[size],
         colorClasses[color],
         variantClasses[variant],
         { fullWidth },
         className
       )}
-      {...props}
-    >
-      {children}
-    </StyledButton>
+      {...rest}
+    />
   );
 };
 
