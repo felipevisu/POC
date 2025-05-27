@@ -1,0 +1,38 @@
+body {
+    font-size: 1.8rem;
+    background: black;
+    color: white;
+    text-align: center;
+}
+
+.grid {
+    width: 600px;
+    height: 600px;
+    border: 1px solid white;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.grid div {
+    width: 40px;
+    height: 40px;
+}
+
+.enemy::after {
+    content: "👾";
+}
+
+.shooter::after {
+    content: "🔫";
+    display: block;
+    rotate: 90deg;
+}
+
+.shoot::after {
+    content: "⚡";
+}
+
+.boom::after {
+    content: "💥";
+}
