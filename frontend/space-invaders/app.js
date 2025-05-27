@@ -75,6 +75,8 @@ function moveInvaders() {
     draw();
 
     if (squares[currentShooterIndex].classList.contains('enemy')) {
+        squares[currentShooterIndex].classList.remove('shooter');
+        squares[currentShooterIndex].classList.add('dead')
         results.innerHTML = 'You Lost';
         clearInterval(invadersId);
     }

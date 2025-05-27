@@ -30,9 +30,14 @@ body {
 }
 
 .shoot::after {
-    content: "⚡";
+    content: "💥";
+    font-size: 0.5rem;
 }
 
 .boom::after {
-    content: "💥";
+    content: "🎇";
+}
+
+.dead::after {
+    content: "☠️";
 }
