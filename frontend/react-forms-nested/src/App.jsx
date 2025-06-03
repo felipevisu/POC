@@ -9,13 +9,19 @@ import {
   FormControl,
   InputLabel,
   IconButton,
-  Typography
+  Typography,
+  FormHelperText
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 
 export default function App() {
-  const {control, register, handleSubmit} = useForm({
+  const {
+    control,
+    register,
+    handleSubmit,
+    formState: {errors},
+  } = useForm({
     defaultValues: {
       user: {
         name: "",
@@ -35,26 +41,36 @@ export default function App() {
 
   return (
     <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{p: 4}}>
-      <Typography variant="h5" gutterBottom>User Form</Typography>
+      <Typography variant="h5" gutterBottom>
+        User Form
+      </Typography>
 
       <TextField
         label="Name"
         fullWidth
-        {...register("user.name", {required: true})}
         margin="normal"
+        {...register("user.name", {required: "Name is required"})}
+        error={!!errors.user?.name}
+        helperText={errors.user?.name?.message}
       />
 
-      <Typography variant="h6" sx={{mt: 3}}>Contacts</Typography>
+      <Typography variant="h6" sx={{mt: 3}}>
+        Contacts
+      </Typography>
 
       {fields.map((field, index) => (
         <Grid container spacing={2} alignItems="center" key={field.id}>
           <Grid item xs={4}>
-            <FormControl fullWidth>
+            <FormControl
+              fullWidth
+              error={!!errors.user?.contacts?.[index]?.type}
+            >
               <InputLabel id={`type-label-${index}`}>Type</InputLabel>
               <Controller
                 control={control}
                 name={`user.contacts.${index}.type`}
                 defaultValue={field.type}
+                rules={{required: "Type is required"}}
                 render={({field}) => (
                   <Select
                     labelId={`type-label-${index}`}
@@ -66,6 +82,9 @@ export default function App() {
                   </Select>
                 )}
               />
+              <FormHelperText>
+                {errors.user?.contacts?.[index]?.type?.message}
+              </FormHelperText>
             </FormControl>
           </Grid>
 
@@ -73,7 +92,11 @@ export default function App() {
             <TextField
               fullWidth
               label="Value"
-              {...register(`user.contacts.${index}.value`, {required: true})}
+              {...register(`user.contacts.${index}.value`, {
+                required: "Value is required",
+              })}
+              error={!!errors.user?.contacts?.[index]?.value}
+              helperText={errors.user?.contacts?.[index]?.value?.message}
             />
           </Grid>
 
