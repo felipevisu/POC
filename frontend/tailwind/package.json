@@ -1,0 +1,16 @@
+{
+  "name": "tailwind",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "node src/generateCss.js",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "postcss": "^8.5.4",
+    "postcss-cli": "^11.0.1",
+    "vite": "^6.3.5"
+  }
+}

@@ -1,26 +1,20 @@
-import type { StorybookConfig } from "@storybook/react-vite";
-import linaria from "@linaria/vite";
+import type { StorybookConfig } from '@storybook/react-vite';
 
 const config: StorybookConfig = {
-  stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
-  addons: [
-    {
-      name: "@storybook/addon-essentials",
-      options: {
-        docs: false,
-      },
-    },
-    "@storybook/addon-interactions",
+  "stories": [
+    "../src/**/*.mdx",
+    "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"
   ],
-  framework: {
-    name: "@storybook/react-vite",
-    options: {},
-  },
-  viteFinal: async (config) => {
-    config.plugins?.push(linaria());
-    config.optimizeDeps ??= {};
-    config.optimizeDeps.include = ["@linaria/react"];
-    return config;
-  },
+  "addons": [
+    "@storybook/addon-onboarding",
+    "@chromatic-com/storybook",
+    "@storybook/addon-docs",
+    "@storybook/addon-a11y",
+    "@storybook/addon-vitest"
+  ],
+  "framework": {
+    "name": "@storybook/react-vite",
+    "options": {}
+  }
 };
 export default config;
