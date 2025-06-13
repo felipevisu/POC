@@ -5,12 +5,17 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node src/generateCss.js",
+    "build:css": "sass src/main.scss dist/styles.css && postcss dist/styles.css -o dist/styles.css",
+    "watch:css": "sass --watch src/main.scss dist/styles.css",
     "preview": "vite preview"
   },
   "devDependencies": {
-    "postcss": "^8.5.4",
+    "postcss": "^8.5.5",
     "postcss-cli": "^11.0.1",
     "vite": "^6.3.5"
+  },
+  "dependencies": {
+    "autoprefixer": "^10.4.21",
+    "sass": "^1.89.2"
   }
 }

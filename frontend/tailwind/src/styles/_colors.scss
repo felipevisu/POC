@@ -1,0 +1,15 @@
+@use "tokens" as *;
+
+@each $key, $value in $colors {
+  .text-#{"" + $key} { color: $value; }
+  .bg-#{"" + $key} { background-color: $value; }
+}
+
+@each $bp, $size in $breakpoints {
+  @media (min-width: $size) {
+    @each $key, $value in $colors {
+      .#{"" + $bp}\:text-#{"" + $key} { color: $value; }
+      .#{"" + $bp}\:bg-#{"" + $key} { background-color: $value; }
+    }
+  }
+}
