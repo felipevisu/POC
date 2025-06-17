@@ -46,6 +46,10 @@ const addTodo = () => {
   transaction.oncomplete = () => {
     input.value = ''
   }
+
+  transaction.onerror = (e) => {
+    console.error('Delete failed:', e.target.error)
+  }
 }
 
 const fetchTodos = () => {
@@ -62,7 +66,7 @@ const fetchTodos = () => {
       li.textContent = todo.title
       const deleteButton = document.createElement('button')
       deleteButton.textContent = 'Delete'
-      deleteButton.onClick = () => deleteTodo(todo.id)
+      deleteButton.onclick = () => deleteTodo(todo.id)
       li.appendChild(deleteButton)
       list.appendChild(li)
     })
@@ -75,6 +79,7 @@ const deleteTodo = (id) => {
   store.delete(id)
 
   transaction.oncomplete = () => {
+    console.log('Deleted todo', id)
     fetchTodos()
   }
 
