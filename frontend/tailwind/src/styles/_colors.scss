@@ -9,6 +9,9 @@
     .bg-#{"" + $color-key}#{$suffix} {
       background-color: $color-value;
     }
+    .border-#{"" + $color-key}#{$suffix} {
+      border-color: $color-value;
+    }
   }
 }
 
@@ -22,6 +25,9 @@
         }
         .#{$bp}\:bg-#{"" + $color-key}#{$suffix} {
           background-color: $color-value;
+        }
+        .#{$bp}\:border-#{"" + $color-key}#{$suffix} {
+          border-color: $color-value;
         }
       }
     }

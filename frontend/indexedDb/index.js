@@ -125,14 +125,15 @@ const renderStatuses = (board, statuses) => {
 
     const title = document.createElement('h3')
     title.textContent = status.name.replace(/_/g, ' ').toUpperCase()
+    title.classList.add('bg-primary', 'text-white', 'p-3')
 
     const list = document.createElement('div')
-    list.classList.add('bg-gray-200')
-    list.classList.add('p-3')
+    list.classList.add('bg-gray-100')
     list.style.width = '100%'
     list.appendChild(title)
 
     const ul = document.createElement('ul')
+    ul.classList.add('p-4')
     list.appendChild(ul)
     col.appendChild(list)
 
@@ -146,6 +147,7 @@ const renderStatuses = (board, statuses) => {
 function renderTodos (todos, statuses, statusMap) {
   todos.forEach(todo => {
     const li = document.createElement('li')
+    li.classList.add('bg-white', 'mb-4', 'p-3', 'rounded-2')
 
     const title = document.createElement('h4')
     title.textContent = todo.title
