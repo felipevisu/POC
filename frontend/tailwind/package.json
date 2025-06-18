@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "purge:css": "purgecss --css dist/styles.css --content index.html src/**/*.js --output dist/",
     "build:css": "sass src/main.scss dist/styles.css && postcss dist/styles.css -o dist/styles.css",
     "watch:css": "sass --watch src/main.scss dist/styles.css",
     "preview": "vite preview"
@@ -12,6 +13,7 @@
   "devDependencies": {
     "postcss": "^8.5.5",
     "postcss-cli": "^11.0.1",
+    "purgecss": "^7.0.2",
     "vite": "^6.3.5"
   },
   "dependencies": {
