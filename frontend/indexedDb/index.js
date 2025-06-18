@@ -72,16 +72,16 @@ const addTodo = () => {
 }
 
 const fetchTodos = () => {
-  const container = document.getElementById('todo-list')
-  container.innerHTML = ''
+  const board = document.getElementById('todo-board')
+  board.innerHTML = ''
 
-  const tx = db.transaction(['todos', 'statuses'], 'readonly')
-  const todoStore = tx.objectStore('todos')
-  const statusStore = tx.objectStore('statuses')
+  const transaction = db.transaction(['todos', 'statuses'], 'readonly')
+  const todoStore = transaction.objectStore('todos')
+  const statusStore = transaction.objectStore('statuses')
 
   statusStore.getAll().onsuccess = (statusEvent) => {
     const statuses = statusEvent.target.result
-    const statusMap = renderStatuses(container, statuses)
+    const statusMap = renderStatuses(board, statuses)
 
     todoStore.getAll().onsuccess = (todoEvent) => {
       const todos = todoEvent.target.result
@@ -116,20 +116,27 @@ const updateTodoStatus = (id, newStatusId) => {
   transaction.oncomplete = fetchTodos
 }
 
-const renderStatuses = (container, statuses) => {
+const renderStatuses = (board, statuses) => {
   const statusMap = new Map()
 
   statuses.forEach(status => {
-    const section = document.createElement('section')
+    const col = document.createElement('div')
+    col.classList.add('flex')
 
-    const title = document.createElement('h2')
+    const title = document.createElement('h3')
     title.textContent = status.name.replace(/_/g, ' ').toUpperCase()
-    section.appendChild(title)
+
+    const list = document.createElement('div')
+    list.classList.add('bg-gray-200')
+    list.classList.add('p-3')
+    list.style.width = '100%'
+    list.appendChild(title)
 
     const ul = document.createElement('ul')
-    section.appendChild(ul)
+    list.appendChild(ul)
+    col.appendChild(list)
 
-    container.appendChild(section)
+    board.appendChild(col)
     statusMap.set(status.id, ul)
   })
 
@@ -139,12 +146,10 @@ const renderStatuses = (container, statuses) => {
 function renderTodos (todos, statuses, statusMap) {
   todos.forEach(todo => {
     const li = document.createElement('li')
-    li.textContent = todo.title
 
-    const delBtn = document.createElement('button')
-    delBtn.textContent = 'Delete'
-    delBtn.onclick = () => deleteTodo(todo.id)
-    li.appendChild(delBtn)
+    const title = document.createElement('h4')
+    title.textContent = todo.title
+    li.appendChild(title)
 
     const select = document.createElement('select')
     statuses.forEach(s => {
@@ -157,6 +162,11 @@ function renderTodos (todos, statuses, statusMap) {
 
     select.onchange = () => updateTodoStatus(todo.id, Number(select.value))
     li.appendChild(select)
+
+    const delBtn = document.createElement('button')
+    delBtn.textContent = 'Delete'
+    delBtn.onclick = () => deleteTodo(todo.id)
+    li.appendChild(delBtn)
 
     const ul = statusMap.get(todo.status_id)
     if (ul) ul.appendChild(li)

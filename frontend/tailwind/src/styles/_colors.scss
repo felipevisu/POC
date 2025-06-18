@@ -1,15 +1,29 @@
 @use "tokens" as *;
 
-@each $key, $value in $colors {
-  .text-#{"" + $key} { color: $value; }
-  .bg-#{"" + $key} { background-color: $value; }
+@each $color-key, $color-map in $colors {
+  @each $shade, $color-value in $color-map {
+    $suffix: if($shade == "default", "", "-#{$shade}");
+    .text-#{"" + $color-key}#{$suffix} {
+      color: $color-value;
+    }
+    .bg-#{"" + $color-key}#{$suffix} {
+      background-color: $color-value;
+    }
+  }
 }
 
 @each $bp, $size in $breakpoints {
   @media (min-width: $size) {
-    @each $key, $value in $colors {
-      .#{"" + $bp}\:text-#{"" + $key} { color: $value; }
-      .#{"" + $bp}\:bg-#{"" + $key} { background-color: $value; }
+    @each $color-key, $color-map in $colors {
+      @each $shade, $color-value in $color-map {
+        $suffix: if($shade == "default", "", "-#{$shade}");
+        .#{$bp}\:text-#{"" + $color-key}#{$suffix} {
+          color: $color-value;
+        }
+        .#{$bp}\:bg-#{"" + $color-key}#{$suffix} {
+          background-color: $color-value;
+        }
+      }
     }
   }
 }

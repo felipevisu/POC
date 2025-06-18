@@ -5,17 +5,57 @@ $spacing: (
         4: 16px,
 );
 
-$colors: (
-        red: red,
-        green: green,
-        blue: blue,
-        yellow: yellow,
-        orange: orange,
-        purple: purple,
-        white: white,
-        black: black
+$font-size: (
+        xs: 0.75rem,
+        sm: 0.85rem,
+        base: 1rem,
+        lg: 1.25rem,
+        xl: 1.5rem,
+        xxl: 2rem,
 );
 
+$colors: (
+        primary: (
+                default: #800080,
+                light: #b266b2,
+                dark: #4b004b
+        ),
+        secondary: (
+                default: #008000,
+                light: #4caf50,
+                dark: #005900
+        ),
+        warning: (
+                default: #ffd700,
+                light: #fff8b0,
+                dark: #bfa100
+        ),
+        error: (
+                default: #ff0000,
+                light: #ff6666,
+                dark: #b20000
+        ),
+        black: (
+                default: #000000,
+        ),
+        white: (
+                default: #ffffff,
+        ),
+        gray: (
+                0: #ffffff,
+                25: #f8f9fa,
+                50: #f1f3f5,
+                100: #e9ecef,
+                200: #dee2e6,
+                300: #ced4da,
+                400: #adb5bd,
+                500: #868e96,
+                600: #495057,
+                700: #343a40,
+                800: #212529,
+                900: #121416
+        )
+);
 $breakpoints: (
         sm: 640px,
         md: 768px,

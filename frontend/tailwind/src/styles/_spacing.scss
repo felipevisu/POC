@@ -1,33 +1,80 @@
 @use "tokens" as *;
 
 @each $key, $value in $spacing {
-  .p-#{$key} { padding: $value; }
-  .pt-#{$key} { padding-top: $value; }
-  .pr-#{$key} { padding-right: $value; }
-  .pb-#{$key} { padding-bottom: $value; }
-  .pl-#{$key} { padding-left: $value; }
+  .p-#{$key} {
+    padding: $value;
+  }
+  .pt-#{$key} {
+    padding-top: $value;
+  }
+  .pr-#{$key} {
+    padding-right: $value;
+  }
+  .pb-#{$key} {
+    padding-bottom: $value;
+  }
+  .pl-#{$key} {
+    padding-left: $value;
+  }
 
-  .m-#{$key} { margin: $value; }
-  .mt-#{$key} { margin-top: $value; }
-  .mr-#{$key} { margin-right: $value; }
-  .mb-#{$key} { margin-bottom: $value; }
-  .ml-#{$key} { margin-left: $value; }
+  .m-#{$key} {
+    margin: $value;
+  }
+  .mt-#{$key} {
+    margin-top: $value;
+  }
+  .mr-#{$key} {
+    margin-right: $value;
+  }
+  .mb-#{$key} {
+    margin-bottom: $value;
+  }
+  .ml-#{$key} {
+    margin-left: $value;
+  }
+
+  .gap-#{$key} {
+    gap: $value;
+  }
 }
 
 @each $bp, $size in $breakpoints {
   @media (min-width: $size) {
     @each $key, $value in $spacing {
-      .#{$bp}\:p-#{$key} { padding: $value; }
-      .#{$bp}\:pt-#{$key} { padding-top: $value; }
-      .#{$bp}\:pr-#{$key} { padding-right: $value; }
-      .#{$bp}\:pb-#{$key} { padding-bottom: $value; }
-      .#{$bp}\:pl-#{$key} { padding-left: $value; }
+      .#{$bp}\:p-#{$key} {
+        padding: $value;
+      }
+      .#{$bp}\:pt-#{$key} {
+        padding-top: $value;
+      }
+      .#{$bp}\:pr-#{$key} {
+        padding-right: $value;
+      }
+      .#{$bp}\:pb-#{$key} {
+        padding-bottom: $value;
+      }
+      .#{$bp}\:pl-#{$key} {
+        padding-left: $value;
+      }
 
-      .#{$bp}\:m-#{$key} { margin: $value; }
-      .#{$bp}\:mt-#{$key} { margin-top: $value; }
-      .#{$bp}\:mr-#{$key} { margin-right: $value; }
-      .#{$bp}\:mb-#{$key} { margin-bottom: $value; }
-      .#{$bp}\:ml-#{$key} { margin-left: $value; }
+      .#{$bp}\:m-#{$key} {
+        margin: $value;
+      }
+      .#{$bp}\:mt-#{$key} {
+        margin-top: $value;
+      }
+      .#{$bp}\:mr-#{$key} {
+        margin-right: $value;
+      }
+      .#{$bp}\:mb-#{$key} {
+        margin-bottom: $value;
+      }
+      .#{$bp}\:ml-#{$key} {
+        margin-left: $value;
+      }
+      .#{$bp}\:gap-#{$key} {
+        gap: $value;
+      }
     }
   }
 }
