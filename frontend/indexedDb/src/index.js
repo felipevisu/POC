@@ -1,3 +1,5 @@
+import './main.scss'
+
 let db
 
 /*

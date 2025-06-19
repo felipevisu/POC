@@ -1,0 +1,21 @@
+{
+  "name": "todo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "purge:css": "purgecss --css dist/styles.css --content index.html src/**/*.js --output dist/",
+    "build:css": "sass src/main.scss dist/styles.css && postcss dist/styles.css -o dist/styles.css",
+    "watch:css": "sass --watch src/main.scss dist/styles.css",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "postcss-cli": "^11.0.1",
+    "vite": "^6.3.5"
+  },
+  "dependencies": {
+    "autoprefixer": "^10.4.21",
+    "sass": "^1.89.2"
+  }
+}
