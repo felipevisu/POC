@@ -123,7 +123,10 @@ const renderStatuses = (board, statuses) => {
 
   statuses.forEach(status => {
     const col = document.createElement('div')
+    col.id = `status-${status.id}`
     col.classList.add('flex')
+    col.ondrop = (e) => drop(e)
+    col.ondragover = (e) => allowDrop(e)
 
     const title = document.createElement('h3')
     title.textContent = status.name.replace(/_/g, ' ').toUpperCase()
@@ -149,24 +152,16 @@ const renderStatuses = (board, statuses) => {
 function renderTodos (todos, statuses, statusMap) {
   todos.forEach(todo => {
     const li = document.createElement('li')
+    li.draggable = true
+    li.id = `todo-${todo.id}`
     li.classList.add('bg-white', 'mb-4', 'p-3', 'rounded-2')
+    li.addEventListener('dragstart', dragStart)
+    li.addEventListener('dragend', dragEnd)
 
     const title = document.createElement('h4')
     title.textContent = todo.title
     li.appendChild(title)
-
-    const select = document.createElement('select')
-    statuses.forEach(s => {
-      const option = document.createElement('option')
-      option.value = s.id
-      option.textContent = s.name.replace(/_/g, ' ')
-      if (s.id === todo.status_id) option.selected = true
-      select.appendChild(option)
-    })
-
-    select.onchange = () => updateTodoStatus(todo.id, Number(select.value))
-    li.appendChild(select)
-
+    
     const delBtn = document.createElement('button')
     delBtn.textContent = 'Delete'
     delBtn.onclick = () => deleteTodo(todo.id)
@@ -175,4 +170,27 @@ function renderTodos (todos, statuses, statusMap) {
     const ul = statusMap.get(todo.status_id)
     if (ul) ul.appendChild(li)
   })
+}
+
+function dragStart (e) {
+  e.dataTransfer.setData('text/plain', e.target.id)
+  setTimeout(() => {
+    e.target.style.display = 'none'
+  }, 0)
+}
+
+function dragEnd (e) {
+  e.target.style.display = ''
+}
+
+function allowDrop (e) {
+  e.preventDefault()
+  e.currentTarget.classList.add('drag-over')
+}
+
+function drop (e) {
+  e.preventDefault()
+  const taskId = e.dataTransfer.getData('text/plain').split('-')[1]
+  const statusId = e.currentTarget.id.split('-')[1]
+  updateTodoStatus(parseInt(taskId), parseInt(statusId))
 }
