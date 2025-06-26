@@ -6,7 +6,6 @@ export default {
     autoprefixer(),
     purgecss.purgeCSSPlugin({
       content: ['./index.html', './src/**/*.{js,ts,jsx,tsx,html}'],
-      defaultExtractor: content => content.match(/[\w-/:]+(?<!:)/g) || [],
     })
   ]
 }

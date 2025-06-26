@@ -154,14 +154,15 @@ function renderTodos (todos, statuses, statusMap) {
     const li = document.createElement('li')
     li.draggable = true
     li.id = `todo-${todo.id}`
-    li.classList.add('bg-white', 'mb-4', 'p-3', 'rounded-2')
+    li.classList.add('bg-white', 'mb-4', 'p-3', 'rounded-2', 'flex')
     li.addEventListener('dragstart', dragStart)
     li.addEventListener('dragend', dragEnd)
 
     const title = document.createElement('h4')
     title.textContent = todo.title
+    title.classList.add('grow-1')
     li.appendChild(title)
-    
+
     const delBtn = document.createElement('button')
     delBtn.textContent = 'Delete'
     delBtn.onclick = () => deleteTodo(todo.id)
