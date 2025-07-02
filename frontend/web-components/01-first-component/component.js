@@ -1,7 +1,7 @@
 class MyCircle extends HTMLElement {
   constructor() {
     super();
-    const shadow = this.attachShadow({ mode: 'closed' });
+    const shadow = this.attachShadow({ mode: 'open' });
     this.render(shadow);
   }
 

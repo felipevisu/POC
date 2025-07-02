@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Document</title>
+    <script src="./index.js" defer></script>
+</head>
+<body>
+<template id="card-template">
+    <style>
+        .card {
+            border: 1px solid #ccc;
+            padding: 1rem;
+            border-radius: 8px;
+            background: white;
+        }
+        .title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+    <div class="card">
+        <div class="title">
+            <slot name="title">Default title</slot>
+        </div>
+        <div class="content">
+            <slot>Default content</slot>
+        </div>
+    </div>
+</template>
+
+<my-card>
+    <span slot="title">Felipe Faria</span>
+    <p>A great software engineer</p>
+</my-card>
+</body>
+</html>

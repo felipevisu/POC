@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Document</title>
+    <script src="./index.js" defer></script>
+</head>
+<body>
+<template id="box-template">
+    <style>
+        .box {
+            padding: 1rem;
+            border: 2px solid #333;
+            background: #f0f0f0;
+            font-weight: bold;
+        }
+    </style>
+    <div class="box">
+        <slot></slot>
+    </div>
+</template>
+
+<box-component>Felipe Faria</box-component>
+</body>
+</html>
