@@ -1,0 +1,12 @@
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfplan
+terraform.tfvars
+*.tfvars
+.terraform.lock.hcl
+.terraform/
+*.pem
+*.pub
+fastapi-key
+fastapi-key.pub
