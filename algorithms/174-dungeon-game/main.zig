@@ -27,13 +27,12 @@ pub fn calculateMinimumHP(dungeon: []const []const i32) i32 {
     return dp[0][0];
 }
 
-pub fn main() void {
+test "calculateMinimumHP works for sample dungeon" {
     const dungeon = [_][]const i32{
         &[_]i32{-2, -3, 3},
         &[_]i32{-5, -10, 1},
         &[_]i32{10, 30, -5},
     };
-
-    const hp = calculateMinimumHP(&dungeon);
-    std.debug.print("{}\n", .{hp});
+    const result = calculateMinimumHP(&dungeon);
+    try std.testing.expect(result == 7);
 }
