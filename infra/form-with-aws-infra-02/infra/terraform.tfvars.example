@@ -1,0 +1,9 @@
+# AWS Configuration
+region = "us-east-1"
+instance_type = "t2.micro"
+ami_id = "ami-020cba7c55df1f615"
+
+# Email Configuration for SES
+# Both emails must be verified in AWS SES before use
+sender_email = "felipevisualize@gmail.com"
+recipient_email = "felipevisualize@gmail.com"
