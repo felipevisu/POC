@@ -1,0 +1,34 @@
+// Background colors
+.background-red { background: #ffeaea; }
+.background-yellow { background: #fff8e1; }
+.background-green { background: #eafaf1; }
+
+// Border colors
+.border-red { border: 1px solid #e74c3c; }
+.border-yellow { border: 1px solid #f1c40f; }
+.border-green { border: 1px solid #27ae60; }
+
+// Text colors
+.text-red { color: #c0392b; }
+.text-yellow { color: #b8860b; }
+.text-green { color: #218c5c; }
+
+// Shadow
+.shadow-1 { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+// Border radius
+.rounded-1 { border-radius: 0.5rem; }
+
+// Padding, margin, max-width, flex, gap
+.p-1 { padding: 1rem 1.5rem; }
+.m-1 { margin: 1rem 0; }
+.maxw-1 { max-width: 400px; }
+.flex-col { display: flex; flex-direction: column; }
+.gap-1 { gap: 0.5rem; }
+
+// Font weight and size
+.font-bold { font-weight: bold; }
+.text-lg { font-size: 1.1rem; }
+.text-md { font-size: 1rem; }
+.lh-md { line-height: 1.4; }
+.mb-xs { margin-bottom: 0.25rem; }

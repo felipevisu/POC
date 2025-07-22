@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+  </head>
+  <body>
+    <h1>BEM</h1>
+    <div class="alert alert--error">
+      <div class="alert__title">Error</div>
+      <div class="alert__message">Something went wrong. Please try again.</div>
+    </div>
+    <div class="alert alert--warning">
+      <div class="alert__title">Warning</div>
+      <div class="alert__message">This action may have unintended consequences.</div>
+    </div>
+    <div class="alert alert--success">
+      <div class="alert__title">Success</div>
+      <div class="alert__message">Your changes have been saved successfully!</div>
+    </div>
+
+    <h1>Tailwind Clone</h1>
+    <div class="background-red border-red text-red shadow-1 rounded-1 p-1 m-1 maxw-1 flex-col gap-1">
+      <div class="font-bold text-lg mb-xs">Error</div>
+      <div class="text-md lh-md">Something went wrong. Please try again.</div>
+    </div>
+
+    <div class="background-yellow border-yellow text-yellow shadow-1 rounded-1 p-1 m-1 maxw-1 flex-col gap-1">
+      <div class="font-bold text-lg mb-xs">Warning</div>
+      <div class="text-md lh-md">This action may have unintended consequences.</div>
+    </div>
+
+    <div class="background-green border-green text-green shadow-1 rounded-1 p-1 m-1 maxw-1 flex-col gap-1">
+      <div class="font-bold text-lg mb-xs">Success</div>
+      <div class="text-md lh-md">Your changes have been saved successfully!</div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
