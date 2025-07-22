@@ -1,5 +1,9 @@
 package com.example.AbstractFactory;
 
+import com.example.AbstractFactory.UI.Application;
+import com.example.AbstractFactory.UI.GUIFactory;
+import com.example.AbstractFactory.UI.MacFactory;
+import com.example.AbstractFactory.UI.WindowsFactory;
 import junit.framework.TestCase;
 
 public class ApplicationTest extends TestCase {
