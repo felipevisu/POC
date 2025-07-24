@@ -1,3 +1,5 @@
+# https://leetcode.com/problems/valid-mountain-array/
+
 def valid_mountain_array(arr):
     if len(arr) < 3:
         return False
