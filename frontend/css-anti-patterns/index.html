@@ -1,42 +1,359 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="/vite.svg" rel="icon" type="image/svg+xml" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Vite App</title>
   </head>
   <body>
-    <h1>BEM</h1>
-    <div class="alert alert--error">
-      <div class="alert__title">Error</div>
-      <div class="alert__message">Something went wrong. Please try again.</div>
-    </div>
-    <div class="alert alert--warning">
-      <div class="alert__title">Warning</div>
-      <div class="alert__message">This action may have unintended consequences.</div>
-    </div>
-    <div class="alert alert--success">
-      <div class="alert__title">Success</div>
-      <div class="alert__message">Your changes have been saved successfully!</div>
-    </div>
+    <header>
+      <h1>CSS Anti Patterns</h1>
+    </header>
 
-    <h1>Tailwind Clone</h1>
-    <div class="background-red border-red text-red shadow-1 rounded-1 p-1 m-1 maxw-1 flex-col gap-1">
-      <div class="font-bold text-lg mb-xs">Error</div>
-      <div class="text-md lh-md">Something went wrong. Please try again.</div>
-    </div>
+    <section>
+      <h2>BEM (Block Element Modifier)</h2>
 
-    <div class="background-yellow border-yellow text-yellow shadow-1 rounded-1 p-1 m-1 maxw-1 flex-col gap-1">
-      <div class="font-bold text-lg mb-xs">Warning</div>
-      <div class="text-md lh-md">This action may have unintended consequences.</div>
-    </div>
+      <div class="alerts-list">
+        <div class="alert alert--error">
+          <div class="alert__title">Error</div>
+          <div class="alert__message">
+            Something went wrong. Please try again.
+          </div>
+        </div>
+        <div class="alert alert--warning">
+          <div class="alert__title">Warning</div>
+          <div class="alert__message">
+            This action may have unintended consequences.
+          </div>
+        </div>
+        <div class="alert alert--success">
+          <div class="alert__title">Success</div>
+          <div class="alert__message">
+            Your changes have been saved successfully!
+          </div>
+        </div>
+      </div>
 
-    <div class="background-green border-green text-green shadow-1 rounded-1 p-1 m-1 maxw-1 flex-col gap-1">
-      <div class="font-bold text-lg mb-xs">Success</div>
-      <div class="text-md lh-md">Your changes have been saved successfully!</div>
-    </div>
+      <pre><code class="language-html">
+&lt;div class="alert alert--error"&gt;
+    &lt;div class="alert__title"&gt;Error&lt;/div&gt;
+    &lt;div class="alert__message"&gt;Something went wrong. Please try again.&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="alert alert--warning"&gt;
+    &lt;div class="alert__title"&gt;Warning&lt;/div&gt;
+    &lt;div class="alert__message"&gt;This action may have unintended consequences.&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="alert alert--success"&gt;
+    &lt;div class="alert__title"&gt;Success&lt;/div&gt;
+    &lt;div class="alert__message"&gt;Your changes have been saved successfully!&lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
 
-    <script type="module" src="/src/main.js"></script>
+      <pre><code class="language-css">
+.alert {
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+  max-width: 400px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  &__title {
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  &__message {
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  &--error {
+    background: #ffeaea;
+    border: 1px solid #e74c3c;
+    color: #c0392b;
+  }
+
+  &--warning {
+    background: #fff8e1;
+    border: 1px solid #f1c40f;
+    color: #b8860b;
+  }
+
+  &--success {
+    background: #eafaf1;
+    border: 1px solid #27ae60;
+    color: #218c5c;
+  }
+}
+</code></pre>
+
+      <div class="about">
+        <div class="pros"></div>
+        <div class="cons">
+          <ul>
+            <li>
+              <b>Harder to Debug & Search</b><br />
+              Since BEM class names can be long and very specific (like
+              block__element--modifier), searching your codebase or browser dev
+              tools for partial matches or related styles is tougher. You often
+              have to type the entire class name exactly, which slows down
+              debugging and style overrides.
+            </li>
+            <li>
+              <b>Verbose Class Names</b><br />
+              BEM names can get long and harder to write manually.
+            </li>
+            <li>
+              <b>Manual Enforcement</b><br />
+              Without tools or conventions, teams can be inconsistent with BEM.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Inline CSS</h2>
+      <div class="alerts-list">
+        <div
+          style="
+            background: #ffeaea;
+            border: 1px solid #e74c3c;
+            color: #c0392b;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            max-width: 400px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+          "
+        >
+          <div
+            style="font-weight: bold; font-size: 1.1em; margin-bottom: 0.25rem"
+          >
+            Error
+          </div>
+          <div style="font-size: 1em; line-height: 1.4">
+            Something went wrong. Please try again.
+          </div>
+        </div>
+
+        <div
+          style="
+            background: #fff8e1;
+            border: 1px solid #f1c40f;
+            color: #b8860b;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            max-width: 400px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+          "
+        >
+          <div
+            style="font-weight: bold; font-size: 1.1em; margin-bottom: 0.25rem"
+          >
+            Warning
+          </div>
+          <div style="font-size: 1em; line-height: 1.4">
+            This action may have unintended consequences.
+          </div>
+        </div>
+
+        <div
+          style="
+            background: #eafaf1;
+            border: 1px solid #27ae60;
+            color: #218c5c;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            max-width: 400px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+          "
+        >
+          <div
+            style="font-weight: bold; font-size: 1.1em; margin-bottom: 0.25rem"
+          >
+            Success
+          </div>
+          <div style="font-size: 1em; line-height: 1.4">
+            Your changes have been saved successfully!
+          </div>
+        </div>
+      </div>
+      <pre><code class="language-html">
+&lt;div
+  style="
+    background: #ffeaea;
+    border: 1px solid #e74c3c;
+    color: #c0392b;
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+    max-width: 400px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  "
+&gt;
+  &lt;div
+    style="font-weight: bold; font-size: 1.1rem; margin-bottom: 0.25rem"
+  &gt;
+    Error
+  &lt;/div&gt;
+  &lt;div style="font-size: 1rem; line-height: 1.4"&gt;
+    Something went wrong. Please try again.
+  &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+
+      <div class="about">
+        <div class="pros"></div>
+        <div class="cons">
+          <ul>
+            <li>
+              <strong>Poor maintainability</strong>: Styles are scattered inside
+              HTML elements, making it harder to update or manage across many
+              elements.
+            </li>
+            <li>
+              <strong>No reusability</strong>: You can’t reuse inline styles
+              easily; you have to repeat the same styles everywhere, causing
+              duplication.
+            </li>
+            <li>
+              <strong>Harder to override</strong>: Inline styles have very high
+              specificity, which can make overriding them with external CSS
+              tricky.
+            </li>
+            <li>
+              <strong>Lack of separation of concerns</strong>: Mixing content
+              (HTML) with presentation (CSS) violates best practices and reduces
+              code clarity.
+            </li>
+            <li>
+              <strong>No media queries or pseudo-classes</strong>: Inline styles
+              cannot handle media queries (@media) or pseudo-classes like
+              :hover, limiting responsiveness and interactivity.
+            </li>
+            <li>
+              <strong>Larger HTML files</strong>: Inline styles increase the
+              size of HTML files, potentially slowing down page load.
+            </li>
+            <li>
+              <strong>Performance issues</strong>: Excessive inline styling can
+              cause the browser to recalculate styles more often, affecting
+              performance.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Tailwind Clone</h2>
+      <div class="alerts-list">
+        <div
+          class="background-red border-red text-red shadow-1 rounded-1 p-1 m-1 maxw-1 flex-col gap-1"
+        >
+          <div class="font-bold text-lg mb-xs">Error</div>
+          <div class="text-md lh-md">
+            Something went wrong. Please try again.
+          </div>
+        </div>
+
+        <div
+          class="background-yellow border-yellow text-yellow shadow-1 rounded-1 p-1 m-1 maxw-1 flex-col gap-1"
+        >
+          <div class="font-bold text-lg mb-xs">Warning</div>
+          <div class="text-md lh-md">
+            This action may have unintended consequences.
+          </div>
+        </div>
+
+        <div
+          class="background-green border-green text-green shadow-1 rounded-1 p-1 m-1 maxw-1 flex-col gap-1"
+        >
+          <div class="font-bold text-lg mb-xs">Success</div>
+          <div class="text-md lh-md">
+            Your changes have been saved successfully!
+          </div>
+        </div>
+      </div>
+      <pre><code class="language-html">
+&lt;div
+  class="background-red border-red text-red shadow-1 rounded-1 p-1 m-1 maxw-1 flex-col gap-1"
+&gt;
+  &lt;div class="font-bold text-lg mb-xs"&gt;Error&lt;/div&gt;
+  &lt;div class="text-md lh-md"&gt;Something went wrong. Please try again.&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div
+  class="background-yellow border-yellow text-yellow shadow-1 rounded-1 p-1 m-1 maxw-1 flex-col gap-1"
+&gt;
+  &lt;div class="font-bold text-lg mb-xs"&gt;Warning&lt;/div&gt;
+  &lt;div class="text-md lh-md"&gt;
+    This action may have unintended consequences.
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div
+  class="background-green border-green text-green shadow-1 rounded-1 p-1 m-1 maxw-1 flex-col gap-1"
+&gt;
+  &lt;div class="font-bold text-lg mb-xs"&gt;Success&lt;/div&gt;
+  &lt;div class="text-md lh-md"&gt;
+    Your changes have been saved successfully!
+  &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+
+      <div class="about">
+        <div class="pros"></div>
+        <div class="cons">
+          <ul>
+            <li>
+              <b>Hard to Understand Component Purpose</b><br />
+              Utility classes like
+              <code>background-red border-red text-red</code> describe styling
+              but don’t convey semantic meaning, so just by looking at the class
+              list it’s not obvious this is an alert component.
+            </li>
+            <li>
+              <b>Class Name Clutter</b><br />
+              Elements end up with long lists of utility classes, which can be
+              visually noisy and harder to read or maintain.
+            </li>
+            <li>
+              <b>Poor Readability for Newcomers</b><br />
+              Developers unfamiliar with the utility classes have to learn the
+              class names first before understanding the UI structure or styles.
+            </li>
+            <li>
+              <b>Repetitive Markup</b><br />
+              Since styles are applied directly on elements via many utility
+              classes, the same styles might be repeated across multiple
+              elements, which could lead to duplication.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <script src="/src/main.js" type="module"></script>
   </body>
 </html>

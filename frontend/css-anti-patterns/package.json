@@ -12,6 +12,7 @@
     "vite": "^7.0.4"
   },
   "dependencies": {
+    "highlight.js": "^11.11.1",
     "sass": "^1.89.2"
   }
 }

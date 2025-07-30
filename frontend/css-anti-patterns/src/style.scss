@@ -1,2 +1,36 @@
 @import url("alertBEM.scss");
 @import url("tailwindClone.scss");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #222;
+  color: #fafafa;
+  font-size: 1.5rem;
+}
+
+header {
+  text-align: center;
+}
+
+.alerts-list {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+section {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+code {
+  font-size: 0.75em;
+  margin: 8px 8px 24px;
+  border-radius: 8px;
+}
