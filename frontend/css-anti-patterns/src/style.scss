@@ -1,5 +1,6 @@
 @import url("alertBEM.scss");
 @import url("tailwindClone.scss");
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@100..900&display=swap");
 
 * {
   margin: 0;
@@ -8,29 +9,79 @@
 }
 
 body {
-  background: #222;
+  background: #2a2640;
   color: #fafafa;
   font-size: 1.5rem;
+  font-family: "Roboto", Arial, sans-serif;
+  line-height: 1.5em;
 }
 
 header {
   text-align: center;
-}
-
-.alerts-list {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
+  padding: 1em;
 }
 
 section {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 3em 1em;
+
+  h2 {
+    margin-bottom: 0.5em;
+  }
 }
 
 code {
   font-size: 0.75em;
-  margin: 8px 8px 24px;
-  border-radius: 8px;
+  margin: 1em 0 2em;
+  border-radius: 0.5em;
+  line-height: 1.2em;
+}
+
+ul {
+  padding-left: 1em;
+
+  li {
+    margin: 1em 0;
+  }
+}
+
+.alerts-list {
+  display: flex;
+  justify-content: center;
+  gap: 1em;
+}
+
+.hljs {
+  white-space: pre-wrap; /* allows wrapping */
+  word-break: break-word; /* optional, breaks long words */
+  background: #1b1626 !important;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(0, 0, 0, 0.2);
+  font-size: 0.8em;
+  margin-top: 1em;
+}
+th,
+td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #999;
+  vertical-align: top;
+}
+th {
+  background: rgba(0, 0, 0, 0.3);
+}
+tr:last-child td {
+  border-bottom: none;
+}
+@media (max-width: 600px) {
+  th,
+  td {
+    font-size: 0.9rem;
+    padding: 0.75rem;
+  }
 }
