@@ -3,15 +3,6 @@ FROM jenkins/jenkins:2.516.1-jdk21
 # Switch to root to install packages
 USER root
 
-# Install Python and other dependencies
-RUN apt-get update && \
-    apt-get install -y \
-        python3 \
-        python3-pip \
-        python3-venv \
-        curl \
-        && rm -rf /var/lib/apt/lists/*
-
 # Create symlink for python command
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
@@ -24,5 +15,14 @@ RUN apt-get update && apt-get install -y lsb-release ca-certificates curl && \
     | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
     apt-get update && apt-get install -y docker-ce-cli && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Build argument to receive host Docker group ID (default to 999)
+ARG DOCKER_GID=999
+
+# Create docker group with the host Docker group ID, add jenkins user to it
+RUN groupadd -for -g ${DOCKER_GID} docker && \
+    usermod -aG docker jenkins
+
 USER jenkins
+
 RUN jenkins-plugin-cli --plugins "blueocean docker-workflow json-path-api"
