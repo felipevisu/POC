@@ -1,0 +1,18 @@
+# Terraform configuration file for variable values
+# Copy this file to terraform.tfvars and customize the values
+
+# Kubernetes configuration
+kubeconfig_path = "~/.kube/config"
+kube_context    = null  # Use default context, or specify: "my-cluster-context"
+
+# Namespace names
+app_namespace   = "app"
+infra_namespace = "infra"
+
+# Cluster configuration
+cluster_name = "my-cluster"
+
+# Optional components (set to true to enable)
+enable_monitoring = false  # Set to true to install Prometheus & Grafana
+enable_ingress    = false  # Set to true to install NGINX Ingress Controller
+enable_jenkins    = false  # Set to true to install Jenkins CI/CD server

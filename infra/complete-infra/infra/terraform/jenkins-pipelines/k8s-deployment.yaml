@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-application
+  namespace: app
+  labels:
+    app: sample-application
+    managed-by: jenkins
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sample-application
+  template:
+    metadata:
+      labels:
+        app: sample-application
+    spec:
+      serviceAccountName: app-service-account
+      containers:
+        - name: sample-app
+          image: sample-application:latest # This will be replaced by Jenkins
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          env:
+            - name: ENV
+              value: "production"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sample-application
+  namespace: app
+  labels:
+    app: sample-application
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8000
+      protocol: TCP
+  selector:
+    app: sample-application
+---
+# Optional: Ingress for the application (if ingress controller is enabled)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sample-application
+  namespace: app
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: app.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sample-application
+                port:
+                  number: 80
