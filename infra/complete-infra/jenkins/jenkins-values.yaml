@@ -1,0 +1,48 @@
+controller:
+  image:
+    repository: jenkins/jenkins
+    tag: "lts"
+    pullPolicy: Always
+
+  admin:
+    username: admin
+    password: admin123
+
+  installPlugins:
+    - kubernetes:latest
+    - workflow-aggregator:latest
+    - git:latest
+    - configuration-as-code:latest
+
+  # Simple service account
+  serviceAccount:
+    create: true
+    name: jenkins
+
+  # Skip setup wizard
+  initializeOnce: false
+
+  # Simple storage for localhost
+  persistence:
+    enabled: true
+    size: 8Gi
+
+  # Simple resource limits for localhost
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "256Mi"
+    limits:
+      cpu: "2000m"
+      memory: "4096Mi"
+
+  # Expose Jenkins service
+  serviceType: NodePort
+
+# Disable agent for simplicity
+agent:
+  enabled: false
+
+# Simple RBAC
+rbac:
+  create: true
