@@ -24,8 +24,7 @@ controller:
 
   # Simple storage for localhost
   persistence:
-    enabled: true
-    size: 8Gi
+    enabled: false
 
   # Simple resource limits for localhost
   resources:
@@ -38,6 +37,9 @@ controller:
 
   # Expose Jenkins service
   serviceType: NodePort
+
+  # Enable executors
+  numExecutors: 2
 
 # Disable agent for simplicity
 agent:

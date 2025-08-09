@@ -88,7 +88,18 @@ helm install jenkins jenkins/jenkins \
 **Useful debug commands**
 
 ```bash
+# See logs
 kubectl logs -n infra -l app.kubernetes.io/name=jenkins
+
+# Uninstall Jenkins
+helm uninstall jenkins -n infra
+
+# Delete any leftover PVCs (removes Jenkins home data)
+kubectl get pvc -n infra
+kubectl delete pvc -n infra -l app.kubernetes.io/instance=jenkins
+
+# Remove leftover objects (if any linger)
+kubectl delete all,cm,secret,sa,role,rolebinding -n infra -l app.kubernetes.io/instance=jenkins --ignore-not-found
 ```
 
 **Run jenkins on port 8000**

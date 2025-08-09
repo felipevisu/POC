@@ -1,66 +1,94 @@
 pipeline {
-    agent {
-        label 'built-in'
+  agent {
+    kubernetes {
+      label 'py-tests'
+      defaultContainer 'python'
+      yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: py-tests
+spec:
+  restartPolicy: Never
+  containers:
+    - name: python
+      image: python:3.11-slim
+      command: ['cat']
+      tty: true
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "256Mi"
+        limits:
+          cpu: "500m"
+          memory: "512Mi"
+"""
     }
-    
-    parameters {
-        string(name: 'BRANCH', defaultValue: 'main', description: 'Git branch to checkout')
+  }
+
+  parameters {
+    string(name: 'BRANCH', defaultValue: 'main', description: 'Git branch')
+  }
+
+  environment {
+    REPO_URL = 'https://github.com/felipevisu/POC-sample-application.git'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout([$class: 'GitSCM',
+          branches: [[name: "*/${params.BRANCH}"]],
+          userRemoteConfigs: [[url: REPO_URL]]
+        ])
+        sh 'echo "Files:"; ls -1 | head'
+      }
     }
-    
-    environment {
-        GITHUB_REPO = "https://github.com/felipevisu/POC-sample-application.git"
+
+    stage('Setup Python Env') {
+      steps {
+        sh '''
+set -e
+python --version
+pip install --no-cache-dir --upgrade pip
+if [ -f requirements.txt ]; then
+  echo "[INFO] Installing requirements..."
+  pip install --no-cache-dir -r requirements.txt
+else
+  echo "[WARN] requirements.txt not found"
+fi
+pip install --no-cache-dir pytest pytest-cov || true
+'''
+      }
     }
-    
-    stages {
-        stage('Checkout') {
-            steps {
-                script {
-                    echo "Checking out branch: ${params.BRANCH}"
-                    deleteDir()
-                    checkout([
-                        $class: 'GitSCM',
-                        branches: [[name: "*/${params.BRANCH}"]],
-                        userRemoteConfigs: [[url: "${GITHUB_REPO}"]]
-                    ])
-                }
-            }
-        }
-        
-        stage('List Files') {
-            steps {
-                script {
-                    echo "Listing repository contents:"
-                    sh "ls -la"
-                    
-                    echo "Checking if Dockerfile exists:"
-                    sh "test -f Dockerfile && echo 'Dockerfile found' || echo 'No Dockerfile found'"
-                    
-                    echo "Checking Python files:"
-                    sh "find . -name '*.py' | head -10"
-                }
-            }
-        }
-        
-        stage('Check Python') {
-            steps {
-                script {
-                    echo "Checking Python version:"
-                    sh "python3 --version || echo 'Python3 not available'"
-                    sh "which python3 || echo 'Python3 not in PATH'"
-                }
-            }
-        }
+
+    stage('Run Tests') {
+      steps {
+        sh '''
+set -e
+if [ -d tests ]; then
+  echo "[INFO] Running pytest in tests/"
+  pytest -v --maxfail=1
+else
+  echo "[WARN] No tests/ directory. Running basic import check."
+  python - <<'EOF'
+try:
+    import main
+    print("Basic import of main OK")
+except Exception as e:
+    print("Import failed:", e)
+    raise
+EOF
+fi
+'''
+      }
     }
-    
-    post {
-        always {
-            echo 'Pipeline completed'
-        }
-        success {
-            echo 'Repository checkout successful!'
-        }
-        failure {
-            echo 'Pipeline failed!'
-        }
-    }
+  }
+
+  post {
+    success { echo 'Tests passed.' }
+    failure { echo 'Tests failed.' }
+    always  { echo 'Pipeline completed.' }
+  }
 }
