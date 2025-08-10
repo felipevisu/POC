@@ -1,6 +1,3 @@
-#!/bin/bash
-# filepath: /home/felipe/Documents/POC/infra/complete-infra/jenkins/simple-setup.sh
-
 echo "🚀 Setting up Jenkins for POC Sample Application..."
 
 # Check if Jenkins is installed
@@ -21,20 +18,11 @@ else
 fi
 
 # Check Jenkins status
-echo "📊 Jenkins status:"
+echo "Jenkins status:"
 kubectl get pods -n infra -l app.kubernetes.io/name=jenkins
 
-# Start port forwarding
-echo "🌐 Starting port forward to Jenkins..."
-echo "🔗 Jenkins will be available at: http://localhost:8080"
-echo "🔐 Login with: admin/admin123"
-echo ""
-echo "📋 To create the pipeline job:"
-echo "1. Go to http://localhost:8080"
-echo "2. New Item > Pipeline > Name: 'poc-sample-app-test'"
-echo "3. Copy content from: ./jenkins/jobs/sample-app-pipeline.groovy"
-echo "4. Save and Build with Parameters"
-echo ""
-echo "Press Ctrl+C to stop port forwarding"
+# Allow Jenkins manage app namespace
+kubectl apply -f jenkins/rbac-app.yaml
 
+# Run on port 8080
 kubectl port-forward svc/jenkins 8080:8080 -n infra

@@ -141,18 +141,25 @@ kubectl port-forward svc/jenkins 8080:8080 -n infra
 2. **Enter BRANCH**: `main` (or any branch from your FastAPI repo)
 3. **Click "Build"**
 
-### Deploy Sample App if tests passed
+## Deploy Sample App if tests passed
 
-**Update pipeline script**
+**Add a RBAC (Role-Based Access Control) so Jnekins can manage app namespace**
 
-1. **In the job configuration page**:
+```bash
+kubectl apply -f jenkins/rbac-app.yaml
+```
 
-   - Scroll down to **"Pipeline"** section
-   - **Definition**: Select "Pipeline script"
-   - **Script**: Copy and paste the entire content from `./jenkins/jobs/poc-sample-app-deploy-pipeline.groovy`
+**Update pipeline script in the job configuration page**:
+
+- Scroll down to **"Pipeline"** section
+- **Definition**: Select "Pipeline script"
+- **Script**: Copy and paste the entire content from `./jenkins/jobs/poc-sample-app-deploy-pipeline.groovy`
 
 **Run application on port 8000**
 
 ```bash
 kubectl port-forward -n app svc/sample-app 8000:80
 ```
+
+## Deploy on AWS EKS
+
