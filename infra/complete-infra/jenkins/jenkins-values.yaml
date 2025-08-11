@@ -4,29 +4,58 @@ controller:
     tag: "lts"
     pullPolicy: Always
 
+  # CORRECT: Modern admin configuration format
   admin:
     username: admin
     password: admin123
 
+  # Use specific plugin versions for stability
   installPlugins:
     - kubernetes:latest
     - workflow-aggregator:latest
     - git:latest
     - configuration-as-code:latest
 
-  # Simple service account
+  # Container security context
+  containerSecurityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+    privileged: false
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+
+  # Pod security context
+  podSecurityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+
+  # Init container security context
+  initContainerSecurityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+    privileged: false
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+
+  # Service account
   serviceAccount:
     create: true
     name: jenkins
 
-  # Skip setup wizard
-  initializeOnce: false
+  # Service type for EKS
+  serviceType: ClusterIP
 
-  # Simple storage for localhost
+  # Enable persistence and use the default EBS StorageClass for EKS
   persistence:
-    enabled: false
+    enabled: true
+    storageClass: gp3 # Or "gp3" if your EKS cluster supports it
+    size: 10Gi
+    annotations: {}
 
-  # Simple resource limits for localhost
+  # Resources
   resources:
     requests:
       cpu: "50m"
@@ -35,16 +64,14 @@ controller:
       cpu: "2000m"
       memory: "4096Mi"
 
-  # Expose Jenkins service
-  serviceType: NodePort
-
-  # Enable executors
+  # Executors
   numExecutors: 2
 
-# Disable agent for simplicity
+# Disable agent
 agent:
   enabled: false
 
-# Simple RBAC
+# RBAC
 rbac:
   create: true
+  readSecrets: false

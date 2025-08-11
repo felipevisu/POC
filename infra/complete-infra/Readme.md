@@ -160,6 +160,3 @@ kubectl apply -f jenkins/rbac-app.yaml
 ```bash
 kubectl port-forward -n app svc/sample-app 8000:80
 ```
-
-## Deploy on AWS EKS
-
