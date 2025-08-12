@@ -214,6 +214,13 @@ resource "kubernetes_namespace" "infra" {
   depends_on = [aws_eks_node_group.main]
 }
 
+resource "kubernetes_namespace" "monitoring" {
+  metadata {
+    name = "monitoring"
+  }
+  depends_on = [aws_eks_node_group.main]
+}
+
 # Get AWS account ID
 data "aws_caller_identity" "current" {}
 
@@ -302,6 +309,45 @@ resource "helm_release" "jenkins" {
     kubernetes_storage_class.jenkins,
     aws_eks_addon.ebs_csi
   ]
+}
+
+# Install Prometheus (kube-prometheus-stack)
+resource "helm_release" "prometheus" {
+  name       = "prometheus"
+  namespace  = kubernetes_namespace.monitoring.metadata[0].name
+  repository = "https://prometheus-community.github.io/helm-charts"
+  chart      = "kube-prometheus-stack"
+  version    = "56.6.0" # Use latest stable version
+
+  values = [
+    yamlencode({
+      grafana = {
+        enabled = false # We'll install Grafana separately
+      }
+    })
+  ]
+
+  depends_on = [kubernetes_namespace.monitoring]
+}
+
+# Install Grafana
+resource "helm_release" "grafana" {
+  name       = "grafana"
+  namespace  = kubernetes_namespace.monitoring.metadata[0].name
+  repository = "https://grafana.github.io/helm-charts"
+  chart      = "grafana"
+  version    = "7.3.9" # Use latest stable version
+
+  values = [
+    yamlencode({
+      adminPassword = "admin"
+      service = {
+        type = "LoadBalancer"
+      }
+    })
+  ]
+
+  depends_on = [helm_release.prometheus]
 }
 
 # Data source to get the Jenkins LoadBalancer details
