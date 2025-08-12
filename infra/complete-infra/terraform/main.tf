@@ -314,6 +314,24 @@ data "kubernetes_service" "jenkins" {
   depends_on = [helm_release.jenkins]
 }
 
+resource "kubernetes_namespace" "app" {
+  metadata {
+    name = "app"
+  }
+
+  depends_on = [aws_eks_node_group.main]
+}
+
+resource "kubernetes_manifest" "jenkins_rbac_app" {
+  for_each = {
+    for doc in split("---", file("../jenkins/rbac-app.yaml")) :
+    yamldecode(doc).metadata.name => yamldecode(doc)
+    if doc != "" && can(yamldecode(doc))
+  }
+  manifest   = each.value
+  depends_on = [kubernetes_namespace.app]
+}
+
 # Outputs
 output "cluster_name" {
   value = aws_eks_cluster.main.name
