@@ -15,6 +15,7 @@ controller:
     - workflow-aggregator:latest
     - git:latest
     - configuration-as-code:latest
+    - prometheus:latest
 
   # Container security context
   containerSecurityContext:

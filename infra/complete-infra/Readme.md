@@ -160,3 +160,51 @@ kubectl apply -f jenkins/rbac-app.yaml
 ```bash
 kubectl port-forward -n app svc/sample-app 8000:80
 ```
+
+## Step 2 - Setup on AWS
+
+### Deploy on terraform
+
+```bash
+cd terraform
+terraform plan
+terraform apply
+```
+
+Once created the infrastructure on AWS the kubectl will point to the AWS EKS, it can be verified by running:
+
+```bash
+kubectl config current-context
+# Output: arn:aws:eks:us-east-1:211125777111:cluster/jenkins-poc-cluster
+```
+
+### Map to localhost
+
+Now that the kubectl is pointing to AWS applying a port fowart makes possible to access the applications running on EK2 from the localhost.
+
+```bash
+# Jenkins
+kubectl -n infra port-forward svc/jenkins 8080:8080
+
+# App
+kubectl -n app port-forward  svc/sample-app 8000:80
+
+# Grafana
+kubectl -n monitoring port-forward svc/grafana 3000:80
+```
+
+### Useful commands
+
+```bash
+# List all namespaces
+kubectl get namespaces
+
+# List all pods in all namespaces
+kubectl get pods --all-namespaces
+
+# List all pods in a specific namespace (e.g., infra)
+kubectl get pods -n infra
+
+# Describe a specific pod
+kubectl describe pod <pod-name> -n <namespace>
+```
