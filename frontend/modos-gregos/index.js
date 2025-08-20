@@ -28,26 +28,33 @@ const frets = 15;
 
 function generateArmMatrix() {
   const arm = [];
+  const chromaticNotes = [
+    "C",
+    "C#",
+    "D",
+    "D#",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "G#",
+    "A",
+    "A#",
+    "B",
+  ];
+
   for (let string = 0; string < strings; string++) {
     arm.push([]);
     const baseNote = reversedTune[string];
-    arm[string].push(baseNote);
 
-    let fret = 0;
-    while (fret < frets) {
-      const previousNote = arm[string][arm[string].length - 1];
-      const previousNoteIndex = notes.indexOf(
-        previousNote.replace(/[#b]/g, "")
-      );
+    let baseIndex = chromaticNotes.findIndex(
+      (note) =>
+        note === baseNote || normalizeNote(note) === normalizeNote(baseNote)
+    );
 
-      if (intervals[previousNoteIndex] === 1) {
-        arm[string].push(previousNote + "#");
-        fret++;
-      }
-
-      const nextNote = notes[(previousNoteIndex + 1) % notes.length];
-      arm[string].push(nextNote);
-      fret++;
+    for (let fret = 0; fret <= frets; fret++) {
+      const chromaticIndex = (baseIndex + fret) % 12;
+      arm[string].push(chromaticNotes[chromaticIndex]);
     }
   }
   return arm;
@@ -72,6 +79,16 @@ function countAccidentals(note) {
 function applyAccidentals(naturalNote, accidentalCount) {
   if (accidentalCount === 0) {
     return naturalNote;
+  }
+
+  if (accidentalCount === 2) {
+    const noteIndex = notes.indexOf(naturalNote);
+    const nextNoteIndex = (noteIndex + 1) % 7;
+    return notes[nextNoteIndex];
+  } else if (accidentalCount === -2) {
+    const noteIndex = notes.indexOf(naturalNote);
+    const prevNoteIndex = (noteIndex - 1 + 7) % 7;
+    return notes[prevNoteIndex];
   } else if (accidentalCount > 0) {
     return naturalNote + "#".repeat(accidentalCount);
   } else {
@@ -110,21 +127,37 @@ function generateScale(mode, note) {
 }
 
 function normalizeNote(note) {
-  const enharmonics = {
+  const enharmonicMap = {
     "C#": "Db",
     "D#": "Eb",
     "F#": "Gb",
     "G#": "Ab",
     "A#": "Bb",
+    Db: "C#",
+    Eb: "D#",
+    Gb: "F#",
+    Ab: "G#",
+    Bb: "A#",
+    "E#": "F",
+    "B#": "C",
+    Fb: "E",
+    Cb: "B",
   };
-  return enharmonics[note] || note;
+  return enharmonicMap[note] || note;
 }
 
-function isNoteInScale(note, scale) {
-  const normalizedNote = normalizeNote(note);
+function isNoteInScale(fretNote, scale) {
   return scale.some((scaleNote) => {
-    const normalizedScaleNote = normalizeNote(scaleNote);
-    return normalizedNote === normalizedScaleNote || note === scaleNote;
+    if (fretNote === scaleNote) return true;
+
+    const normalizedFret = normalizeNote(fretNote);
+    const normalizedScale = normalizeNote(scaleNote);
+
+    return (
+      normalizedFret === normalizedScale ||
+      normalizedFret === scaleNote ||
+      fretNote === normalizedScale
+    );
   });
 }
 
@@ -136,7 +169,7 @@ function renderFretboard(scale, rootNote) {
   const headerRow = document.createElement("tr");
   headerRow.appendChild(document.createElement("th"));
 
-  for (let fret = 0; fret <= frets; fret++) {
+  for (let fret = 1; fret <= frets; fret++) {
     const th = document.createElement("th");
     th.textContent = fret;
     th.className = "fret-header";
@@ -152,7 +185,7 @@ function renderFretboard(scale, rootNote) {
     stringCell.className = "string-label";
     row.appendChild(stringCell);
 
-    for (let fret = 0; fret <= frets; fret++) {
+    for (let fret = 1; fret <= frets; fret++) {
       const cell = document.createElement("td");
       const note = arm[string][fret];
       cell.textContent = note;
@@ -208,4 +241,10 @@ function updateFretboard() {
 
 document.addEventListener("DOMContentLoaded", function () {
   updateFretboard();
+  document
+    .getElementById("noteSelect")
+    .addEventListener("change", updateFretboard);
+  document
+    .getElementById("modeSelect")
+    .addEventListener("change", updateFretboard);
 });
