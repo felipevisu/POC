@@ -1,0 +1,157 @@
+body {
+  font-family: "Arial", sans-serif;
+  background: #1e3c72;
+  margin: 0;
+  padding: 20px;
+  color: white;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 100%;
+  padding: 30px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 2.5em;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+label {
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+select,
+button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+select {
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+}
+
+button {
+  background: #ff6b6b;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.scale-info {
+  text-align: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.scale-notes {
+  font-size: 1.3em;
+  font-weight: bold;
+  margin: 10px 0;
+  color: #ffd700;
+}
+
+.fretboard {
+  background: #8b4513;
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+  overflow-x: auto;
+}
+
+.fretboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+
+.string-label {
+  background: #654321;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  padding: 10px;
+  border: 2px solid #4a2c17;
+  width: 60px;
+}
+
+.fret-header {
+  background: #654321;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  padding: 10px;
+  border: 2px solid #4a2c17;
+  min-width: 50px;
+}
+
+.fret-cell {
+  background: #d2b48c;
+  text-align: center;
+  padding: 8px;
+  border: 1px solid #8b4513;
+  position: relative;
+  font-weight: bold;
+  font-size: 14px;
+  height: 40px;
+  vertical-align: middle;
+}
+
+.note-in-scale {
+  background: #ff6b6b !important;
+  color: white;
+}
+
+.root-note {
+  background: #ffd700 !important;
+  color: #333;
+  font-weight: 900;
+}
+
+@media (max-width: 768px) {
+  .controls {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .fretboard {
+    padding: 10px;
+  }
+
+  h1 {
+    font-size: 2em;
+  }
+}
+
+.mode-description {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  border-radius: 10px;
+  margin-top: 20px;
+  text-align: center;
+}

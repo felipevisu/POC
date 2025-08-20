@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Braço da Guitarra - Modos Gregos</title>
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎸 Braço da Guitarra - Modos Gregos</h1>
+
+      <div class="controls">
+        <div class="control-group">
+          <label for="noteSelect">Nota Fundamental:</label>
+          <select id="noteSelect">
+            <option value="C">C (Dó)</option>
+            <option value="C#">C# (Dó#)</option>
+            <option value="Db">Db (Réb)</option>
+            <option value="D">D (Ré)</option>
+            <option value="D#">D# (Ré#)</option>
+            <option value="Eb">Eb (Mib)</option>
+            <option value="E">E (Mi)</option>
+            <option value="F">F (Fá)</option>
+            <option value="F#">F# (Fá#)</option>
+            <option value="Gb">Gb (Solb)</option>
+            <option value="G">G (Sol)</option>
+            <option value="G#">G# (Sol#)</option>
+            <option value="Ab">Ab (Láb)</option>
+            <option value="A">A (Lá)</option>
+            <option value="A#">A# (Lá#)</option>
+            <option value="Bb">Bb (Sib)</option>
+            <option value="B">B (Si)</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="modeSelect">Modo Grego:</label>
+          <select id="modeSelect">
+            <option value="jonio">Jônio (Maior)</option>
+            <option value="dorico">Dórico</option>
+            <option value="frigio">Frígio</option>
+            <option value="lidio">Lídio</option>
+            <option value="mixolidio">Mixolídio</option>
+            <option value="eolio">Eólio (Menor)</option>
+            <option value="locrio">Lócrio</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <button onclick="updateFretboard()">Gerar Escala</button>
+        </div>
+      </div>
+
+      <div class="scale-info" id="scaleInfo">
+        <div>Selecione uma nota e um modo para ver a escala</div>
+      </div>
+
+      <div class="fretboard">
+        <table class="fretboard-table" id="fretboardTable"></table>
+      </div>
+
+      <div class="mode-description" id="modeDescription"></div>
+    </div>
+
+    <script src="index.js"></script>
+  </body>
+</html>
