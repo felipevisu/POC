@@ -2,27 +2,26 @@ body {
   font-family: "Arial", sans-serif;
   background: #1e3c72;
   margin: 0;
-  padding: 20px;
   color: white;
   min-height: 100vh;
 }
 
 .container {
   max-width: 100%;
-  padding: 30px;
+  padding: 24px;
 }
 
 h1 {
   text-align: center;
-  margin-bottom: 30px;
-  font-size: 2.5em;
+  margin-bottom: 24px;
+  font-size: 2em;
 }
 
 .controls {
   display: flex;
   justify-content: center;
   gap: 30px;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
   flex-wrap: wrap;
 }
 
@@ -30,7 +29,7 @@ h1 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 label {
@@ -42,7 +41,7 @@ select,
 button {
   padding: 12px 20px;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
@@ -66,19 +65,19 @@ button {
   margin-bottom: 20px;
   padding: 15px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
 .scale-notes {
   font-size: 1.3em;
   font-weight: bold;
-  margin: 10px 0;
+  margin: 8px 0;
   color: #ffd700;
 }
 
 .fretboard {
   background: #8b4513;
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 20px;
   margin: 20px 0;
   overflow-x: auto;
@@ -95,7 +94,7 @@ button {
   color: white;
   font-weight: bold;
   text-align: center;
-  padding: 10px;
+  padding: 8px;
   border: 2px solid #4a2c17;
   width: 60px;
 }
@@ -105,7 +104,7 @@ button {
   color: white;
   font-weight: bold;
   text-align: center;
-  padding: 10px;
+  padding: 8px;
   border: 2px solid #4a2c17;
   min-width: 50px;
 }
@@ -114,11 +113,11 @@ button {
   background: #d2b48c;
   text-align: center;
   padding: 8px;
-  border: 1px solid #8b4513;
+  border: 2px solid #4a2c17;
   position: relative;
   font-weight: bold;
   font-size: 14px;
-  height: 40px;
+  height: 24px;
   vertical-align: middle;
 }
 
@@ -140,7 +139,7 @@ button {
   }
 
   .fretboard {
-    padding: 10px;
+    padding: 8px;
   }
 
   h1 {
@@ -151,7 +150,7 @@ button {
 .mode-description {
   background: rgba(255, 255, 255, 0.1);
   padding: 15px;
-  border-radius: 10px;
+  border-radius: 8px;
   margin-top: 20px;
   text-align: center;
 }
