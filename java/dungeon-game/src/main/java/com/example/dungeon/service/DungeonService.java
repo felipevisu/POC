@@ -1,9 +1,11 @@
-package com.example.dungeon;
+package com.example.dungeon.service;
 
+import org.springframework.stereotype.Service;
 import java.util.Arrays;
 
+@Service
+public class DungeonService {
 
-public final class DungeonGame {
     public int calculateMinimumHP(int[][] dungeon) {
         int m = dungeon.length;
         int n = dungeon[0].length;
