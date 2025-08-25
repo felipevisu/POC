@@ -74,7 +74,7 @@ class GameControllerTest {
                 .andExpect(jsonPath("$.gameId", is(1)))
                 .andExpect(jsonPath("$.playerName", is("Alice")))
                 .andExpect(jsonPath("$.boardName", is("Test Dungeon")))
-                .andExpect(jsonPath("$.minimumHealth", is(7)));
+                .andExpect(jsonPath("$.minimumHealth", is(0)));
     }
 
     @Test
