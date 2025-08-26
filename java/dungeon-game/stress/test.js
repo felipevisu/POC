@@ -7,6 +7,8 @@ export let options = {
 };
 
 export default function () {
+  sleep(10);
+
   // Create a player
   let playerRes = http.post(
     "http://app:8080/api/players",

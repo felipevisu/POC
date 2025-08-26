@@ -9,7 +9,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data"
 
   app:
     build: .
@@ -24,13 +24,38 @@ services:
       - "8080:8080"
     restart: always
 
+  influxdb:
+    image: influxdb:1.8
+    environment:
+      INFLUXDB_DB: k6
+      INFLUXDB_ADMIN_USER: admin
+      INFLUXDB_ADMIN_PASSWORD: admin
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb-data:/var/lib/influxdb
+
+  grafana:
+    image: grafana/grafana
+    depends_on:
+      - influxdb
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+
   k6:
     image: grafana/k6
-    volumes:
-      - ./stress/test.js:/scripts/test.js
     depends_on:
       - app
-    entrypoint: ["k6", "run", "/scripts/test.js"]
+      - influxdb
+    volumes:
+      - ./stress/test.js:/scripts/test.js
+    entrypoint: ["k6"]
+    command:
+      ["run", "--out", "influxdb=http://influxdb:8086", "/scripts/test.js"]
 
 volumes:
   pgdata:
+  influxdb-data:
