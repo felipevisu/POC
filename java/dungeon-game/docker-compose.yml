@@ -24,5 +24,13 @@ services:
       - "8080:8080"
     restart: always
 
+  k6:
+    image: grafana/k6
+    volumes:
+      - ./stress/test.js:/scripts/test.js
+    depends_on:
+      - app
+    entrypoint: ["k6", "run", "/scripts/test.js"]
+
 volumes:
   pgdata:

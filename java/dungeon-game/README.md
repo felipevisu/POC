@@ -38,8 +38,16 @@ export DB_PASSWORD=your_password
 
 ## Running the Application
 
+### Option 1 - java spring
+
 ```bash
 mvn spring-boot:run
+```
+
+### Option 2 - docker compose
+
+```bash
+docker-compose up --build -d
 ```
 
 ## API Endpoints
@@ -185,4 +193,10 @@ Expected response:
   "boardName": "Test Dungeon",
   "minimumHealth": 7
 }
+```
+
+## Run the stress tests
+
+```bash
+docker-compose up --build k6
 ```
