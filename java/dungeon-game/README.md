@@ -197,6 +197,25 @@ Expected response:
 
 ## Run the stress tests
 
+**Build the containers**
+
+```bash
+docker-compose up --build -d
+```
+
+**Run the stress tests with the K6**
+
 ```bash
 docker-compose up --build k6
 ```
+
+**Cleanup**
+
+```bash
+docker-compose down -v --remove-orphans
+ocker system prune -af --volumes
+```
+
+## Results
+
+<img src="./screenshots/stress-tests-terminal-results.png" />
