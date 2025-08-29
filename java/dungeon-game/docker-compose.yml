@@ -44,9 +44,15 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      # Provisioning configurations
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      # Dashboard files
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    restart: always
 
   k6:
-    image: grafana/k6
+    image: grafana/k6:latest
     depends_on:
       - app
       - influxdb
@@ -54,7 +60,12 @@ services:
       - ./stress/test.js:/scripts/test.js
     entrypoint: ["k6"]
     command:
-      ["run", "--out", "influxdb=http://influxdb:8086", "/scripts/test.js"]
+      [
+        "run",
+        "--out",
+        "influxdb=http://influxdb:8086/k6?consistency=one",
+        "/scripts/test.js",
+      ]
 
 volumes:
   pgdata:
