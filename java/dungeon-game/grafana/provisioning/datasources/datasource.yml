@@ -1,7 +1,7 @@
 apiVersion: 1
 
 datasources:
-  - name: InfluxDB
+  - name: k6_influx
     type: influxdb
     access: proxy
     url: http://influxdb:8086

@@ -45,9 +45,7 @@ services:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
     volumes:
-      # Provisioning configurations
       - ./grafana/provisioning:/etc/grafana/provisioning
-      # Dashboard files
       - ./grafana/dashboards:/var/lib/grafana/dashboards
     restart: always
 
