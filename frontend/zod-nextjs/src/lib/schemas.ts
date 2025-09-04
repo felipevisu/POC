@@ -46,3 +46,29 @@ export const FormSchema = z
       path: ["general"],
     }
   );
+
+export const CalculationResultSchema = z.object({
+  finalAmount: z.number(),
+  totalContributions: z.number(),
+  totalInterest: z.number(),
+  yearlyBreakdown: z.array(
+    z.object({
+      year: z.number(),
+      amount: z.number(),
+      contributions: z.number(),
+      interest: z.number(),
+    })
+  ),
+});
+
+export const ApiResponseSchema = z.discriminatedUnion("success", [
+  z.object({
+    success: z.literal(true),
+    data: CalculationResultSchema,
+  }),
+  z.object({
+    success: z.literal(false),
+    error: z.string(),
+    fieldErrors: z.record(z.string(), z.array(z.string())).optional(),
+  }),
+]);

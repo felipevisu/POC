@@ -1,45 +1,19 @@
-export interface FormData {
-  principal: string;
-  annualRate: string;
-  compoundingFrequency: string;
-  years: string;
-  monthlyContribution: string;
-}
+import z from "zod";
+import {
+  ApiResponseSchema,
+  CalculationResultSchema,
+  FormSchema,
+} from "./schemas";
 
-export interface ParsedFormData {
-  principal: number;
-  annualRate: number;
-  compoundingFrequency: number;
-  years: number;
-  monthlyContribution: number;
-}
+export type FormData = z.input<typeof FormSchema>;
 
-export interface YearlyBreakdown {
-  year: number;
-  amount: number;
-  contributions: number;
-  interest: number;
-}
+export type ParsedFormData = z.output<typeof FormSchema>;
 
-export interface CalculationResult {
-  finalAmount: number;
-  totalContributions: number;
-  totalInterest: number;
-  yearlyBreakdown: YearlyBreakdown[];
-}
+export type CalculationResult = z.infer<typeof CalculationResultSchema>;
 
-export interface ApiSuccessResponse {
-  success: true;
-  data: CalculationResult;
-}
-
-export interface ApiErrorResponse {
-  success: false;
-  error: string;
-  fieldErrors?: Record<string, string[]>;
-}
-
-export type ApiResponse = ApiSuccessResponse | ApiErrorResponse;
+export type ApiResponse = z.infer<typeof ApiResponseSchema>;
+export type ApiSuccessResponse = Extract<ApiResponse, { success: true }>;
+export type ApiErrorResponse = Extract<ApiResponse, { success: false }>;
 
 export interface ValidationResult {
   isValid: boolean;
