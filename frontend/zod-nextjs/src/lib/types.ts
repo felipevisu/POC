@@ -5,7 +5,7 @@ import {
   FormSchema,
 } from "./schemas";
 
-export type FormData = z.input<typeof FormSchema>;
+export type FormData = z.infer<typeof FormSchema>;
 
 export type ParsedFormData = z.output<typeof FormSchema>;
 

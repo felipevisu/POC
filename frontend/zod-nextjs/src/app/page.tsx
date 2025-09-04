@@ -6,31 +6,13 @@ import ResultsDisplay from "./components/ResultsDisplay";
 import { FormData, CalculationResult, ApiResponse } from "@/lib/types";
 
 export default function HomePage() {
-  const [formData, setFormData] = useState<FormData>({
-    principal: "10000",
-    annualRate: "7",
-    compoundingFrequency: "12",
-    years: "10",
-    monthlyContribution: "500",
-  });
-
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [apiError, setApiError] = useState<string | null>(null);
 
-  const handleFormChange = (updates: Partial<FormData>) => {
-    setFormData((prev) => ({ ...prev, ...updates }));
-    // Clear errors for changed fields
-    const clearedErrors = { ...errors };
-    Object.keys(updates).forEach((key) => {
-      delete clearedErrors[key];
-    });
-    setErrors(clearedErrors);
-  };
-
-  const handleSubmit = async () => {
+  const handleFormSubmit = async (formData: FormData) => {
     setLoading(true);
-    setErrors({});
+    setApiError(null);
     setResult(null);
 
     try {
@@ -41,26 +23,14 @@ export default function HomePage() {
         },
         body: JSON.stringify(formData),
       });
-
       const data: ApiResponse = await response.json();
-
       if (data.success) {
         setResult(data.data);
       } else {
-        // Handle field-specific errors
-        if (data.fieldErrors) {
-          const errorMap: Record<string, string> = {};
-          Object.entries(data.fieldErrors).forEach(([field, messages]) => {
-            errorMap[field] = messages[0];
-          });
-          setErrors(errorMap);
-        } else {
-          setErrors({ general: data.error });
-        }
+        setApiError(data.error);
       }
-    } catch (error) {
-      console.error("Calculation error:", error);
-      setErrors({ general: "Failed to calculate. Please try again." });
+    } catch {
+      setApiError("Failed to calculate. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -74,15 +44,14 @@ export default function HomePage() {
         </h1>
 
         <div className="grid md:grid-cols-2 gap-8">
-          <CalculatorForm
-            formData={formData}
-            onChange={handleFormChange}
-            onSubmit={handleSubmit}
-            loading={loading}
-            errors={errors}
-          />
+          <CalculatorForm onSubmit={handleFormSubmit} loading={loading} />
           <ResultsDisplay result={result} />
         </div>
+        {apiError && (
+          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {apiError}
+          </div>
+        )}
 
         {/* Architecture Notes */}
         <div className="mt-12 bg-white rounded-xl shadow-lg p-6">

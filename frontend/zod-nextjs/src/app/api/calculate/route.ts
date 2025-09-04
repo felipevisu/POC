@@ -1,19 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateFormData } from "@/lib/validation";
 import { calculateCompoundInterest } from "@/lib/calculations";
-import { FormData, ApiResponse } from "@/lib/types";
+import { ApiResponse } from "@/lib/types";
+import { FormSchema } from "@/lib/schemas";
 
 export async function POST(request: NextRequest) {
   try {
     // Parse request body
     const body = await request.json();
-    const formData: FormData = {
-      principal: body.principal || "",
-      annualRate: body.annualRate || "",
-      compoundingFrequency: body.compoundingFrequency || "",
-      years: body.years || "",
-      monthlyContribution: body.monthlyContribution || "",
-    };
+    const formData = FormSchema.parse(body);
 
     // Validate input data
     const validation = validateFormData(formData);

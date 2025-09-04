@@ -1,42 +1,52 @@
 "use client";
 
 import React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FormSchema } from "@/lib/schemas";
 import { FormData } from "@/lib/types";
 
 interface CalculatorFormProps {
-  formData: FormData;
-  onChange: (data: Partial<FormData>) => void;
-  onSubmit: () => void;
+  onSubmit: (data: FormData) => void;
   loading: boolean;
-  errors: Record<string, string>;
 }
 
+type FieldErrorsWithGeneral = ReturnType<
+  typeof useForm
+>["formState"]["errors"] & {
+  general?: { message: string };
+};
+
 export default function CalculatorForm({
-  formData,
-  onChange,
   onSubmit,
   loading,
-  errors,
 }: CalculatorFormProps) {
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    onChange({ [name]: value });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit();
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      principal: 10000,
+      annualRate: 7,
+      compoundingFrequency: 12,
+      years: 10,
+      monthlyContribution: 500,
+    },
+    mode: "onTouched",
+  });
+  const errorsWithGeneral = errors as FieldErrorsWithGeneral;
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">
       <h2 className="text-2xl font-semibold text-gray-700 mb-6">
         Calculate Your Investment
       </h2>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form
+        onSubmit={handleSubmit((data) => onSubmit(data))}
+        className="space-y-4"
+      >
         <div>
           <label
             htmlFor="principal"
@@ -47,20 +57,19 @@ export default function CalculatorForm({
           <input
             type="number"
             id="principal"
-            name="principal"
-            value={formData.principal}
-            onChange={handleInputChange}
-            className={`text-gray-500 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 
-              ${
-                errors.principal
-                  ? "border-red-500 focus:ring-red-500"
-                  : "border-gray-300 focus:ring-blue-500"
-              }`}
+            {...register("principal", { valueAsNumber: true })}
+            className={`text-gray-500 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+              errors.principal
+                ? "border-red-500 focus:ring-red-500"
+                : "border-gray-300 focus:ring-blue-500"
+            }`}
             step="0.01"
             disabled={loading}
           />
           {errors.principal && (
-            <p className="mt-1 text-sm text-red-600">{errors.principal}</p>
+            <p className="mt-1 text-sm text-red-600">
+              {errors.principal.message}
+            </p>
           )}
         </div>
 
@@ -74,20 +83,19 @@ export default function CalculatorForm({
           <input
             type="number"
             id="annualRate"
-            name="annualRate"
-            value={formData.annualRate}
-            onChange={handleInputChange}
-            className={`text-gray-500 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 
-              ${
-                errors.annualRate
-                  ? "border-red-500 focus:ring-red-500"
-                  : "border-gray-300 focus:ring-blue-500"
-              }`}
+            {...register("annualRate", { valueAsNumber: true })}
+            className={`text-gray-500 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+              errors.annualRate
+                ? "border-red-500 focus:ring-red-500"
+                : "border-gray-300 focus:ring-blue-500"
+            }`}
             step="0.01"
             disabled={loading}
           />
           {errors.annualRate && (
-            <p className="mt-1 text-sm text-red-600">{errors.annualRate}</p>
+            <p className="mt-1 text-sm text-red-600">
+              {errors.annualRate.message}
+            </p>
           )}
         </div>
 
@@ -100,15 +108,12 @@ export default function CalculatorForm({
           </label>
           <select
             id="compoundingFrequency"
-            name="compoundingFrequency"
-            value={formData.compoundingFrequency}
-            onChange={handleInputChange}
-            className={`text-gray-500 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 
-              ${
-                errors.compoundingFrequency
-                  ? "border-red-500 focus:ring-red-500"
-                  : "border-gray-300 focus:ring-blue-500"
-              }`}
+            {...register("compoundingFrequency", { valueAsNumber: true })}
+            className={`text-gray-500 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+              errors.compoundingFrequency
+                ? "border-red-500 focus:ring-red-500"
+                : "border-gray-300 focus:ring-blue-500"
+            }`}
             disabled={loading}
           >
             <option value="1">Annually</option>
@@ -119,7 +124,7 @@ export default function CalculatorForm({
           </select>
           {errors.compoundingFrequency && (
             <p className="mt-1 text-sm text-red-600">
-              {errors.compoundingFrequency}
+              {errors.compoundingFrequency.message}
             </p>
           )}
         </div>
@@ -134,21 +139,18 @@ export default function CalculatorForm({
           <input
             type="number"
             id="years"
-            name="years"
-            value={formData.years}
-            onChange={handleInputChange}
-            className={`text-gray-500 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 
-              ${
-                errors.years
-                  ? "border-red-500 focus:ring-red-500"
-                  : "border-gray-300 focus:ring-blue-500"
-              }`}
+            {...register("years", { valueAsNumber: true })}
+            className={`text-gray-500 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+              errors.years
+                ? "border-red-500 focus:ring-red-500"
+                : "border-gray-300 focus:ring-blue-500"
+            }`}
             min="1"
             max="50"
             disabled={loading}
           />
           {errors.years && (
-            <p className="mt-1 text-sm text-red-600">{errors.years}</p>
+            <p className="mt-1 text-sm text-red-600">{errors.years.message}</p>
           )}
         </div>
 
@@ -162,22 +164,19 @@ export default function CalculatorForm({
           <input
             type="number"
             id="monthlyContribution"
-            name="monthlyContribution"
-            value={formData.monthlyContribution}
-            onChange={handleInputChange}
-            className={`text-gray-500 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 
-              ${
-                errors.monthlyContribution
-                  ? "border-red-500 focus:ring-red-500"
-                  : "border-gray-300 focus:ring-blue-500"
-              }`}
+            {...register("monthlyContribution", { valueAsNumber: true })}
+            className={`text-gray-500 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+              errors.monthlyContribution
+                ? "border-red-500 focus:ring-red-500"
+                : "border-gray-300 focus:ring-blue-500"
+            }`}
             step="0.01"
             min="0"
             disabled={loading}
           />
           {errors.monthlyContribution && (
             <p className="mt-1 text-sm text-red-600">
-              {errors.monthlyContribution}
+              {errors.monthlyContribution.message}
             </p>
           )}
         </div>
@@ -190,9 +189,9 @@ export default function CalculatorForm({
           {loading ? "Calculating..." : "Calculate Returns"}
         </button>
 
-        {errors.general && (
+        {errorsWithGeneral.general && (
           <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-            {errors.general}
+            {errorsWithGeneral.general.message}
           </div>
         )}
       </form>
