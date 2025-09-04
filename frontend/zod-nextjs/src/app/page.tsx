@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import CalculatorForm from "./components/CalculatorForm";
 import ResultsDisplay from "./components/ResultsDisplay";
-import ErrorAlert from "./components/ErrorAlert";
 import { FormData, CalculationResult, ApiResponse } from "@/lib/types";
 
 export default function HomePage() {
@@ -82,7 +81,6 @@ export default function HomePage() {
             loading={loading}
             errors={errors}
           />
-
           <ResultsDisplay result={result} />
         </div>
 
