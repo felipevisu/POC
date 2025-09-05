@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>POC Slideshow</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/black.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/monokai.min.css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      html,
+      body {
+        font-size: 1rem;
+      }
+      .reveal h1 {
+        font-size: 3rem;
+        font-weight: 900;
+      }
+      .reveal h4 {
+        font-size: 22px;
+      }
+      .reveal p {
+        font-size: 1rem;
+      }
+      .reveal {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 1rem;
+      }
+
+      .reveal .slides section {
+        text-align: left;
+      }
+      .gradient-text {
+        background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: bold;
+      }
+      .reveal pre {
+        font-size: 0.8em;
+        width: 100%;
+      }
+      .reveal code {
+        font-family: "Fira Code", monospace;
+      }
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "zod-blue": "#3b82f6",
+              "zod-purple": "#8b5cf6",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+<body>
+<div class="reveal">
+      <div class="slides">
+        <section>
+          <h1>ZOD</h1>
+          <p>TypeScript-first schema validation with static type inference</p>
+        </section>
+        <section>
+          <h1 class="text-center ont-bold mb-8 gradient-text">
+            Runtime vs. Compile-time
+          </h1>
+          <div
+            class="bg-yellow-900/20 border-2 border-yellow-500 rounded-lg px-4 py-2 mt-8 text-center"
+          >
+            <p class="text-xl font-bold text-yellow-300">
+              "TypeScript gives us compile-time safety, but runtime data is the
+              wild west."
+            </p>
+          </div>
+          <div class="grid grid-cols-2 gap-4 mt-4">
+            <div
+              class="bg-green-900/20 border-2 border-green-500 rounded-lg p-6"
+            >
+              <h4 class="text-sm font-semibold text-green-400 mb-4">
+                What TypeScript thinks we have:
+              </h4>
+              <pre><code class="typescript">
+interface User {
+    id: number;
+    email: string;
+    age: number;
+}
+            </code></pre>
+            </div>
+            <div class="bg-red-900/20 border-2 border-red-500 rounded-lg p-6">
+              <h4 class="text-xl font-semibold text-red-400 mb-4">
+                What actually comes from the API:
+              </h4>
+              <pre><code class="typescript">
+{
+    id: "123",        // ❌ String, not number
+    email: null,      // ❌ Null, not string
+    birthday: "1990"  // ❌ Wrong field entirely
+}
+                </code></pre>
+            </div>
+          </div>
+        </section>
+        <section>
+          <h1 class="text-center font-bold mb-6 gradient-text">
+            Zod: Your Runtime Type Guardian
+          </h1>
+          <div
+            class="bg-purple-900/20 border-2 border-purple-500 rounded-xl px-6 py-1 mb-6 text-center"
+          >
+            <p class="font-semibold text-purple-200">
+              <strong>
+                Zod is a TypeScript-first schema validation library that bridges
+                the gap between compile-time types and runtime validation.
+              </strong>
+            </p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div
+              class="bg-green-900/20 border-2 border-green-500 rounded-lg p-3 flex items-center"
+            >
+              <span class="text-green-400 mr-3 text-custom-lg">✅</span>
+              <span class="text-custom-base">Zero dependencies</span>
+            </div>
+            <div
+              class="bg-green-900/20 border-2 border-green-500 rounded-lg p-3 flex items-center"
+            >
+              <span class="text-green-400 mr-3 text-custom-lg">✅</span>
+              <span class="text-custom-base"
+                >Works in Node.js and browsers</span
+              >
+            </div>
+            <div
+              class="bg-green-900/20 border-2 border-green-500 rounded-lg p-3 flex items-center"
+            >
+              <span class="text-green-400 mr-3 text-custom-lg">✅</span>
+              <span class="text-custom-base">TypeScript inference magic</span>
+            </div>
+            <div
+              class="bg-green-900/20 border-2 border-green-500 rounded-lg p-3 flex items-center"
+            >
+              <span class="text-green-400 mr-3 text-custom-lg">✅</span>
+              <span class="text-custom-base">Composable and chainable</span>
+            </div>
+            <div
+              class="bg-green-900/20 border-2 border-green-500 rounded-lg p-3 flex items-center"
+            >
+              <span class="text-green-400 mr-3 text-custom-lg">✅</span>
+              <span class="text-custom-base">Detailed error messages</span>
+            </div>
+          </div>
+
+          <div
+            class="bg-yellow-900/20 border-2 border-yellow-500 rounded-lg p-0 mt-6 text-center"
+          >
+            <p class="font-bold text-yellow-300">
+              "Write your schema once, get TypeScript types AND runtime
+              validation automatically."
+            </p>
+          </div>
+        </section>
+
+        <section>
+            <h1 class="text-center text-5xl font-bold mb-8 gradient-text">From Schema to Safety in One Line</h1>
+            <pre class="bg-gray-900/50 border-2 border-gray-500/50 rounded-lg p-6 mb-6"><code class="typescript">import { z } from 'zod';
+// 1. Define your schema
+const UserSchema = z.object({
+  id: z.number(),
+  email: z.string().email(),
+  age: z.number().min(18).max(120),
+  isActive: z.boolean().default(true)
+});
+
+// 2. Get TypeScript type automatically
+type User = z.infer<typeof UserSchema>;
+// Result: { id: number; email: string; age: number; isActive: boolean; }
+
+// 3. Validate runtime data
+const result = UserSchema.parse(apiData);
+// ✅ Throws if invalid, returns typed data if valid
+            </code></pre>
+            <div class="bg-yellow-900/20 border-2 border-yellow-500 rounded-lg px-6 py-1 text-center">
+                <p class="text-xl font-bold text-yellow-300"><strong>Notice:</strong> We never wrote the TypeScript interface manually!</p>
+            </div>
+        </section>
+        <section>
+            <h1 class="text-center text-4xl font-bold mb-8 gradient-text">Advanced Validation Made Simple</h1>
+            <div class="grid grid-cols-2 gap-6">
+                <div class="bg-blue-900/20 border-2 border-blue-500 rounded-lg p-4">
+                    <h4 class="text-lg font-semibold text-blue-400 mb-3">API Input Validation</h4>
+                    <pre class="text-sm"><code class="typescript">
+const CreatePostSchema = z.object({
+  title: z.string().min(1).max(100),
+  content: z.string().min(10),
+  tags: z.array(z.string()).max(5),
+  publishAt: z.string().datetime().optional()
+});
+
+app.post('/posts', (req, res) => {
+  const post = CreatePostSchema.parse(req.body);
+  // post is now fully typed and validated
+});
+                    </code></pre>
+                </div>
+                <div class="bg-blue-900/20 border-2 border-blue-500 rounded-lg p-4">
+                    <h4 class="text-lg font-semibold text-blue-400 mb-3">Environment Variables</h4>
+                    <pre class="text-sm"><code class="typescript">
+const EnvSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production']),
+  DATABASE_URL: z.string().url(),
+  PORT: z.string().transform(Number)
+});
+
+const env = EnvSchema.parse(process.env);
+// ✅ Fail fast if env vars are wrong
+                    </code></pre>
+                </div>
+            </div>
+        </section>
+        <section>
+            <h1 class="text-center text-5xl font-bold mb-8 gradient-text">Errors That Actually Help</h1>
+            <div class="grid grid-cols-2 gap-8">
+                <div class="bg-red-900/20 border-2 border-red-500 rounded-lg p-6">
+                    <h4 class="text-xl font-semibold text-red-400 mb-4 flex items-center">
+                        <span class="mr-2">❌</span> Traditional Approach
+                    </h4>
+                    <pre><code class="typescript">// Generic error
+throw new Error("Validation failed");
+// Unhelpful for users and debugging</code></pre>
+                </div>
+                
+                <div class="bg-green-900/20 border-2 border-green-500 rounded-lg p-6">
+                    <h4 class="text-xl font-semibold text-green-400 mb-4 flex items-center">
+                        <span class="mr-2">✅</span> Zod Approach
+                    </h4>
+                    <pre><code class="typescript">
+const result = UserSchema.safeParse(data);
+if (!result.success) {
+  console.log(result.error.format());
+  /*
+  {
+    email: { _errors: ["Invalid email"] },
+    age: { _errors: ["Must be >= 18"] },
+    _errors: []
+  }
+  */
+}</code></pre>
+                </div>
+            </div>
+            <div class="mt-8 grid grid-cols-2 gap-4">
+                <div class="bg-green-900/20 border-2 border-green-500 rounded-lg p-3 flex items-center">
+                    <span class="text-green-400 mr-3 text-xl">✅</span>
+                    <span class="text-lg">Field-specific error messages</span>
+                </div>
+                <div class="bg-green-900/20 border-2 border-green-500 rounded-lg p-3 flex items-center">
+                    <span class="text-green-400 mr-3 text-xl">✅</span>
+                    <span class="text-lg">Perfect for form validation UIs</span>
+                </div>
+                <div class="bg-green-900/20 border-2 border-green-500 rounded-lg p-3 flex items-center">
+                    <span class="text-green-400 mr-3 text-xl">✅</span>
+                    <span class="text-lg">Localization-ready</span>
+                </div>
+                <div class="bg-green-900/20 border-2 border-green-500 rounded-lg p-3 flex items-center">
+                    <span class="text-green-400 mr-3 text-xl">✅</span>
+                    <span class="text-lg">Programmatically accessible</span>
+                </div>
+            </div>
+        </section>
+        <section>
+            <section>
+                <h1 class="text-center font-bold mb-4 gradient-text">Transform Messy Data into Clean Types</h1>
+                
+                <!-- Input vs Output Type Comparison -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="bg-red-900/20 border-2 border-red-500 rounded-lg p-4">
+                        <h4 class="text-custom-lg font-semibold text-red-400 mb-2 text-center">❌ API Input Types</h4>
+                        <pre class="text-custom-xs"><code class="typescript">type ApiInput = {
+    id: string;           // ❌ String ID
+    name: string;         // ❌ Messy whitespace  
+    email: string;        // ❌ Uppercase
+    age: string;          // ❌ String age
+    salary: string;       // ❌ "$75,000.50"
+    tags: string;         // ❌ CSV string
+    isActive: string;     // ❌ "true"/"false"
+    createdAt: string;    // ❌ ISO string
+}</code></pre>
+                    </div>
+                    
+                    <div class="bg-green-900/20 border-2 border-green-500 rounded-lg p-4">
+                        <h4 class="text-custom-lg font-semibold text-green-400 mb-2 text-center">✅ Clean Output Types</h4>
+                        <pre class="text-custom-xs">
+                            <code class="typescript">type User = z.infer<typeof UserSchema> = {
+    id: number;           // ✅ Proper number
+    name: string;         // ✅ Clean lowercase
+    email: string;        // ✅ Normalized
+    age: number;          // ✅ Proper number
+    salary: number;       // ✅ 75000.5
+    tags: string[];       // ✅ ["dev", "ts"]
+    isActive: boolean;    // ✅ true/false
+    createdAt: Date;      // ✅ Date object
+}</code></pre>
+                    </div>
+                </div>
+
+                </section>
+                <section>
+                <div class="bg-purple-900/20 border-2 border-purple-500 rounded-lg p-4 mb-4">
+                    <h4 class="text-custom-lg font-semibold text-purple-400 mb-2 text-center">🔄 Zod Schema with Transformations</h4>
+                    <pre class="text-custom-xs"><code class="typescript">const UserSchema = z.object({
+    id: z.string().transform(Number),                           // string → number
+    name: z.string().transform(s => s.trim().toLowerCase()),    // clean whitespace
+    email: z.string().email().transform(s => s.toLowerCase()), // normalize email
+    age: z.string().transform(Number),                          // string → number
+    salary: z.string().transform(s => 
+    parseFloat(s.replace(/[$,]/g, ''))                        // "$75,000.50" → 75000.5
+    ),
+    tags: z.string().transform(s => 
+    s.split(',').map(tag => tag.trim())                       // CSV → string[]
+    ),
+    isActive: z.string().transform(s => s === 'true'),          // string → boolean
+    createdAt: z.string().transform(s => new Date(s))           // string → Date
+});
+
+// Parse and transform in one step:
+const cleanUser: User = UserSchema.parse(messyApiData);</code></pre>
+                </div>
+                </section>
+                <section>
+                <!-- Before/After Example -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-gray-900/30 border border-gray-600 rounded-lg p-3">
+                        <h4 class="text-custom-base font-semibold text-gray-300 mb-2">Raw API Response:</h4>
+                        <pre class="text-custom-xs"><code class="javascript">{
+    id: "123",
+    name: "  John DOE  ",
+    email: "JOHN@EXAMPLE.COM",
+    age: "25",
+    salary: "$75,000.50",
+    tags: "developer,typescript,react",
+    isActive: "true",
+    createdAt: "2024-01-15T10:30:00Z"
+}</code></pre>
+                    </div>
+                    
+                    <div class="bg-green-900/20 border border-green-500 rounded-lg p-3">
+                        <h4 class="text-custom-base font-semibold text-green-400 mb-2">After Zod Transform:</h4>
+                        <pre class="text-custom-xs"><code class="javascript">{
+    id: 123,
+    name: "john doe", 
+    email: "john@example.com",
+    age: 25,
+    salary: 75000.5,
+    tags: ["developer", "typescript", "react"],
+    isActive: true,
+    createdAt: Date(2024-01-15T10:30:00.000Z)
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="bg-yellow-900/20 border-2 border-yellow-500 rounded-lg p-3 mt-4 text-center">
+                    <p class="text-custom-lg font-bold text-yellow-300">One schema = Input validation + Data transformation + Output types!</p>
+                </div>
+            </section>
+            <section>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="bg-red-900/20 border-2 border-red-500 rounded-lg p-4">
+                        <h4 class="text-custom-lg font-semibold text-red-400 mb-2 text-center">📥 Generated Input Type</h4>
+<pre class="text-custom-xs"><code class="typescript">// Zod automatically generates this:
+type UserInput = z.input<typeof UserSchema>;
+
+// Equals:
+type UserInput = {
+ id: string;           // Before transform
+ name: string;         // Before transform
+ email: string;        // Before transform
+ age: string;          // Before transform
+ salary: string;       // Before transform
+ tags: string;         // Before transform
+ isActive: string;     // Before transform
+ createdAt: string;    // Before transform
+}</code></pre>
+                    </div>
+       
+                    <div class="bg-green-900/20 border-2 border-green-500 rounded-lg p-4">
+                        <h4 class="text-custom-lg font-semibold text-green-400 mb-2 text-center">📤 Generated Output Type</h4>
+<pre class="text-custom-xs"><code class="typescript">// Zod automatically generates this:
+type User = z.output<typeof UserSchema>;
+
+// Equals:
+type User = {
+ id: number;           // After transform
+ name: string;         // After transform
+ email: string;        // After transform
+ age: number;          // After transform
+ salary: number;       // After transform
+ tags: string[];       // After transform
+ isActive: boolean;    // After transform
+ createdAt: Date;      // After transform
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+        </section>
+        <section>
+            <h1 class="text-center text-5xl font-bold mb-8 gradient-text">The Developer Experience Difference</h1>
+            
+            <div class="grid grid-cols-2 gap-8 mb-8">
+                <div class="bg-red-900/20 border-2 border-red-500 rounded-lg p-6">
+                    <h4 class="text-xl font-semibold text-red-400 mb-4 flex items-center">
+                        <span class="mr-2">❌</span> Before Zod:
+                    </h4>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <span class="text-red-400 mr-2">•</span>
+                            <span>Manual type guards everywhere</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-red-400 mr-2">•</span>
+                            <span>Runtime errors in production</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-red-400 mr-2">•</span>
+                            <span>Duplicate validation logic</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-red-400 mr-2">•</span>
+                            <span>Type/validation mismatches</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-green-900/20 border-2 border-green-500 rounded-lg p-6">
+                    <h4 class="text-xl font-semibold text-green-400 mb-4 flex items-center">
+                        <span class="mr-2">✅</span> After Zod:
+                    </h4>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <span class="text-green-400 mr-2">•</span>
+                            <span>Single source of truth for data shape</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-400 mr-2">•</span>
+                            <span>Automatic TypeScript types</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-400 mr-2">•</span>
+                            <span>Consistent validation across app layers</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-400 mr-2">•</span>
+                            <span>Better error messages</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-400 mr-2">•</span>
+                            <span>Faster development</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="bg-gradient-to-r from-blue-900/20 to-purple-900/20 border-2 border-blue-500 rounded-xl p-8 text-center">
+                <h4 class="text-2xl font-bold text-blue-400 mb-6">Success Metrics</h4>
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="text-lg font-semibold">
+                        <span class="text-2xl mr-2">🎯</span>
+                        <span class="text-yellow-300">40% fewer runtime type errors</span>
+                    </div>
+                    <div class="text-lg font-semibold">
+                        <span class="text-2xl mr-2">⚡</span>
+                        <span class="text-yellow-300">60% faster API development</span>
+                    </div>
+                    <div class="text-lg font-semibold">
+                        <span class="text-2xl mr-2">🛡️</span>
+                        <span class="text-yellow-300">100% confidence in data shapes</span>
+                    </div>
+                    <div class="text-lg font-semibold">
+                        <span class="text-2xl mr-2">🎨</span>
+                        <span class="text-yellow-300">Better UX with detailed form errors</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+    <!-- Reveal.js JS -->
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/notes/notes.min.js"></script>
+
+    <script>
+      Reveal.initialize({
+        hash: true,
+        transition: "slide",
+        transitionSpeed: "default",
+        backgroundTransition: "fade",
+        plugins: [RevealHighlight, RevealNotes],
+        highlight: {
+          highlightOnLoad: true,
+          escapeHTML: false,
+        },
+      });
+    </script>
+</body>
+</html>
