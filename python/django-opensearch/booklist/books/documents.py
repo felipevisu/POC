@@ -1,27 +1,38 @@
-from django_elasticsearch_dsl import Document, Index, fields
-from django_elasticsearch_dsl.registries import registry
+from django_opensearch_dsl import Document, fields
+from django_opensearch_dsl.registries import registry
 
 from .models import Book
 
-book_index = Index("books")
-book_index.settings(
-    number_of_shards=1,
-    number_of_replicas=0
-)
 
 @registry.register_document
 class BookDocument(Document):
+    """Book OpenSearch document."""
+
     title = fields.TextField(
-        fields={"raw": fields.KeywordField()}
+        analyzer='standard',
+        fields={
+            'raw': fields.KeywordField(),
+            'suggest': fields.CompletionField(),
+        }
     )
+
     author = fields.TextField(
-        fields={"raw": fields.KeywordField()}
+        analyzer='standard',
+        fields={
+            'raw': fields.KeywordField(),
+        }
     )
-    description = fields.TextField()
+
+    year = fields.IntegerField()
+    description = fields.TextField(analyzer='standard')
 
     class Index:
-        name = "books"
+        name = 'books'
+        settings = {
+            'number_of_shards': 1,
+            'number_of_replicas': 0
+        }
 
     class Django:
         model = Book
-        fields = ["id", "year"]
+        fields = ['id']

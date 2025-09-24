@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # libs
-    "django_elasticsearch_dsl",
+    'rest_framework',
+    "django_opensearch_dsl",
     "django_seed",
     # apps
     'booklist.books',
@@ -76,6 +77,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'booklist.wsgi.application'
 
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -84,10 +91,13 @@ DATABASES = {
     "default": dj_database_url.config(default=os.environ.get("DATABASE_URL"))
 }
 
-ELASTICSEARCH_DSL = {
-    "default": {
-        "hosts": os.environ.get("ELASTICSEARCH_DSL_HOSTS", "http://localhost:9200")
-    }
+OPENSEARCH_DSL = {
+    'default': {
+        'hosts': [{'host': 'opensearch', 'port': 9200}],
+        'use_ssl': False,
+        'verify_certs': False,
+        'ssl_show_warn': False,
+    },
 }
 
 # Password validation
