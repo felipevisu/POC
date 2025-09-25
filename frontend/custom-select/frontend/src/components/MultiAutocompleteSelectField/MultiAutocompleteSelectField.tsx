@@ -7,6 +7,7 @@ import {
   Chip,
   Button,
   CircularProgress,
+  Typography,
 } from "@mui/material";
 import { ArrowDropDown } from "@mui/icons-material";
 import { useEffect, useRef, useState } from "react";
@@ -24,12 +25,15 @@ function MultiAutocompleteSelectField({
   loadMore,
   loading = false,
 }: MultiAutocompleteSelectFieldProps) {
-  const anchor = useRef<HTMLInputElement | null>(null);
+  const anchorRef = useRef<HTMLDivElement | null>(null);
+  const popperRef = useRef<HTMLDivElement | null>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+
   const [selectedItems, setSelectedItems] = useState<
     { label: string; value: number | string }[]
   >([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [inputValue, setInputValue] = useState("");
+  const [searchValue, setSearchValue] = useState("");
 
   const handleItemSelect = (item: {
     label: string;
@@ -42,9 +46,9 @@ function MultiAutocompleteSelectField({
 
       if (isAlreadySelected) {
         return prevItems.filter((selected) => selected.value !== item.value);
-      } else {
-        return [...prevItems, item];
       }
+
+      return [...prevItems, item];
     });
   };
 
@@ -57,158 +61,249 @@ function MultiAutocompleteSelectField({
     );
   };
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
-    setInputValue(value);
+    setSearchValue(value);
     fetchChoices(value);
-    setIsOpen(true);
   };
 
-  const handleInputFocus = () => {
-    setIsOpen(true);
-    fetchChoices(inputValue || "");
-  };
-
-  const handleToggle = () => {
-    setIsOpen(!isOpen);
-    if (!isOpen) {
-      fetchChoices(inputValue || "");
+  const openDropdown = () => {
+    if (isOpen) {
+      return;
     }
+
+    setIsOpen(true);
+    setSearchValue("");
+    fetchChoices("");
   };
 
-  const handleClickAway = (event: MouseEvent) => {
-    if (anchor.current && !anchor.current.contains(event.target as Node)) {
-      const popper = document.querySelector("[data-popper-placement]");
-      if (popper && !popper.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
+  const closeDropdown = () => {
+    setIsOpen(false);
+  };
+
+  const handleArrowClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (isOpen) {
+      closeDropdown();
+    } else {
+      openDropdown();
     }
   };
 
   useEffect(() => {
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickAway);
-      return () => {
-        document.removeEventListener("mousedown", handleClickAway);
-      };
+    if (!isOpen) {
+      return;
     }
+
+    const handleMouseDown = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (anchorRef.current?.contains(target)) {
+        return;
+      }
+
+      if (popperRef.current?.contains(target)) {
+        return;
+      }
+
+      closeDropdown();
+    };
+
+    document.addEventListener("mousedown", handleMouseDown);
+
+    if (searchInputRef.current) {
+      searchInputRef.current.focus({ preventScroll: true });
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleMouseDown);
+    };
   }, [isOpen]);
 
   return (
-    <div>
+    <Box>
       <TextField
-        ref={anchor}
-        value={inputValue}
-        onChange={handleInputChange}
-        onFocus={handleInputFocus}
-        placeholder={
-          selectedItems.length === 0
-            ? "Search and select items..."
-            : `${selectedItems.length} item(s) selected`
-        }
+        ref={anchorRef}
+        value=""
+        onClick={openDropdown}
+        onFocus={openDropdown}
+        placeholder=""
+        fullWidth
         InputProps={{
+          readOnly: true,
+          sx: {
+            display: "flex",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 0.5,
+            cursor: "pointer",
+            minHeight: 56,
+            "& .MuiInputBase-input": {
+              display: "none",
+            },
+          },
+          startAdornment: (
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                gap: 0.5,
+                flex: 1,
+                py: 0.5,
+              }}
+            >
+              {selectedItems.length === 0 ? (
+                <Typography color="text.secondary">
+                  Search and select items...
+                </Typography>
+              ) : (
+                selectedItems.map((item) => (
+                  <Chip
+                    key={item.value}
+                    label={item.label}
+                    onDelete={() => handleRemoveItem(item)}
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                    onMouseDown={(event) => event.stopPropagation()}
+                    onClick={(event) => event.stopPropagation()}
+                  />
+                ))
+              )}
+            </Box>
+          ),
           endAdornment: (
             <Box
-              onClick={handleToggle}
-              style={{
-                cursor: "pointer",
+              onClick={handleArrowClick}
+              sx={{
                 display: "flex",
                 alignItems: "center",
+                cursor: "pointer",
+                transform: isOpen ? "rotate(180deg)" : "none",
+                transition: "transform 0.2s ease",
               }}
             >
               <ArrowDropDown />
             </Box>
           ),
         }}
-        fullWidth
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
       />
 
-      {selectedItems.length > 0 && (
-        <Box sx={{ mt: 1, display: "flex", flexWrap: "wrap", gap: 1 }}>
-          {selectedItems.map((item) => (
-            <Chip
-              key={item.value}
-              label={item.label}
-              onDelete={() => handleRemoveItem(item)}
-              size="small"
-              color="primary"
-              variant="outlined"
-            />
-          ))}
-        </Box>
-      )}
-
       <Popper
-        anchorEl={anchor.current}
+        anchorEl={anchorRef.current}
         open={isOpen}
         placement="bottom-start"
+        modifiers={[
+          {
+            name: "offset",
+            options: {
+              offset: [0, 4],
+            },
+          },
+        ]}
         style={{
-          width: anchor.current?.clientWidth,
+          width: anchorRef.current?.clientWidth,
           zIndex: 1301,
         }}
       >
         <Box
+          ref={popperRef}
           sx={{
-            backgroundColor: "white",
-            border: "1px solid #ccc",
-            borderRadius: "4px",
-            maxHeight: "360px",
-            overflow: "auto",
-            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+            backgroundColor: "background.paper",
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: 1,
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.12)",
+            overflow: "hidden",
+            maxHeight: 360,
+            display: "flex",
+            flexDirection: "column",
           }}
         >
-          {choices.length === 0 ? (
-            <MenuItem disabled>No options found</MenuItem>
-          ) : (
-            choices.map((choice) => {
-              const isSelected = selectedItems.some(
-                (item) => item.value === choice.value
-              );
+          <Box
+            sx={{
+              position: "sticky",
+              top: 0,
+              backgroundColor: "background.paper",
+              borderBottom: "1px solid",
+              borderColor: "divider",
+              p: 1,
+              zIndex: 1,
+            }}
+          >
+            <TextField
+              inputRef={searchInputRef}
+              value={searchValue}
+              onChange={handleSearchChange}
+              placeholder="Search items..."
+              size="small"
+              fullWidth
+              onClick={(event) => event.stopPropagation()}
+              onKeyDown={(event) => event.stopPropagation()}
+            />
+          </Box>
 
-              return (
-                <MenuItem
-                  key={choice.value}
-                  onClick={() => handleItemSelect(choice)}
-                  selected={isSelected}
-                >
-                  <Checkbox checked={isSelected} onChange={() => {}} />
-                  <span style={{ marginLeft: 8 }}>{choice.label}</span>
-                </MenuItem>
-              );
-            })
-          )}
+          <Box sx={{ overflowY: "auto", flex: 1 }}>
+            {choices.length === 0 ? (
+              <MenuItem disabled sx={{ opacity: 0.7 }}>
+                No options found
+              </MenuItem>
+            ) : (
+              choices.map((choice) => {
+                const isSelected = selectedItems.some(
+                  (item) => item.value === choice.value
+                );
 
-          {loadMore && (
-            <Box
-              sx={{
-                position: "sticky",
-                bottom: 0,
-                backgroundColor: "white",
-                borderTop: "1px solid #e0e0e0",
-                p: 1,
-              }}
-            >
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  loadMore();
-                }}
-                disabled={loading}
-                startIcon={loading ? <CircularProgress size={16} /> : null}
+                return (
+                  <MenuItem
+                    key={choice.value}
+                    onClick={() => handleItemSelect(choice)}
+                    selected={isSelected}
+                    sx={{ display: "flex", alignItems: "center" }}
+                  >
+                    <Checkbox
+                      checked={isSelected}
+                      onChange={() => {}}
+                      sx={{ mr: 1 }}
+                    />
+                    <span>{choice.label}</span>
+                  </MenuItem>
+                );
+              })
+            )}
+
+            {loadMore && (
+              <Box
                 sx={{
-                  textTransform: "none",
-                  color: loading ? "text.secondary" : "primary.main",
+                  position: "sticky",
+                  bottom: 0,
+                  backgroundColor: "background.paper",
+                  borderTop: "1px solid",
+                  borderColor: "divider",
+                  p: 1,
                 }}
               >
-                {loading ? "Loading..." : "Load More"}
-              </Button>
-            </Box>
-          )}
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    loadMore();
+                  }}
+                  disabled={loading}
+                  startIcon={loading ? <CircularProgress size={16} /> : null}
+                  sx={{ textTransform: "none" }}
+                >
+                  {loading ? "Loading..." : "Load More"}
+                </Button>
+              </Box>
+            )}
+          </Box>
         </Box>
       </Popper>
-    </div>
+    </Box>
   );
 }
 
