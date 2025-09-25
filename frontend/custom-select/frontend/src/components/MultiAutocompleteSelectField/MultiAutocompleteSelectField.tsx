@@ -17,6 +17,8 @@ interface MultiAutocompleteSelectFieldProps {
   choices: { label: string; value: number | string }[];
   loadMore?: () => void;
   loading?: boolean;
+  value: { label: string; value: number | string }[];
+  onChange: (items: { label: string; value: number | string }[]) => void;
 }
 
 function MultiAutocompleteSelectField({
@@ -24,14 +26,12 @@ function MultiAutocompleteSelectField({
   choices,
   loadMore,
   loading = false,
+  value,
+  onChange,
 }: MultiAutocompleteSelectFieldProps) {
   const anchorRef = useRef<HTMLDivElement | null>(null);
   const popperRef = useRef<HTMLDivElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
-
-  const [selectedItems, setSelectedItems] = useState<
-    { label: string; value: number | string }[]
-  >([]);
   const [isOpen, setIsOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
 
@@ -39,26 +39,22 @@ function MultiAutocompleteSelectField({
     label: string;
     value: number | string;
   }) => {
-    setSelectedItems((prevItems) => {
-      const isAlreadySelected = prevItems.some(
-        (selected) => selected.value === item.value
-      );
+    const isAlreadySelected = value.some(
+      (selected) => selected.value === item.value
+    );
 
-      if (isAlreadySelected) {
-        return prevItems.filter((selected) => selected.value !== item.value);
-      }
-
-      return [...prevItems, item];
-    });
+    if (isAlreadySelected) {
+      onChange(value.filter((selected) => selected.value !== item.value));
+    } else {
+      onChange([...value, item]);
+    }
   };
 
   const handleRemoveItem = (itemToRemove: {
     label: string;
     value: number | string;
   }) => {
-    setSelectedItems((prevItems) =>
-      prevItems.filter((item) => item.value !== itemToRemove.value)
-    );
+    onChange(value.filter((item) => item.value !== itemToRemove.value));
   };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,12 +148,12 @@ function MultiAutocompleteSelectField({
                 py: 0.5,
               }}
             >
-              {selectedItems.length === 0 ? (
+              {value.length === 0 ? (
                 <Typography color="text.secondary">
                   Search and select items...
                 </Typography>
               ) : (
-                selectedItems.map((item) => (
+                value.map((item) => (
                   <Chip
                     key={item.value}
                     label={item.label}
@@ -252,7 +248,7 @@ function MultiAutocompleteSelectField({
               </MenuItem>
             ) : (
               choices.map((choice) => {
-                const isSelected = selectedItems.some(
+                const isSelected = value.some(
                   (item) => item.value === choice.value
                 );
 
