@@ -59,10 +59,10 @@ const useSearchBook = (): UseSearchBookReturn => {
           params.append("search", searchTerm.trim());
         }
 
+        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
         const response = await axios.get<ApiResponse>(
-          `http://localhost:5000/api/books?${params.toString()}`
+          `${apiUrl}/api/books?${params.toString()}`
         );
-
         if (response.data.success) {
           if (append) {
             setBooks((prevBooks) => [...prevBooks, ...response.data.data]);
