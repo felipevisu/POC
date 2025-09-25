@@ -1,31 +1,15 @@
 import React from "react";
-import {
-  Container,
-  Typography,
-  Box,
-  List,
-  ListItem,
-  ListItemText,
-  Card,
-  CardContent,
-  CircularProgress,
-  Alert,
-  Chip,
-  Button,
-} from "@mui/material";
-import { Book as BookIcon, Add as AddIcon } from "@mui/icons-material";
 import MultiAutocompleteSelectField from "./components/MultiAutocompleteSelectField/MultiAutocompleteSelectField";
 import useSearchBook from "./hooks/useSearchBook";
+import { Box, Container } from "@mui/material";
 
 const App: React.FC = () => {
   const {
     books = [],
     isLoading,
-    error,
+
     fetch,
     loadMore,
-    pagination,
-    hasMore,
   } = useSearchBook();
 
   return (

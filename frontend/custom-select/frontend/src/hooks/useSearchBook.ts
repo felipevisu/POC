@@ -51,7 +51,6 @@ const useSearchBook = (): UseSearchBookReturn => {
         setIsLoading(true);
         setError(null);
 
-        // Build query parameters
         const params = new URLSearchParams();
         params.append("page", page.toString());
         params.append("limit", "20");
@@ -66,10 +65,8 @@ const useSearchBook = (): UseSearchBookReturn => {
 
         if (response.data.success) {
           if (append) {
-            // Append new books to existing ones (for loadMore)
             setBooks((prevBooks) => [...prevBooks, ...response.data.data]);
           } else {
-            // Replace books (for new search or initial fetch)
             setBooks(response.data.data);
           }
           setPagination(response.data.pagination);
