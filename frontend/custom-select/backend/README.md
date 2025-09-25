@@ -1,20 +1,23 @@
 # Books Backend API
 
-Express.js backend server that provides a paginated API endpoint with search functionality for a collection of 100 book names.
+Express.js backend server that provides a paginated API endpoint with search functionality for a collection of 101 books with unique IDs.
 
 ## Setup
 
 1. Install dependencies:
+
 ```bash
 npm install
 ```
 
 2. Start the development server:
+
 ```bash
 npm run dev
 ```
 
 3. Or start the production server:
+
 ```bash
 npm start
 ```
@@ -54,15 +57,15 @@ GET /api/books?page=1&limit=5&search=lord
 {
   "success": true,
   "data": [
-    "To Kill a Mockingbird",
-    "1984",
-    "Pride and Prejudice",
+    { "id": 1, "name": "To Kill a Mockingbird" },
+    { "id": 2, "name": "1984" },
+    { "id": 3, "name": "Pride and Prejudice" }
     // ... up to 20 more books
   ],
   "pagination": {
     "currentPage": 1,
-    "totalPages": 5,
-    "totalBooks": 100,
+    "totalPages": 6,
+    "totalBooks": 101,
     "booksPerPage": 20,
     "hasNextPage": true,
     "hasPrevPage": false,

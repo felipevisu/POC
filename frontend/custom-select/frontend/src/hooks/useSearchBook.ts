@@ -1,6 +1,11 @@
 import { useState, useCallback } from "react";
 import axios from "axios";
 
+interface Book {
+  id: number;
+  name: string;
+}
+
 interface PaginationInfo {
   currentPage: number;
   totalPages: number;
@@ -14,13 +19,13 @@ interface PaginationInfo {
 
 interface ApiResponse {
   success: boolean;
-  data: string[];
+  data: Book[];
   pagination: PaginationInfo;
   search: string | null;
 }
 
 interface UseSearchBookReturn {
-  books: string[];
+  books: Book[];
   isLoading: boolean;
   error: string | null;
   fetch: (searchTerm?: string, page?: number) => Promise<void>;
@@ -30,7 +35,7 @@ interface UseSearchBookReturn {
 }
 
 const useSearchBook = (): UseSearchBookReturn => {
-  const [books, setBooks] = useState<string[]>([]);
+  const [books, setBooks] = useState<Book[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
