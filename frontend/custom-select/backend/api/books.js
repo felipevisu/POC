@@ -2,11 +2,7 @@ const express = require("express");
 const cors = require("cors");
 
 const app = express();
-const PORT = process.env.PORT || 5000;
-
-// Middleware
-app.use(cors());
-app.use(express.json());
+app.use(cors({ origin: "*" }));
 
 // Sample data: 100 books with id and name
 const books = [
@@ -113,7 +109,6 @@ const books = [
   { id: 101, name: "Just Above My Head" },
 ];
 
-// Routes
 app.get("/api/books", (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -162,30 +157,4 @@ app.get("/api/books", (req, res) => {
   }
 });
 
-app.get("/", (req, res) => {
-  res.json({
-    message: "Books API Server",
-    version: "3.0.0",
-    endpoints: {
-      books: "/api/books",
-      "books with pagination": "/api/books?page=1&limit=20",
-      "books with search": "/api/books?search=harry",
-      "books with both": "/api/books?page=1&limit=10&search=lord",
-    },
-    parameters: {
-      page: "Page number (default: 1)",
-      limit: "Books per page (default: 20)",
-      search: "Search books by name (case-insensitive)",
-    },
-    responseFormat: {
-      data: [{ id: 1, name: "Book Title" }],
-      pagination: "{ currentPage, totalPages, totalBooks, ... }",
-      search: "search term or null",
-    },
-  });
-});
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Access the API at: http://localhost:${PORT}/api/books`);
-});
+module.exports = app;

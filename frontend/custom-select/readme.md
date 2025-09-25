@@ -4,6 +4,8 @@ A simple book search app with pagination.
 
 ## Demo
 
+https://custom-select-blue.vercel.app/
+
 <video width="600" controls>
   <source src="demo.mp4" type="video/mp4">
   Your browser does not support the video tag.
