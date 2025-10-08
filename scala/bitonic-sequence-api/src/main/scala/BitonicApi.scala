@@ -11,9 +11,18 @@ case class BitonicRequest(n: Int, l: Int, r: Int) derives io.circe.Codec
 case class BitonicResponse(result: List[Int], cached: Boolean = false) derives io.circe.Codec
 
 object BitonicApi extends IOApp {
-  
+
   def routes(cache: RedisCache): HttpRoutes[IO] = HttpRoutes.of[IO] {
     case req @ POST -> Root / "calculate" =>
+      for {
+        request <- req.as[BitonicRequest]
+        result = BitonicSequence.calculate(request.n, request.l, request.r)
+        response <- IO.pure(
+          Response[IO](Status.Ok).withEntity(BitonicResponse(result, cached = false))
+        )
+      } yield response
+
+    case req @ POST -> Root / "calculate-cached" =>
       for {
         request <- req.as[BitonicRequest]
         key = cache.generateKey(request.n, request.l, request.r)
@@ -40,8 +49,7 @@ object BitonicApi extends IOApp {
   }
 
   def run(args: List[String]): IO[ExitCode] = {
-    val redisUri = sys.env.getOrElse("REDIS_URI", "redis://localhost:6379")
-    
+    val redisUri = sys.env.getOrElse("REDIS_URI", null)
     RedisCache.make(redisUri).use { cache =>
       EmberServerBuilder
         .default[IO]
@@ -52,5 +60,6 @@ object BitonicApi extends IOApp {
         .use(_ => IO.never)
         .as(ExitCode.Success)
     }
+    
   }
 }
