@@ -1,13 +1,15 @@
 ## My first Scala REST API
 
 ```bash
-sbt run
+docker-compose up -d
 ```
 
 ```bash
 # Health check
 curl http://localhost:8080/health
+```
 
+```bash
 # Post request
 curl -X POST http://localhost:8080/calculate \
   -H "Content-Type: application/json" \

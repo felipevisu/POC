@@ -12,3 +12,5 @@ libraryDependencies ++= Seq(
     "io.circe" %% "circe-generic" % circeVersion,
     "org.typelevel" %% "cats-effect" % "3.5.2"
 )
+
+enablePlugins(JavaAppPackaging)
