@@ -25,10 +25,3 @@ def bitonicSequence(n: Int, l: Int, r: Int): ArrayDeque[Int] = {
 
     return deque
 }
-    
-
-
-@main
-def main(): Unit =
-    val seq: ArrayDeque[Int] = bitonicSequence(5, 3, 10)
-    println(seq)
