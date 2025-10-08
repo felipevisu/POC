@@ -9,7 +9,7 @@ sbt run
 curl http://localhost:8080/health
 
 # Post request
-curl -X POST http://localhost:8080/calculate \
+curl -X POST http://localhost:8080/users \
   -H "Content-Type: application/json" \
-  -d '{"n": 5, "l": 3, "r": 10}'
+  -d '{"name": "John", "email": "john@example.com"}'
 ```

@@ -1,5 +1,5 @@
 import cats.effect.{IO, IOApp, ExitCode}
-import org.http4s.{HttpRoutes, Response, Status}
+import org.http4s.HttpRoutes
 import org.http4s.dsl.io.*
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits.http4sKleisliResponseSyntaxOptionT
@@ -7,20 +7,15 @@ import org.http4s.circe.CirceEntityCodec.{circeEntityDecoder, circeEntityEncoder
 import io.circe.generic.auto.{deriveDecoder, deriveEncoder}
 import com.comcast.ip4s.{ipv4, port}
 
-case class BitonicRequest(n: Int, l: Int, r: Int) derives io.circe.Codec
-case class BitonicResponse(result: List[Int]) derives io.circe.Codec
+case class User(name: String, email: String)
 
 object BitonicApi extends IOApp {
   
   val routes = HttpRoutes.of[IO] {
-    case req @ POST -> Root / "calculate" =>
+    case req @ POST -> Root / "users" =>
       for {
-        request <- req.as[BitonicRequest]
-        result = BitonicSequence.calculate(request.n, request.l, request.r)
-        response <- IO.pure(
-          Response[IO](Status.Ok)
-            .withEntity(BitonicResponse(result.toList))
-        )
+        user <- req.as[User]
+        response <- Ok(s"Created user: ${user.name}")
       } yield response
       
     case GET -> Root / "health" =>
