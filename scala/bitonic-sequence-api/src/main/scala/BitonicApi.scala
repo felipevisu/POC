@@ -8,32 +8,49 @@ import io.circe.generic.auto.{deriveDecoder, deriveEncoder}
 import com.comcast.ip4s.{ipv4, port}
 
 case class BitonicRequest(n: Int, l: Int, r: Int) derives io.circe.Codec
-case class BitonicResponse(result: List[Int]) derives io.circe.Codec
+case class BitonicResponse(result: List[Int], cached: Boolean = false) derives io.circe.Codec
 
 object BitonicApi extends IOApp {
   
-  val routes = HttpRoutes.of[IO] {
+  def routes(cache: RedisCache): HttpRoutes[IO] = HttpRoutes.of[IO] {
     case req @ POST -> Root / "calculate" =>
       for {
         request <- req.as[BitonicRequest]
-        result = BitonicSequence.calculate(request.n, request.l, request.r)
+        key = cache.generateKey(request.n, request.l, request.r)
+
+        cachedResult <- cache.get[List[Int]](key)
+
+        result <- cachedResult match {
+          case Some(cached) =>
+            IO.pure(BitonicResponse(cached, cached= true))
+          case None =>
+            val calculated = BitonicSequence.calculate(request.n, request.l, request.r)
+            cache.set(key, calculated, ttlSeconds = 3600).map(_ =>
+              BitonicResponse(calculated, cached = false)
+            )
+        }
+
         response <- IO.pure(
-          Response[IO](Status.Ok)
-            .withEntity(BitonicResponse(result.toList))
+          Response[IO](Status.Ok).withEntity(result)
         )
       } yield response
       
     case GET -> Root / "health" =>
-      Ok("OK")
-  }.orNotFound
+      IO.pure(Response[IO](Status.Ok).withEntity("OK"))
+  }
 
-  def run(args: List[String]): IO[ExitCode] =
-    EmberServerBuilder
-      .default[IO]
-      .withHost(ipv4"0.0.0.0")
-      .withPort(port"8080")
-      .withHttpApp(routes)
-      .build
-      .use(_ => IO.never)
-      .as(ExitCode.Success)
+  def run(args: List[String]): IO[ExitCode] = {
+    val redisUri = sys.env.getOrElse("REDIS_URI", "redis://localhost:6379")
+    
+    RedisCache.make(redisUri).use { cache =>
+      EmberServerBuilder
+        .default[IO]
+        .withHost(ipv4"0.0.0.0")
+        .withPort(port"8080")
+        .withHttpApp(routes(cache).orNotFound)
+        .build
+        .use(_ => IO.never)
+        .as(ExitCode.Success)
+    }
+  }
 }

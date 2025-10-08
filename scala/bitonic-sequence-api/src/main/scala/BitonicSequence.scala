@@ -2,12 +2,12 @@
 import scala.collection.mutable.ArrayDeque
 
 object BitonicSequence{
-    def calculate(n: Int, l: Int, r: Int): ArrayDeque[Int] = {
+    def calculate(n: Int, l: Int, r: Int): List[Int] = {
         val deque = new ArrayDeque[Int]()
         
         if (n > (r - l) * 2 * 1){
             deque.append(-1)
-            return deque
+            return deque.toList
         }
 
         deque.append(r - 1)
@@ -24,7 +24,7 @@ object BitonicSequence{
             i -= 1
         }
 
-        return deque
+        return deque.toList
     }
 }
 
