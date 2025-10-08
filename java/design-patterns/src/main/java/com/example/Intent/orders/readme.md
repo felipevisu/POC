@@ -39,4 +39,4 @@ It separates the **invoker** (who triggers the action) from the **receiver** (wh
 * **Undo/Redo Functionality**: Text editors, image editors, IDEs.
 * **Button Actions**: Encapsulating complex UI operations behind simple button clicks.
 * **Form Processing**: Converting form submissions into business operations.
-* **Wizards & Multi-step Processes**: Managing complex user workflows.
+* **Wizards & Multi-step Processes**: Managing complex user workflows.q
