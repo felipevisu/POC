@@ -1,4 +1,4 @@
-## My first Scala REST API
+## Bitonic Sequence with Scala and Redis
 
 ```bash
 docker-compose up -d
@@ -24,7 +24,7 @@ curl -X POST http://localhost:8080/calculate \
 
 **Second request:**
 
-Cached is true, server read from redis, and didn't calculated again
+Cached is true, server read from redis and didn't calculate again
 
 ```bash
 # Post request
