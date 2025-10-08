@@ -5,7 +5,7 @@ object BitonicSequence{
     def calculate(n: Int, l: Int, r: Int): List[Int] = {
         val deque = new ArrayDeque[Int]()
         
-        if (n > (r - l) * 2 * 1){
+        if (n > (r - l) * 2 + 1){
             deque.append(-1)
             return deque.toList
         }
