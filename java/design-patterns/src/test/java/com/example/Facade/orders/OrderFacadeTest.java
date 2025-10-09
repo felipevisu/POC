@@ -1,6 +1,5 @@
 package com.example.Facade.orders;
 
-import junit.framework.TestCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -36,13 +35,11 @@ class TestPaymentService extends PaymentService {
 class TestableOrderFacade extends OrderFacade {
     private TestInventoryService inventory;
     private TestPaymentService payment;
-    private ShippingService shipping;
     private ShoppingCart cart;
 
     public TestableOrderFacade() {
         this.inventory = new TestInventoryService();
         this.payment = new TestPaymentService();
-        this.shipping = new ShippingService();
         this.cart = new ShoppingCart();
     }
 

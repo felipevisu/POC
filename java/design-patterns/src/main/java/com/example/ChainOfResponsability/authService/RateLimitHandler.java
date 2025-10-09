@@ -1,8 +1,7 @@
 package com.example.ChainOfResponsability.authService;
 
 public class RateLimitHandler extends AuthHandler {
-    private static final int MAX_REQUESTS_PER_MINUTE = 100;
-
+    
     @Override
     public void handleRequest(AuthRequest request) {
         System.out.println("Checking rate limits...");
