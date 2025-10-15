@@ -33,23 +33,40 @@ public class BookController {
     }
 
     @QueryMapping
-    public List<Book> _entities(@Argument List<Map<String, Object>> representations) {
+    public List<Object> _entities(@Argument("representations") List<Map<String, Object>> representations) {
         return representations.stream()
-                .map(r -> bookService.getBookById((String) r.get("id")).orElse(null))
+                .<Object>map(representation -> {
+                    String typename = (String) representation.get("__typename");
+                    if ("Book".equals(typename)) {
+                        String id = (String) representation.get("id");
+                        return bookService.findById(id);
+                    }
+                    return null;
+                })
+                .filter(entity -> entity != null)
                 .toList();
     }
 
     @QueryMapping
     public Map<String, String> _service() {
-        return Map.of("sdl", """
-            type Book @key(fields: "id") {
-                id: ID!
-                title: String
-                author: String
-                year: Int
-                isbn: String
-            }
-        """);
+        String sdl = """
+                directive @key(fields: String!) on OBJECT | INTERFACE
+                
+                type Book @key(fields: "id") {
+                  id: ID!
+                  title: String
+                  author: String
+                  year: Int
+                  isbn: String
+                }
+                
+                type Query {
+                  books: [Book]
+                  bookById(id: ID!): Book
+                  booksByAuthor(author: String!): [Book]
+                }
+                """;
+        return Map.of("sdl", sdl);
     }
 
     @MutationMapping

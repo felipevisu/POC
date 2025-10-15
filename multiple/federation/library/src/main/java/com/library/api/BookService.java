@@ -42,4 +42,8 @@ public class BookService {
         books.add(newBook);
         return newBook;
     }
+
+    public Book findById(String id) {
+        return getBookById(id).orElse(null);
+    }
 }

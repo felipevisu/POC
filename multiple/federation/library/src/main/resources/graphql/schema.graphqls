@@ -1,3 +1,5 @@
+directive @key(fields: String!) on OBJECT | INTERFACE
+
 type Book @key(fields: "id") {
   id: ID!
   title: String
@@ -10,22 +12,14 @@ type Query {
   books: [Book]
   bookById(id: ID!): Book
   booksByAuthor(author: String!): [Book]
+  _entities(representations: [_Any!]!): [_Entity]
+  _service: _Service!
 }
 
-# scalar _Any
-directive @key(fields: String!) on OBJECT | INTERFACE
+union _Entity = Book
 
 type _Service {
   sdl: String
-}
-
-type _Entity {
-  id: ID!
-}
-
-extend type Query {
-  _entities(representations: [_Any!]!): [_Entity]!
-  _service: _Service!
 }
 
 scalar _Any

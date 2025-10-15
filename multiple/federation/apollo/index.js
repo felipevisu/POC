@@ -1,7 +1,6 @@
 const { ApolloServer } = require("apollo-server");
 const { ApolloGateway, IntrospectAndCompose } = require("@apollo/gateway");
 
-// Make sure to read env variables
 const libraryUrl = process.env.LIBRARY_URL;
 const radioUrl = process.env.RADIO_URL;
 
@@ -17,14 +16,26 @@ const gateway = new ApolloGateway({
       { name: "library", url: libraryUrl },
       { name: "radio", url: radioUrl },
     ],
+    pollIntervalInMs: 10000,
   }),
+  debug: true,
 });
 
 const server = new ApolloServer({
   gateway,
   subscriptions: false,
+  introspection: true,
+  playground: true,
 });
 
-server.listen({ port: 4000, host: "0.0.0.0" }).then(({ url }) => {
-  console.log(`Apollo Gateway running at ${url}`);
-});
+async function startServer() {
+  try {
+    const { url } = await server.listen({ port: 4000, host: "0.0.0.0" });
+    console.log(`Playground ${url}`);
+  } catch (error) {
+    console.error("Error:", error);
+    process.exit(1);
+  }
+}
+
+startServer();

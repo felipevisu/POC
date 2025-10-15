@@ -10,6 +10,12 @@ services:
       - "8080:8080"
     networks:
       - graphql-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   radio:
     build:
@@ -20,6 +26,12 @@ services:
       - "8000:8000"
     networks:
       - graphql-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   apollo:
     build:
@@ -29,8 +41,10 @@ services:
     ports:
       - "4000:4000"
     depends_on:
-      - library
-      - radio
+      library:
+        condition: service_healthy
+      radio:
+        condition: service_healthy
     environment:
       LIBRARY_URL: "http://library:8080/graphql"
       RADIO_URL: "http://radio:8000/graphql"

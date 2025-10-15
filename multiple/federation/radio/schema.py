@@ -6,7 +6,7 @@ from strawberry.fastapi import GraphQLRouter
 from strawberry.federation import Schema
 
 
-@strawberry.federation.type
+@strawberry.federation.type(keys=["id"])
 class Song:
     id: strawberry.ID
     name: str
@@ -36,3 +36,8 @@ graphql_app = GraphQLRouter(schema)
 
 app = FastAPI()
 app.include_router(graphql_app, prefix="/graphql")
+
+
+@app.get("/health")
+def health():
+    return {"status": "UP", "service": "radio"}
