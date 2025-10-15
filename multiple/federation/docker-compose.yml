@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  library:
+    build:
+      context: ./library
+      dockerfile: Dockerfile
+    container_name: library
+    ports:
+      - "8080:8080"
+    networks:
+      - graphql-network
+
+  radio:
+    build:
+      context: ./radio
+      dockerfile: Dockerfile
+    container_name: radio
+    ports:
+      - "8000:8000"
+    networks:
+      - graphql-network
+
+  apollo:
+    build:
+      context: ./apollo
+      dockerfile: Dockerfile
+    container_name: apollo-gateway
+    ports:
+      - "4000:4000"
+    depends_on:
+      - library
+      - radio
+    environment:
+      LIBRARY_URL: "http://library:8080/graphql"
+      RADIO_URL: "http://radio:8000/graphql"
+    networks:
+      - graphql-network
+
+networks:
+  graphql-network:
+    driver: bridge
