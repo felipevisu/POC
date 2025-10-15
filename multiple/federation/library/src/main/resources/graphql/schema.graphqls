@@ -1,11 +1,31 @@
-type Book {
-    id: ID!
-    title: String!
-    author: String!
-    year: Int!
+type Book @key(fields: "id") {
+  id: ID!
+  title: String
+  author: String
+  year: Int
+  isbn: String
 }
 
 type Query {
-    books: [Book]
-    bookById(id: ID!): Book
+  books: [Book]
+  bookById(id: ID!): Book
+  booksByAuthor(author: String!): [Book]
 }
+
+# scalar _Any
+directive @key(fields: String!) on OBJECT | INTERFACE
+
+type _Service {
+  sdl: String
+}
+
+type _Entity {
+  id: ID!
+}
+
+extend type Query {
+  _entities(representations: [_Any!]!): [_Entity]!
+  _service: _Service!
+}
+
+scalar _Any

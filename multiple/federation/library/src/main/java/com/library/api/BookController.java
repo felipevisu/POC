@@ -6,6 +6,7 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class BookController {
@@ -31,6 +32,25 @@ public class BookController {
         return bookService.getBooksByAuthor(author);
     }
 
+    @QueryMapping
+    public List<Book> _entities(@Argument List<Map<String, Object>> representations) {
+        return representations.stream()
+                .map(r -> bookService.getBookById((String) r.get("id")).orElse(null))
+                .toList();
+    }
+
+    @QueryMapping
+    public Map<String, String> _service() {
+        return Map.of("sdl", """
+            type Book @key(fields: "id") {
+                id: ID!
+                title: String
+                author: String
+                year: Int
+                isbn: String
+            }
+        """);
+    }
 
     @MutationMapping
     public Book addBook(@Argument String title,
