@@ -1,10 +1,16 @@
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 
-function addToCart(prev, data) {
+async function addToCart(_prev: unknown, data: FormData) {
   const itemId = data.get("itemId");
 
-  if(itemId === "abc")
+  if (itemId === "abc") {
+    return "Added";
+  }
 
+  await new Promise((resolve) => {
+    setTimeout(resolve, 3000);
+  });
+  return "Failed";
 }
 
 function AddToCartForm({
@@ -14,10 +20,7 @@ function AddToCartForm({
   itemId: string;
   itemTitle: string;
 }) {
-  const [message, formAction, isPending] = useActionState<string>(
-    addToCart,
-    null
-  );
+  const [message, formAction, isPending] = useActionState(addToCart, null);
   return (
     <form action={formAction}>
       <h2>{itemTitle}</h2>
