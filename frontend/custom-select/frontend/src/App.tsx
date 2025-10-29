@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import MultiAutocompleteSelectField from "./components/MultiAutocompleteSelectField/MultiAutocompleteSelectField";
 import useSearchBook from "./hooks/useSearchBook";
-import { Box, Container } from "@mui/material";
+import "./App.css";
 
 const App: React.FC = () => {
   const { books = [], isLoading, fetch, loadMore } = useSearchBook();
@@ -11,8 +11,8 @@ const App: React.FC = () => {
   >([]);
 
   return (
-    <Container maxWidth="md">
-      <Box sx={{ py: 4 }}>
+    <div className="app-container">
+      <div className="app-content">
         <MultiAutocompleteSelectField
           fetchChoices={fetch}
           loadMore={loadMore}
@@ -21,8 +21,8 @@ const App: React.FC = () => {
           value={selectedBooks}
           onChange={setSelectedBooks}
         />
-      </Box>
-    </Container>
+      </div>
+    </div>
   );
 };
 

@@ -1,0 +1,10 @@
+/* App.css */
+.app-container {
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.app-content {
+  padding: 32px 0;
+}
