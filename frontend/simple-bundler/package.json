@@ -4,9 +4,19 @@
   "description": "",
   "license": "ISC",
   "author": "",
-  "type": "commonjs",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@babel/preset-react": "^7.28.5",
+    "@babel/preset-typescript": "^7.28.5",
+    "@linaria/babel-preset": "^5.0.4",
+    "@linaria/core": "^6.3.0",
+    "@linaria/react": "^6.3.0",
+    "@linaria/shaker": "^5.0.3",
+    "@wyw-in-js/transform": "^0.8.0",
+    "glob": "^11.0.3"
   }
 }

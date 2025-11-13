@@ -1,7 +1,7 @@
 import { transform } from "@wyw-in-js/transform";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { join, dirname } from "path";
-import glob from "glob";
+import { glob } from "glob";
 
 class SimpleWywBundler {
   constructor(config = {}) {
@@ -17,6 +17,7 @@ class SimpleWywBundler {
       // Babel configuration for WyW-in-JS
       babelConfig: config.babelConfig || {
         presets: [
+          "@linaria",
           ["@babel/preset-react", { runtime: "automatic" }],
           "@babel/preset-typescript",
         ],
@@ -41,14 +42,20 @@ class SimpleWywBundler {
       console.log(`Processing: ${filePath}`);
 
       // Transform with WyW-in-JS
-      const result = await transform(content, {
-        filename: filePath,
-        pluginOptions: {
-          babelOptions: this.config.babelConfig,
-          displayName: this.config.displayName,
-          evaluate: this.config.evaluate,
+      const result = await transform(
+        {
+          options: {
+            filename: filePath,
+            pluginOptions: {
+              babelOptions: this.config.babelConfig,
+              displayName: this.config.displayName,
+              evaluate: this.config.evaluate,
+            },
+          },
         },
-      });
+        content,
+        {}
+      );
 
       // Store extracted CSS
       if (result.cssText) {
@@ -153,7 +160,7 @@ class SimpleWywBundler {
 export { SimpleWywBundler };
 
 // CLI usage
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   async function run() {
     const bundler = new SimpleWywBundler({
       input: "src/**/*.{js,jsx,ts,tsx}",
