@@ -11,94 +11,202 @@
 
     <link rel="stylesheet" href="dist/reset.css" />
     <link rel="stylesheet" href="dist/reveal.css" />
-    <link rel="stylesheet" href="dist/theme/black.css" />
+    <!-- Prism CSS Theme -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"
+      rel="stylesheet"
+    />
 
-    <!-- Theme used for syntax highlighted code -->
-    <link rel="stylesheet" href="plugin/highlight/monokai.css" />
+    <!-- Prism JS Core -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+
+    <!-- Language Support (add what you need) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-jsx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+
+    <style>
+      pre {
+        background: black !important;
+      }
+    </style>
   </head>
-  <body>
+  <body class="bg-slate-800">
     <div class="reveal">
       <div class="slides">
-        <section>
-          <h1>Linaria CSS</h1>
-          <h2>Write CSS in JS and get real CSS files during build time.</h2>
+        <section class="text-white">
+          <h1 class="text-8xl font-bold mb-6 text-blue-400">Linaria CSS</h1>
+          <h2 class="text-3xl font-light text-gray-300 max-w-4xl mx-auto">
+            Write CSS in JS and get real CSS files during build time.
+          </h2>
         </section>
-        <section>
-          <h2>Styled Components</h2>
-          <h3>What is happening?</h3>
-          <p>
-            The styled-components team announced that the library is now in
-            “maintenance mode”: no new features, only critical bug-fixes and
-            security patches.
-          </p>
-          <h3>Why?</h3>
-          <p>
-            Styled-components was built around patterns common in React apps
-            when it was created: runtime CSS-in-JS, heavy use of Context API,
-            runtime style injection etc. But React’s direction is shifting:
-            e.g., with Server Components, concurrent rendering, streaming SSR,
-            etc., some assumptions no longer hold
-          </p>
+        <section class="text-white">
+          <h2 class="text-6xl font-bold mb-10 text-red-400">
+            Styled Components
+          </h2>
+          <div class="text-left max-w-5xl mx-auto space-y-8">
+            <div
+              class="bg-slate-700/50 p-6 rounded-lg border-l-4 border-orange-400"
+            >
+              <h3 class="text-3xl font-semibold text-orange-400 mb-3">
+                What is happening?
+              </h3>
+              <p class="text-xl text-gray-200 leading-relaxed">
+                The styled-components team announced that the library is now in
+                "maintenance mode": no new features, only critical bug-fixes and
+                security patches.
+              </p>
+            </div>
+            <div
+              class="bg-slate-700/50 p-6 rounded-lg border-l-4 border-orange-400"
+            >
+              <h3 class="text-3xl font-semibold text-orange-400 mb-3">Why?</h3>
+              <p class="text-xl text-gray-200 leading-relaxed">
+                Styled-components was built around patterns common in React apps
+                when it was created: runtime CSS-in-JS, heavy use of Context
+                API, runtime style injection etc. But React's direction is
+                shifting: e.g., with Server Components, concurrent rendering,
+                streaming SSR, etc., some assumptions no longer hold
+              </p>
+            </div>
+          </div>
         </section>
-        <section>
-          <h2>How run time CSS works</h2>
-          <img src="./assets/runtime.drawio.svg" alt="Run Time Diagram" />
+        <section class="text-white">
+          <h2 class="text-6xl font-bold mb-10 text-purple-400">
+            How run time CSS works
+          </h2>
+          <img
+            src="./assets/runtime.drawio.svg"
+            alt="Run Time Diagram"
+            class="max-w-5xl p-9 bg-slate-900 mx-auto rounded-xl shadow-2xl border-4 border-purple-400/30"
+          />
         </section>
-        <section>
-          Slide 4 - disadivantages of using module or regular css
+        <section class="text-white">
+          <h2 class="text-4xl font-bold mb-8 text-yellow-400">
+            CSS Modules - a common and simple alternative
+          </h2>
+          <div class="grid grid-cols-2 gap-6 max-w-6xl mx-auto text-left">
+            <div>
+              <h3 class="text-2xl font-semibold text-yellow-300 mb-4">
+                menu.module.css
+              </h3>
+              <pre><code class="language-css">.menuItem {
+  padding: 0.75rem 1rem;
+  border-left: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.menuItem:hover {
+  background: #f0f0f0;
+}
+
+.active {
+  background: #e3f2fd;
+  border-left-color: #007bff;
+  color: #007bff;
+  font-weight: 600;
+}
+
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+</code></pre>
+            </div>
+            <div>
+              <h3 class="text-2xl font-semibold text-yellow-300 mb-4">
+                MenuItem.jsx
+              </h3>
+              <pre><code class="language-jsx">import React from 'react';
+import styles from './menu.module.css';
+
+export const MenuItem = ({ 
+  children, 
+  active, 
+  disabled,
+  onClick 
+}) =&gt; {
+  const className = [
+    styles.menuItem,
+    active &amp;&amp; styles.active,
+    disabled &amp;&amp; styles.disabled
+  ].filter(Boolean).join(' ');
+
+  return (
+    &lt;div className={className}&gt;
+      {children}
+    &lt;/div&gt;
+  );
+};</code></pre>
+            </div>
+          </div>
         </section>
-        <section>
-          <h2>Use like module CSS</h2>
-          <pre><code class="language-jsx">
-import React from 'react';
-import { css } from '@linaria/core';
+        <section class="text-white">
+          <h2 class="text-5xl font-bold mb-8 text-green-400">
+            Use like module CSS
+          </h2>
+          <div class="grid grid-cols-2 gap-6 max-w-6xl mx-auto text-left">
+            <div>
+              <h3 class="text-2xl font-semibold text-green-300 mb-4">
+                styles.js
+              </h3>
+              <pre><code class="language-jsx">import { css } from '@linaria/core';
 import { sizes } from './fonts';
 
-const button = css\`
+const button = css&#96;
   background: #007bff;
   color: white;
   font-weight: 600;
-  font-size: \${sizes.medium}px;
+  font-size: ${sizes.medium}px;
   border: none;
   border-radius: 4px;
   padding: 0.6rem 1.2rem;
   cursor: pointer;
   transition: background 0.2s ease;
+&#96;;
+</code></pre>
+            </div>
+            <div>
+              <h3 class="text-2xl font-semibold text-green-300 mb-4">
+                Button.jsx
+              </h3>
+              <pre><code class="language-jsx">import React from 'react';
+import { button } from './styles';
 
-  &:hover {
-    background: #0056b3;
-  }
-
-  &:disabled {
-    background: #999;
-    cursor: not-allowed;
-  }
-`;
-
-export const Button = ({ children, disabled }) => (
-  <button className={button} disabled={disabled}>
+export const Button = ({ 
+  children, 
+  disabled 
+}) =&gt; (
+  &lt;button 
+    className={button} 
+    disabled={disabled}
+  &gt;
     {children}
-  </button>
+  &lt;/button&gt;
 );
 </code></pre>
+            </div>
+          </div>
         </section>
-        <section>
-          <h2>Dynamic props</h2>
-          <pre><code class="language-jsx">
-import React from 'react';
+        <section class="text-white">
+          <h2 class="text-5xl font-bold mb-8 text-cyan-400">Dynamic props</h2>
+          <div class="grid grid-cols-2 gap-6 max-w-6xl mx-auto text-left">
+            <div>
+              <h3 class="text-2xl font-semibold text-cyan-300 mb-4">
+                Button.jsx
+              </h3>
+              <pre><code class="language-javascript">import React from 'react';
 import { styled } from '@linaria/react';
 
-const Button = styled.button`
+const Button = styled.button&#96;
   font-size: 1rem;
   font-weight: 600;
   border-radius: 4px;
   padding: 0.6rem 1.2rem;
   cursor: pointer;
   border: none;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.2s ease;
 
-  /* Base color styles depending on the variant */
-  background-color: \${props =>
+  background-color: ${props =&gt;
     props.variant === 'primary'
       ? '#007bff'
       : props.variant === 'secondary'
@@ -107,55 +215,91 @@ const Button = styled.button`
       ? '#dc3545'
       : '#e0e0e0'};
 
-  color: \${props =>
-    props.variant === 'primary' || props.variant === 'danger'
+  color: ${props =&gt;
+    props.variant === 'primary' || 
+    props.variant === 'danger'
       ? '#fff'
       : '#000'};
 
-  &:hover {
-    background-color: \${props =>
-      props.variant === 'primary'
-        ? '#0056b3'
-        : props.variant === 'secondary'
-        ? '#5a6268'
-        : props.variant === 'danger'
-        ? '#b02a37'
-        : '#cacaca'};
+  &amp;:hover {
+    opacity: 0.9;
   }
 
-  &:disabled {
-    background-color: #ccc;
-    color: #666;
+  &amp;:disabled {
+    opacity: 0.5;
     cursor: not-allowed;
   }
-`;
-export const ButtonExample = () => (
-  <div>
-    <Button variant="primary">Primary</Button>
-    <Button variant="secondary">Secondary</Button>
-    <Button variant="danger">Danger</Button>
-    <Button>Default</Button>
-  </div>
+&#96;;
+</code></pre>
+            </div>
+            <div>
+              <h3 class="text-2xl font-semibold text-cyan-300 mb-4">Usage</h3>
+              <pre><code class="language-jsx">import React from 'react';
+import { Button } from './Button';
+
+export const App = () =&gt; (
+  &lt;div&gt;
+    &lt;Button variant="primary"&gt;
+      Primary
+    &lt;/Button&gt;
+    
+    &lt;Button variant="secondary"&gt;
+      Secondary
+    &lt;/Button&gt;
+    
+    &lt;Button variant="danger"&gt;
+      Danger
+    &lt;/Button&gt;
+    
+    &lt;Button&gt;
+      Default
+    &lt;/Button&gt;
+
+    &lt;Button disabled&gt;
+      Disabled
+    &lt;/Button&gt;
+  &lt;/div&gt;
 );
-</code>
-</pre>
+</code></pre>
+            </div>
+          </div>
         </section>
         <section>
-          <section>
-            <h2>How it works</h2>
-            <ol>
-              <li>
-                The babel plugin will look for CSS and styled in the codebase
+          <section class="text-white">
+            <h2 class="text-6xl font-bold mb-12 text-teal-400">How it works</h2>
+            <ol class="text-left max-w-4xl mx-auto space-y-3 text-xl">
+              <li
+                class="bg-slate-700/50 p-5 rounded-lg border-l-4 border-teal-400"
+              >
+                <span class="font-bold text-teal-400 text-2xl">1.</span> The
+                babel plugin will look for CSS and styled in the codebase
               </li>
-              <li>Then it will generate unique name based on the file hash</li>
-              <li>Replace the interpolations with CSS custom properties</li>
-              <li>Generate the CSS file</li>
+              <li
+                class="bg-slate-700/50 p-5 rounded-lg border-l-4 border-teal-400"
+              >
+                <span class="font-bold text-teal-400 text-2xl">2.</span> Then it
+                will generate unique name based on the file hash
+              </li>
+              <li
+                class="bg-slate-700/50 p-5 rounded-lg border-l-4 border-teal-400"
+              >
+                <span class="font-bold text-teal-400 text-2xl">3.</span> Replace
+                the interpolations with CSS custom properties
+              </li>
+              <li
+                class="bg-slate-700/50 p-5 rounded-lg border-l-4 border-teal-400"
+              >
+                <span class="font-bold text-teal-400 text-2xl">4.</span>
+                Generate the CSS file
+              </li>
             </ol>
           </section>
-          <section>
+          <section class="text-white">
+            <h3 class="text-2xl font-semibold text-cyan-300 mb-4">
+              Original code
+            </h3>
             <pre>
-<code class="language-javascript">
-import { styled } from '@linaria/react';
+<code class="language-javascript">import { styled } from '@linaria/react';
 import { families, sizes } from './fonts';
 
 const background = 'yellow';
@@ -174,14 +318,15 @@ const Container = styled.div`
   &:hover {
     border-color: blue;
   }
-`;
-</code>
+`;</code>
     </pre>
           </section>
-          <section>
+          <section class="text-white">
+            <h3 class="text-2xl font-semibold text-cyan-300 mb-4">
+              Parsed code
+            </h3>
             <pre>
-<code class="language-javascript">
-import { styled } from '@linaria/react';
+<code class="language-javascript">import { styled } from '@linaria/react';
 import { families, sizes } from './fonts';
 
 const background = 'yellow';
@@ -201,14 +346,15 @@ const Container = styled('div')({
     'c1ugh8t9-0': [sizes.medium, 'px'],
     'c1ugh8t9-2': [props => props.color],
   },
-});
-</code>
+});</code>
     </pre>
           </section>
-          <section>
+          <section class="text-white">
+            <h3 class="text-2xl font-semibold text-cyan-300 mb-4">
+              Generated CSS
+            </h3>
             <pre>
-<code class="language-css">
-.Title_t1ugh8t9 {
+<code class="language-css">.Title_t1ugh8t9 {
   font-family: var(--t1ugh8t-0);
 }
 
@@ -222,37 +368,60 @@ const Container = styled('div')({
 
 .Container_c1ugh8t9:hover {
   border-color: blue;
-}
-</code>
-    </pre>
+}</code></pre>
           </section>
         </section>
-        <section>
-          <h2>Advantages</h2>
-          <ol>
-            <li>Selectors are scoped</li>
-            <li>No pre-processor needed</li>
-            <li>Automatic removes unused styles</li>
-            <li>Declarative dynamic stylling with React</li>
-          </ol>
-          <h3>Advantages over CSS processors</h3>
-          <ol>
-            <li>No new syntax to learn</li>
-            <li>Same advantages of regular CSS</li>
-          </ol>
-          <h3>Advantages over other CSS-in-JS</h3>
-          <ol>
-            <li>CSS is downloaded and parsed separately from JS</li>
-            <li>No extra parse needed</li>
-          </ol>
+        <section class="text-white">
+          <h2 class="text-6xl font-bold mb-10 text-green-400">Advantages</h2>
+          <div class="max-w-6xl mx-auto">
+            <div
+              class="bg-slate-700/50 p-8 rounded-lg mb-6 border-l-4 border-green-400"
+            >
+              <ol
+                class="text-left space-y-3 text-xl list-decimal list-inside text-gray-200"
+              >
+                <li>Selectors are scoped</li>
+                <li>No pre-processor needed</li>
+                <li>Automatic removes unused styles</li>
+                <li>Declarative dynamic stylling with React</li>
+              </ol>
+            </div>
+            <div class="grid grid-cols-2 gap-6 text-left">
+              <div
+                class="bg-slate-700/50 p-6 rounded-lg border-l-4 border-green-400"
+              >
+                <h3 class="text-2xl font-bold mb-4 text-green-400">
+                  vs CSS processors
+                </h3>
+                <ol
+                  class="space-y-2 text-lg list-decimal list-inside text-gray-200"
+                >
+                  <li>No new syntax to learn</li>
+                  <li>Same advantages of regular CSS</li>
+                </ol>
+              </div>
+              <div
+                class="bg-slate-700/50 p-6 rounded-lg border-l-4 border-green-400"
+              >
+                <h3 class="text-2xl font-bold mb-4 text-green-400">
+                  vs other CSS-in-JS
+                </h3>
+                <ol
+                  class="space-y-2 text-lg list-decimal list-inside text-gray-200"
+                >
+                  <li>CSS is downloaded and parsed separately from JS</li>
+                  <li>No extra parse needed</li>
+                </ol>
+              </div>
+            </div>
+          </div>
         </section>
       </div>
     </div>
-
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="dist/reveal.js"></script>
     <script src="plugin/notes/notes.js"></script>
     <script src="plugin/markdown/markdown.js"></script>
-    <script src="plugin/highlight/highlight.js"></script>
     <script>
       // More info about initialization & config:
       // - https://revealjs.com/initialization/
@@ -261,7 +430,7 @@ const Container = styled('div')({
         hash: true,
 
         // Learn about plugins: https://revealjs.com/plugins/
-        plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
+        plugins: [RevealMarkdown, RevealNotes],
       });
     </script>
   </body>
