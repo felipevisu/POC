@@ -28,7 +28,6 @@ import {
   type SelectChangeEvent,
 } from "@mui/material";
 
-// Type definitions
 interface WorkPreferences {
   remote: boolean;
   hybrid: boolean;
@@ -250,8 +249,7 @@ export default function JobApplicationForm(): JSX.Element {
           </Alert>
         )}
 
-        <form onSubmit={handleSubmit}>
-          {/* Personal Information Section */}
+        <form onSubmit={handleSubmit} noValidate>
           <Typography variant="h6" gutterBottom sx={{ mt: 3, mb: 2 }}>
             Personal Information
           </Typography>
@@ -260,7 +258,7 @@ export default function JobApplicationForm(): JSX.Element {
           <TextField
             fullWidth
             label="Full Name"
-            name="fullName"
+            name="fullname"
             value={formData.fullName}
             onChange={handleChange("fullName")}
             required
@@ -271,6 +269,7 @@ export default function JobApplicationForm(): JSX.Element {
             fullWidth
             label="Email Address"
             type="email"
+            name="email"
             value={formData.email}
             onChange={handleChange("email")}
             required
@@ -281,6 +280,7 @@ export default function JobApplicationForm(): JSX.Element {
             fullWidth
             label="Phone Number"
             type="tel"
+            name="phone"
             value={formData.phone}
             onChange={handleChange("phone")}
             required
@@ -290,6 +290,7 @@ export default function JobApplicationForm(): JSX.Element {
           <TextField
             fullWidth
             label="LinkedIn Profile"
+            name="linkedin"
             value={formData.linkedIn}
             onChange={handleChange("linkedIn")}
             placeholder="https://linkedin.com/in/yourprofile"
@@ -299,13 +300,13 @@ export default function JobApplicationForm(): JSX.Element {
           <TextField
             fullWidth
             label="Portfolio Website"
+            name="portfolio"
             value={formData.portfolio}
             onChange={handleChange("portfolio")}
             placeholder="https://yourportfolio.com"
             sx={{ mb: 2 }}
           />
 
-          {/* Position Details Section */}
           <Typography variant="h6" gutterBottom sx={{ mt: 4, mb: 2 }}>
             Position Details
           </Typography>
@@ -316,6 +317,7 @@ export default function JobApplicationForm(): JSX.Element {
             <Select
               value={formData.position}
               label="Position Applying For"
+              name="position"
               onChange={handleSelectChange("position")}
             >
               <MenuItem value="frontend">Frontend Engineer</MenuItem>
@@ -331,6 +333,7 @@ export default function JobApplicationForm(): JSX.Element {
             <Select
               value={formData.department}
               label="Department"
+              name="department"
               onChange={handleSelectChange("department")}
             >
               <MenuItem value="engineering">Engineering</MenuItem>
@@ -346,6 +349,7 @@ export default function JobApplicationForm(): JSX.Element {
             <Select
               value={formData.experienceLevel}
               label="Experience Level"
+              name="experience"
               onChange={handleSelectChange("experienceLevel")}
             >
               <MenuItem value="junior">Junior (0-2 years)</MenuItem>
@@ -355,11 +359,11 @@ export default function JobApplicationForm(): JSX.Element {
             </Select>
           </FormControl>
 
-          {/* Skills Multi-Select */}
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>Technical Skills</InputLabel>
             <Select
               multiple
+              name="skills"
               value={formData.skills}
               onChange={handleMultiSelect("skills")}
               input={<OutlinedInput label="Technical Skills" />}
@@ -380,7 +384,6 @@ export default function JobApplicationForm(): JSX.Element {
             <FormHelperText>Select all that apply</FormHelperText>
           </FormControl>
 
-          {/* Autocomplete for Locations */}
           <Autocomplete
             multiple
             options={cities}
@@ -390,18 +393,19 @@ export default function JobApplicationForm(): JSX.Element {
               <TextField
                 {...params}
                 label="Preferred Work Locations"
+                name="locations"
                 placeholder="Select cities"
               />
             )}
             sx={{ mb: 2 }}
           />
 
-          {/* Experience Slider */}
           <Box sx={{ mb: 3 }}>
             <Typography gutterBottom>
               Years of Experience: {formData.yearsExperience}
             </Typography>
             <Slider
+              id="years"
               value={formData.yearsExperience}
               onChange={handleSlider("yearsExperience")}
               min={0}
@@ -411,7 +415,6 @@ export default function JobApplicationForm(): JSX.Element {
             />
           </Box>
 
-          {/* Self Rating */}
           <Box sx={{ mb: 3 }}>
             <Typography gutterBottom>
               Rate Your Overall Technical Proficiency
@@ -425,7 +428,6 @@ export default function JobApplicationForm(): JSX.Element {
             />
           </Box>
 
-          {/* Employment Type Radio */}
           <FormControl component="fieldset" sx={{ mb: 3 }}>
             <FormLabel component="legend">Employment Type Preference</FormLabel>
             <RadioGroup
@@ -455,7 +457,6 @@ export default function JobApplicationForm(): JSX.Element {
             </RadioGroup>
           </FormControl>
 
-          {/* Work Preferences Checkboxes */}
           <FormControl component="fieldset" sx={{ mb: 3 }}>
             <FormLabel component="legend">Work Location Preferences</FormLabel>
             <FormGroup>
@@ -489,7 +490,6 @@ export default function JobApplicationForm(): JSX.Element {
             </FormGroup>
           </FormControl>
 
-          {/* Benefits Checkboxes */}
           <FormControl component="fieldset" sx={{ mb: 3 }}>
             <FormLabel component="legend">
               Important Benefits (Select all that apply)
@@ -511,7 +511,6 @@ export default function JobApplicationForm(): JSX.Element {
             </FormGroup>
           </FormControl>
 
-          {/* Relocation Radio */}
           <FormControl component="fieldset" sx={{ mb: 3 }}>
             <FormLabel component="legend">Open to Relocation?</FormLabel>
             <RadioGroup
@@ -528,7 +527,6 @@ export default function JobApplicationForm(): JSX.Element {
             </RadioGroup>
           </FormControl>
 
-          {/* Switches */}
           <Box sx={{ mb: 3 }}>
             <FormControlLabel
               control={
