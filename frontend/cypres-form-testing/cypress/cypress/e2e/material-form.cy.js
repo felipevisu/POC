@@ -61,5 +61,9 @@ describe("template spec", () => {
     cy.get('textarea[name="achievements"]').type("Nothing to say");
 
     cy.get("button").contains("Submit Application").click();
+
+    cy.get('[role="alert"]')
+      .should("be.visible")
+      .and("contain", "Application submitted successfully");
   });
 });
