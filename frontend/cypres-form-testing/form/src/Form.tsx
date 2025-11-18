@@ -128,17 +128,16 @@ export default function JobApplicationForm(): JSX.Element {
       setFormData({ ...formData, [field]: event.target.value as string });
     };
 
-  const handleCheckboxGroup =
-    (field: keyof FormData, value: keyof WorkPreferences) =>
-    (event: ChangeEvent<HTMLInputElement>): void => {
-      setFormData({
-        ...formData,
-        [field]: {
-          ...(formData[field] as WorkPreferences),
-          [value]: event.target.checked,
-        },
-      });
-    };
+  const handleCheckboxGroup = (event: ChangeEvent<HTMLInputElement>): void => {
+    const { name, value, checked } = event.target;
+    setFormData({
+      ...formData,
+      [name]: {
+        ...(formData[name as keyof FormData] as WorkPreferences),
+        [value]: checked,
+      },
+    });
+  };
 
   const handleCheckboxArray =
     (field: keyof FormData) =>
@@ -179,17 +178,11 @@ export default function JobApplicationForm(): JSX.Element {
       setFormData({ ...formData, [field]: value });
     };
 
-  const handleFileUpload = (event: ChangeEvent<HTMLInputElement>): void => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setFormData({ ...formData, resumeFileName: file.name });
-    }
-  };
-
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
     setSubmitted(true);
     console.log("Form Data:", formData);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const skillsList: string[] = [
@@ -349,7 +342,7 @@ export default function JobApplicationForm(): JSX.Element {
             <Select
               value={formData.experienceLevel}
               label="Experience Level"
-              name="experience"
+              name="experienceLevel"
               onChange={handleSelectChange("experienceLevel")}
             >
               <MenuItem value="junior">Junior (0-2 years)</MenuItem>
@@ -393,7 +386,7 @@ export default function JobApplicationForm(): JSX.Element {
               <TextField
                 {...params}
                 label="Preferred Work Locations"
-                name="locations"
+                name="preferredLocations"
                 placeholder="Select cities"
               />
             )}
@@ -405,7 +398,7 @@ export default function JobApplicationForm(): JSX.Element {
               Years of Experience: {formData.yearsExperience}
             </Typography>
             <Slider
-              id="years"
+              name="yearsExperience"
               value={formData.yearsExperience}
               onChange={handleSlider("yearsExperience")}
               min={0}
@@ -420,6 +413,7 @@ export default function JobApplicationForm(): JSX.Element {
               Rate Your Overall Technical Proficiency
             </Typography>
             <Rating
+              name="rate"
               value={formData.selfRating}
               onChange={(event, newValue) => {
                 setFormData({ ...formData, selfRating: newValue });
@@ -428,9 +422,10 @@ export default function JobApplicationForm(): JSX.Element {
             />
           </Box>
 
-          <FormControl component="fieldset" sx={{ mb: 3 }}>
+          <FormControl component="fieldset" fullWidth sx={{ mb: 3 }}>
             <FormLabel component="legend">Employment Type Preference</FormLabel>
             <RadioGroup
+              name="employmentType"
               value={formData.employmentType}
               onChange={handleChange("employmentType")}
             >
@@ -457,14 +452,15 @@ export default function JobApplicationForm(): JSX.Element {
             </RadioGroup>
           </FormControl>
 
-          <FormControl component="fieldset" sx={{ mb: 3 }}>
+          <FormControl component="fieldset" fullWidth sx={{ mb: 3 }}>
             <FormLabel component="legend">Work Location Preferences</FormLabel>
             <FormGroup>
               <FormControlLabel
                 control={
                   <Checkbox
+                    value="remote"
                     checked={formData.workPreferences.remote}
-                    onChange={handleCheckboxGroup("workPreferences", "remote")}
+                    onChange={handleCheckboxGroup}
                   />
                 }
                 label="Remote Work"
@@ -472,8 +468,10 @@ export default function JobApplicationForm(): JSX.Element {
               <FormControlLabel
                 control={
                   <Checkbox
+                    name="workPreferences"
+                    value="hybrid"
                     checked={formData.workPreferences.hybrid}
-                    onChange={handleCheckboxGroup("workPreferences", "hybrid")}
+                    onChange={handleCheckboxGroup}
                   />
                 }
                 label="Hybrid Work"
@@ -481,8 +479,10 @@ export default function JobApplicationForm(): JSX.Element {
               <FormControlLabel
                 control={
                   <Checkbox
+                    name="workPreferences"
+                    value="onsite"
                     checked={formData.workPreferences.onsite}
-                    onChange={handleCheckboxGroup("workPreferences", "onsite")}
+                    onChange={handleCheckboxGroup}
                   />
                 }
                 label="On-Site Work"
@@ -490,7 +490,7 @@ export default function JobApplicationForm(): JSX.Element {
             </FormGroup>
           </FormControl>
 
-          <FormControl component="fieldset" sx={{ mb: 3 }}>
+          <FormControl component="fieldset" fullWidth sx={{ mb: 3 }}>
             <FormLabel component="legend">
               Important Benefits (Select all that apply)
             </FormLabel>
@@ -498,6 +498,7 @@ export default function JobApplicationForm(): JSX.Element {
               {benefitOptions.map((benefit) => (
                 <FormControlLabel
                   key={benefit}
+                  name="benefits"
                   control={
                     <Checkbox
                       value={benefit}
@@ -511,9 +512,10 @@ export default function JobApplicationForm(): JSX.Element {
             </FormGroup>
           </FormControl>
 
-          <FormControl component="fieldset" sx={{ mb: 3 }}>
+          <FormControl component="fieldset" fullWidth sx={{ mb: 3 }}>
             <FormLabel component="legend">Open to Relocation?</FormLabel>
             <RadioGroup
+              name="relocation"
               value={formData.relocation}
               onChange={handleChange("relocation")}
             >
@@ -529,6 +531,7 @@ export default function JobApplicationForm(): JSX.Element {
 
           <Box sx={{ mb: 3 }}>
             <FormControlLabel
+              name="immediateStart"
               control={
                 <Switch
                   checked={formData.immediateStart}
@@ -541,6 +544,7 @@ export default function JobApplicationForm(): JSX.Element {
 
           <Box sx={{ mb: 3 }}>
             <FormControlLabel
+              name="referral"
               control={
                 <Switch
                   checked={formData.referral}
@@ -551,10 +555,10 @@ export default function JobApplicationForm(): JSX.Element {
             />
           </Box>
 
-          {/* Date Input */}
           <TextField
             fullWidth
             label="Available Start Date"
+            name="availableFrom"
             type="date"
             value={formData.availableFrom}
             onChange={handleChange("availableFrom")}
@@ -564,12 +568,12 @@ export default function JobApplicationForm(): JSX.Element {
             sx={{ mb: 3 }}
           />
 
-          {/* Salary Expectation Slider */}
           <Box sx={{ mb: 3 }}>
             <Typography gutterBottom>
               Salary Expectation: ${formData.salaryExpectation.toLocaleString()}
             </Typography>
             <Slider
+              name="salaryExpectation"
               value={formData.salaryExpectation}
               onChange={handleSlider("salaryExpectation")}
               min={30000}
@@ -580,30 +584,12 @@ export default function JobApplicationForm(): JSX.Element {
             />
           </Box>
 
-          {/* File Upload */}
-          <Box sx={{ mb: 3 }}>
-            <Button variant="outlined" component="label" fullWidth>
-              Upload Resume (PDF)
-              <input
-                type="file"
-                hidden
-                accept=".pdf"
-                onChange={handleFileUpload}
-              />
-            </Button>
-            {formData.resumeFileName && (
-              <Typography variant="body2" sx={{ mt: 1 }}>
-                Selected file: {formData.resumeFileName}
-              </Typography>
-            )}
-          </Box>
-
-          {/* Text Areas */}
           <TextField
             fullWidth
             label="Cover Letter"
             multiline
             rows={6}
+            name="coverLetter"
             value={formData.coverLetter}
             onChange={handleChange("coverLetter")}
             placeholder="Tell us why you're interested in this position..."
@@ -616,12 +602,12 @@ export default function JobApplicationForm(): JSX.Element {
             multiline
             rows={4}
             value={formData.achievements}
+            name="achievements"
             onChange={handleChange("achievements")}
             placeholder="List your most significant professional achievements..."
             sx={{ mb: 3 }}
           />
 
-          {/* Submit Button */}
           <Button
             type="submit"
             variant="contained"
