@@ -5,7 +5,6 @@ import {
   Container,
   Heading,
   VStack,
-  HStack,
   Stack,
   Wrap,
   Input,
@@ -20,7 +19,8 @@ import {
 import { Field } from "@chakra-ui/react/field";
 import { Checkbox } from "@chakra-ui/react/checkbox";
 import { RadioGroup } from "@chakra-ui/react/radio-group";
-import { SliderRoot, SliderTrack, SliderThumb } from "@chakra-ui/react/slider";
+import { Slider } from "@chakra-ui/react/slider";
+import { RatingGroup } from "@chakra-ui/react";
 import { Switch } from "@chakra-ui/react/switch";
 import { Tag } from "@chakra-ui/react/tag";
 import { Separator } from "@chakra-ui/react/separator";
@@ -110,6 +110,9 @@ export default function JobApplicationForm(): JSX.Element {
   });
 
   const [submitted, setSubmitted] = useState<boolean>(false);
+  const [locationInput, setLocationInput] = useState<string>("");
+  const [showLocationDropdown, setShowLocationDropdown] =
+    useState<boolean>(false);
 
   const handleChange =
     (field: keyof FormData) =>
@@ -436,45 +439,75 @@ export default function JobApplicationForm(): JSX.Element {
 
                 <Field.Root>
                   <Field.Label>Preferred Work Locations</Field.Label>
-                  <SelectRoot
-                    name="preferredLocations"
-                    collection={createListCollection({
-                      items: cities
-                        .filter(
-                          (city) => !formData.preferredLocations.includes(city)
-                        )
-                        .map((city) => ({ label: city, value: city })),
-                    })}
-                    onValueChange={(details) => {
-                      const location = details.value[0];
-                      if (
-                        location &&
-                        !formData.preferredLocations.includes(location)
-                      ) {
-                        handleLocationToggle(location);
-                      }
-                    }}
-                    size="md"
-                  >
-                    <SelectTrigger>
-                      <SelectValueText placeholder="Add locations" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {cities
-                        .filter(
-                          (city) => !formData.preferredLocations.includes(city)
-                        )
-                        .map((city) => (
-                          <SelectItem
-                            key={city}
-                            item={{ label: city, value: city }}
-                          >
-                            {city}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </SelectRoot>
-                  <Wrap gap={2} mb={2}>
+                  <Box position="relative" width="100%">
+                    <Input
+                      name="preferredLocations"
+                      placeholder="Select cities"
+                      value={locationInput}
+                      onChange={(e) => {
+                        setLocationInput(e.target.value);
+                        setShowLocationDropdown(true);
+                      }}
+                      onFocus={() => setShowLocationDropdown(true)}
+                      onBlur={() => {
+                        setTimeout(() => setShowLocationDropdown(false), 200);
+                      }}
+                    />
+                    {showLocationDropdown && locationInput && (
+                      <Box
+                        position="absolute"
+                        top="100%"
+                        left={0}
+                        right={0}
+                        bg="white"
+                        borderWidth="1px"
+                        borderColor="gray.300"
+                        borderRadius="md"
+                        boxShadow="md"
+                        maxH="200px"
+                        overflowY="auto"
+                        zIndex={10}
+                        mt={1}
+                      >
+                        {cities
+                          .filter(
+                            (city) =>
+                              city
+                                .toLowerCase()
+                                .includes(locationInput.toLowerCase()) &&
+                              !formData.preferredLocations.includes(city)
+                          )
+                          .map((city) => (
+                            <Box
+                              key={city}
+                              px={3}
+                              py={2}
+                              role="option"
+                              cursor="pointer"
+                              _hover={{ bg: "gray.100" }}
+                              onClick={() => {
+                                if (
+                                  !formData.preferredLocations.includes(city)
+                                ) {
+                                  setFormData({
+                                    ...formData,
+                                    preferredLocations: [
+                                      ...formData.preferredLocations,
+                                      city,
+                                    ],
+                                  });
+                                  setLocationInput("");
+                                  setShowLocationDropdown(false);
+                                }
+                              }}
+                            >
+                              {city}
+                            </Box>
+                          ))}
+                      </Box>
+                    )}
+                  </Box>
+                  <Wrap gap={2} mt={2}>
                     {formData.preferredLocations.map((location) => (
                       <Tag.Root
                         key={location}
@@ -495,7 +528,7 @@ export default function JobApplicationForm(): JSX.Element {
                   <Field.Label>
                     Years of Experience: {formData.yearsExperience}
                   </Field.Label>
-                  <SliderRoot
+                  <Slider.Root
                     name="yearsExperience"
                     value={[formData.yearsExperience]}
                     onValueChange={(details) =>
@@ -507,41 +540,42 @@ export default function JobApplicationForm(): JSX.Element {
                     min={0}
                     max={20}
                     step={1}
+                    width="100%"
                   >
-                    <SliderTrack>
-                      <SliderThumb index={0} />
-                    </SliderTrack>
-                  </SliderRoot>
+                    <Slider.Control>
+                      <Slider.Track bg="gray.200">
+                        <Slider.Range bg="blue.500" />
+                      </Slider.Track>
+                      <Slider.Thumb index={0} />
+                    </Slider.Control>
+                  </Slider.Root>
                 </Field.Root>
 
                 <Field.Root>
                   <Field.Label>
                     Rate Your Overall Technical Proficiency
                   </Field.Label>
-                  <HStack gap={2}>
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Button
-                        key={star}
-                        type="button"
-                        onClick={() =>
-                          setFormData({ ...formData, selfRating: star })
-                        }
-                        colorScheme={
-                          formData.selfRating && formData.selfRating >= star
-                            ? "yellow"
-                            : "gray"
-                        }
-                        variant={
-                          formData.selfRating && formData.selfRating >= star
-                            ? "solid"
-                            : "outline"
-                        }
-                        size="lg"
-                      >
-                        ★
-                      </Button>
-                    ))}
-                  </HStack>
+                  <RatingGroup.Root
+                    name="rate"
+                    count={5}
+                    value={formData.selfRating ?? 0}
+                    onValueChange={(details) =>
+                      setFormData({ ...formData, selfRating: details.value })
+                    }
+                  >
+                    <RatingGroup.HiddenInput />
+                    <RatingGroup.Control>
+                      <For each={[1, 2, 3, 4, 5]}>
+                        {(index) => (
+                          <RatingGroup.Item key={index} index={index}>
+                            <RatingGroup.ItemIndicator>
+                              ★
+                            </RatingGroup.ItemIndicator>
+                          </RatingGroup.Item>
+                        )}
+                      </For>
+                    </RatingGroup.Control>
+                  </RatingGroup.Root>
                 </Field.Root>
 
                 <Field.Root>
@@ -724,7 +758,7 @@ export default function JobApplicationForm(): JSX.Element {
                     Salary Expectation: $
                     {formData.salaryExpectation.toLocaleString()}
                   </Field.Label>
-                  <SliderRoot
+                  <Slider.Root
                     name="salaryExpectation"
                     value={[formData.salaryExpectation]}
                     onValueChange={(details) =>
@@ -736,11 +770,15 @@ export default function JobApplicationForm(): JSX.Element {
                     min={30000}
                     max={250000}
                     step={5000}
+                    width="100%"
                   >
-                    <SliderTrack>
-                      <SliderThumb index={0} />
-                    </SliderTrack>
-                  </SliderRoot>
+                    <Slider.Control>
+                      <Slider.Track bg="gray.200">
+                        <Slider.Range bg="blue.500" />
+                      </Slider.Track>
+                      <Slider.Thumb index={0} />
+                    </Slider.Control>
+                  </Slider.Root>
                 </Field.Root>
 
                 <Field.Root>

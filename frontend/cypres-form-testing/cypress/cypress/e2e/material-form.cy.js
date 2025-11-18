@@ -1,6 +1,6 @@
 describe("template spec", () => {
   it("passes", () => {
-    cy.visit("http://localhost:5173/material");
+    cy.visit("http://localhost:5173/chakra");
 
     cy.get('input[name="fullname"]').type("John Doe");
     cy.get('input[name="email"]').type("john-doe@example.com");
@@ -19,19 +19,21 @@ describe("template spec", () => {
 
     cy.contains("label", "Technical Skills").next().click();
     cy.get('[role="option"]').contains("JavaScript").click();
+    cy.get("body").click(0, 0);
+    cy.contains("label", "Technical Skills").next().click();
     cy.get('[role="option"]').contains("React").click();
     cy.get("body").click(0, 0);
 
     cy.get('input[name="preferredLocations"]').type("New York", {
       force: true,
     });
-    cy.get('[role="listbox"]').contains("New York").click();
+    cy.get('[role="option"]').contains("New York").click();
     cy.get('input[name="preferredLocations"]').type("Los Angeles", {
       force: true,
     });
-    cy.get('[role="listbox"]').contains("Los Angeles").click();
+    cy.get('[role="option"]').contains("Los Angeles").click();
 
-    cy.get('input[name="yearsExperience"]').parent().parent().click("center");
+    cy.contains("label", "Years of Experience").next().click("center");
 
     cy.get('input[name="rate"][value="5"]')
       .invoke("attr", "id")

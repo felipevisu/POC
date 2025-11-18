@@ -388,9 +388,9 @@ export default function JobApplicationForm(): JSX.Element {
           />
 
           <Box sx={{ mb: 3 }}>
-            <Typography gutterBottom>
+            <FormLabel>
               Years of Experience: {formData.yearsExperience}
-            </Typography>
+            </FormLabel>
             <Slider
               name="yearsExperience"
               value={formData.yearsExperience}
@@ -563,9 +563,9 @@ export default function JobApplicationForm(): JSX.Element {
           />
 
           <Box sx={{ mb: 3 }}>
-            <Typography gutterBottom>
+            <FormLabel>
               Salary Expectation: ${formData.salaryExpectation.toLocaleString()}
-            </Typography>
+            </FormLabel>
             <Slider
               name="salaryExpectation"
               value={formData.salaryExpectation}
