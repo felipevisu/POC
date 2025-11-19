@@ -1,0 +1,26 @@
+/* Framework Isolation Styles */
+
+/* Material-UI Wrapper - Ensure MUI styles don't leak */
+.material-form-wrapper {
+  isolation: isolate;
+  contain: layout style;
+}
+
+/* Chakra UI Wrapper - Ensure Chakra styles don't leak */
+.chakra-form-wrapper {
+  isolation: isolate;
+  contain: layout style;
+}
+
+/* Bootstrap Wrapper - Ensure Bootstrap styles don't leak */
+.bootstrap-form-wrapper {
+  isolation: isolate;
+  contain: layout style;
+}
+
+/* Reset any global styles within each wrapper if needed */
+.material-form-wrapper *,
+.chakra-form-wrapper *,
+.bootstrap-form-wrapper * {
+  box-sizing: border-box;
+}

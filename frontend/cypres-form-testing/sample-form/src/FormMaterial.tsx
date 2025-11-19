@@ -223,396 +223,403 @@ export default function JobApplicationForm(): JSX.Element {
   ];
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 3 }}>
-          Senior Software Engineer Application
-        </Typography>
-
-        {submitted && (
-          <Alert severity="success" sx={{ mb: 3 }}>
-            Application submitted successfully! We'll review your information
-            and get back to you soon.
-          </Alert>
-        )}
-
-        <form onSubmit={handleSubmit} noValidate>
-          <Typography variant="h6" gutterBottom sx={{ mt: 3, mb: 2 }}>
-            Personal Information
+    <div className="material-form-wrapper">
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Paper elevation={3} sx={{ p: 4 }}>
+          <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 3 }}>
+            Senior Software Engineer Application
           </Typography>
-          <Divider sx={{ mb: 3 }} />
 
-          <TextField
-            fullWidth
-            label="Full Name"
-            name="fullname"
-            value={formData.fullName}
-            onChange={handleChange("fullName")}
-            required
-            sx={{ mb: 2 }}
-          />
+          {submitted && (
+            <Alert severity="success" sx={{ mb: 3 }}>
+              Application submitted successfully! We'll review your information
+              and get back to you soon.
+            </Alert>
+          )}
 
-          <TextField
-            fullWidth
-            label="Email Address"
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange("email")}
-            required
-            sx={{ mb: 2 }}
-          />
-
-          <TextField
-            fullWidth
-            label="Phone Number"
-            type="tel"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange("phone")}
-            required
-            sx={{ mb: 2 }}
-          />
-
-          <TextField
-            fullWidth
-            label="LinkedIn Profile"
-            name="linkedin"
-            value={formData.linkedIn}
-            onChange={handleChange("linkedIn")}
-            placeholder="https://linkedin.com/in/yourprofile"
-            sx={{ mb: 2 }}
-          />
-
-          <TextField
-            fullWidth
-            label="Portfolio Website"
-            name="portfolio"
-            value={formData.portfolio}
-            onChange={handleChange("portfolio")}
-            placeholder="https://yourportfolio.com"
-            sx={{ mb: 2 }}
-          />
-
-          <Typography variant="h6" gutterBottom sx={{ mt: 4, mb: 2 }}>
-            Position Details
-          </Typography>
-          <Divider sx={{ mb: 3 }} />
-
-          <FormControl fullWidth required sx={{ mb: 2 }}>
-            <InputLabel>Position Applying For</InputLabel>
-            <Select
-              value={formData.position}
-              label="Position Applying For"
-              name="position"
-              onChange={handleSelectChange("position")}
-            >
-              <MenuItem value="frontend">Frontend Engineer</MenuItem>
-              <MenuItem value="backend">Backend Engineer</MenuItem>
-              <MenuItem value="fullstack">Full Stack Engineer</MenuItem>
-              <MenuItem value="devops">DevOps Engineer</MenuItem>
-              <MenuItem value="mobile">Mobile Engineer</MenuItem>
-            </Select>
-          </FormControl>
-
-          <FormControl fullWidth required sx={{ mb: 2 }}>
-            <InputLabel>Department</InputLabel>
-            <Select
-              value={formData.department}
-              label="Department"
-              name="department"
-              onChange={handleSelectChange("department")}
-            >
-              <MenuItem value="engineering">Engineering</MenuItem>
-              <MenuItem value="product">Product</MenuItem>
-              <MenuItem value="design">Design</MenuItem>
-              <MenuItem value="data">Data Science</MenuItem>
-              <MenuItem value="security">Security</MenuItem>
-            </Select>
-          </FormControl>
-
-          <FormControl fullWidth required sx={{ mb: 2 }}>
-            <InputLabel>Experience Level</InputLabel>
-            <Select
-              value={formData.experienceLevel}
-              label="Experience Level"
-              name="experienceLevel"
-              onChange={handleSelectChange("experienceLevel")}
-            >
-              <MenuItem value="junior">Junior (0-2 years)</MenuItem>
-              <MenuItem value="mid">Mid-Level (3-5 years)</MenuItem>
-              <MenuItem value="senior">Senior (6-10 years)</MenuItem>
-              <MenuItem value="lead">Lead (10+ years)</MenuItem>
-            </Select>
-          </FormControl>
-
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Technical Skills</InputLabel>
-            <Select
-              multiple
-              name="skills"
-              value={formData.skills}
-              onChange={handleMultiSelect("skills")}
-              input={<OutlinedInput label="Technical Skills" />}
-              renderValue={(selected) => (
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                  {selected.map((value) => (
-                    <Chip key={value} label={value} size="small" />
-                  ))}
-                </Box>
-              )}
-            >
-              {skillsList.map((skill) => (
-                <MenuItem key={skill} value={skill}>
-                  {skill}
-                </MenuItem>
-              ))}
-            </Select>
-            <FormHelperText>Select all that apply</FormHelperText>
-          </FormControl>
-
-          <Autocomplete
-            multiple
-            options={cities}
-            value={formData.preferredLocations}
-            onChange={handleAutocomplete("preferredLocations")}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Preferred Work Locations"
-                name="preferredLocations"
-                placeholder="Select cities"
-              />
-            )}
-            sx={{ mb: 2 }}
-          />
-
-          <Box sx={{ mb: 3 }}>
-            <FormLabel>
-              Years of Experience: {formData.yearsExperience}
-            </FormLabel>
-            <Slider
-              name="yearsExperience"
-              value={formData.yearsExperience}
-              onChange={handleSlider("yearsExperience")}
-              min={0}
-              max={20}
-              marks
-              valueLabelDisplay="auto"
-            />
-          </Box>
-
-          <Box sx={{ mb: 3 }}>
-            <Typography gutterBottom>
-              Rate Your Overall Technical Proficiency
+          <form onSubmit={handleSubmit} noValidate>
+            <Typography variant="h6" gutterBottom sx={{ mt: 3, mb: 2 }}>
+              Personal Information
             </Typography>
-            <Rating
-              name="rate"
-              value={formData.selfRating}
-              onChange={(event, newValue) => {
-                setFormData({ ...formData, selfRating: newValue });
-              }}
-              size="large"
+            <Divider sx={{ mb: 3 }} />
+
+            <TextField
+              fullWidth
+              label="Full Name"
+              name="fullname"
+              value={formData.fullName}
+              onChange={handleChange("fullName")}
+              required
+              sx={{ mb: 2 }}
             />
-          </Box>
 
-          <FormControl component="fieldset" fullWidth sx={{ mb: 3 }}>
-            <FormLabel component="legend">Employment Type Preference</FormLabel>
-            <RadioGroup
-              name="employmentType"
-              value={formData.employmentType}
-              onChange={handleChange("employmentType")}
-            >
-              <FormControlLabel
-                value="fulltime"
-                control={<Radio />}
-                label="Full-Time"
-              />
-              <FormControlLabel
-                value="parttime"
-                control={<Radio />}
-                label="Part-Time"
-              />
-              <FormControlLabel
-                value="contract"
-                control={<Radio />}
-                label="Contract"
-              />
-              <FormControlLabel
-                value="freelance"
-                control={<Radio />}
-                label="Freelance"
-              />
-            </RadioGroup>
-          </FormControl>
+            <TextField
+              fullWidth
+              label="Email Address"
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange("email")}
+              required
+              sx={{ mb: 2 }}
+            />
 
-          <FormControl component="fieldset" fullWidth sx={{ mb: 3 }}>
-            <FormLabel component="legend">Work Location Preferences</FormLabel>
-            <FormGroup>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    value="remote"
-                    checked={formData.workPreferences.remote}
-                    onChange={handleCheckboxGroup}
-                  />
-                }
-                label="Remote Work"
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    name="workPreferences"
-                    value="hybrid"
-                    checked={formData.workPreferences.hybrid}
-                    onChange={handleCheckboxGroup}
-                  />
-                }
-                label="Hybrid Work"
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    name="workPreferences"
-                    value="onsite"
-                    checked={formData.workPreferences.onsite}
-                    onChange={handleCheckboxGroup}
-                  />
-                }
-                label="On-Site Work"
-              />
-            </FormGroup>
-          </FormControl>
+            <TextField
+              fullWidth
+              label="Phone Number"
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange("phone")}
+              required
+              sx={{ mb: 2 }}
+            />
 
-          <FormControl component="fieldset" fullWidth sx={{ mb: 3 }}>
-            <FormLabel component="legend">
-              Important Benefits (Select all that apply)
-            </FormLabel>
-            <FormGroup>
-              {benefitOptions.map((benefit) => (
+            <TextField
+              fullWidth
+              label="LinkedIn Profile"
+              name="linkedin"
+              value={formData.linkedIn}
+              onChange={handleChange("linkedIn")}
+              placeholder="https://linkedin.com/in/yourprofile"
+              sx={{ mb: 2 }}
+            />
+
+            <TextField
+              fullWidth
+              label="Portfolio Website"
+              name="portfolio"
+              value={formData.portfolio}
+              onChange={handleChange("portfolio")}
+              placeholder="https://yourportfolio.com"
+              sx={{ mb: 2 }}
+            />
+
+            <Typography variant="h6" gutterBottom sx={{ mt: 4, mb: 2 }}>
+              Position Details
+            </Typography>
+            <Divider sx={{ mb: 3 }} />
+
+            <FormControl fullWidth required sx={{ mb: 2 }}>
+              <InputLabel>Position Applying For</InputLabel>
+              <Select
+                value={formData.position}
+                label="Position Applying For"
+                name="position"
+                onChange={handleSelectChange("position")}
+              >
+                <MenuItem value="frontend">Frontend Engineer</MenuItem>
+                <MenuItem value="backend">Backend Engineer</MenuItem>
+                <MenuItem value="fullstack">Full Stack Engineer</MenuItem>
+                <MenuItem value="devops">DevOps Engineer</MenuItem>
+                <MenuItem value="mobile">Mobile Engineer</MenuItem>
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth required sx={{ mb: 2 }}>
+              <InputLabel>Department</InputLabel>
+              <Select
+                value={formData.department}
+                label="Department"
+                name="department"
+                onChange={handleSelectChange("department")}
+              >
+                <MenuItem value="engineering">Engineering</MenuItem>
+                <MenuItem value="product">Product</MenuItem>
+                <MenuItem value="design">Design</MenuItem>
+                <MenuItem value="data">Data Science</MenuItem>
+                <MenuItem value="security">Security</MenuItem>
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth required sx={{ mb: 2 }}>
+              <InputLabel>Experience Level</InputLabel>
+              <Select
+                value={formData.experienceLevel}
+                label="Experience Level"
+                name="experienceLevel"
+                onChange={handleSelectChange("experienceLevel")}
+              >
+                <MenuItem value="junior">Junior (0-2 years)</MenuItem>
+                <MenuItem value="mid">Mid-Level (3-5 years)</MenuItem>
+                <MenuItem value="senior">Senior (6-10 years)</MenuItem>
+                <MenuItem value="lead">Lead (10+ years)</MenuItem>
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel>Technical Skills</InputLabel>
+              <Select
+                multiple
+                name="skills"
+                value={formData.skills}
+                onChange={handleMultiSelect("skills")}
+                input={<OutlinedInput label="Technical Skills" />}
+                renderValue={(selected) => (
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                    {selected.map((value) => (
+                      <Chip key={value} label={value} size="small" />
+                    ))}
+                  </Box>
+                )}
+              >
+                {skillsList.map((skill) => (
+                  <MenuItem key={skill} value={skill}>
+                    {skill}
+                  </MenuItem>
+                ))}
+              </Select>
+              <FormHelperText>Select all that apply</FormHelperText>
+            </FormControl>
+
+            <Autocomplete
+              multiple
+              options={cities}
+              value={formData.preferredLocations}
+              onChange={handleAutocomplete("preferredLocations")}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Preferred Work Locations"
+                  name="preferredLocations"
+                  placeholder="Select cities"
+                />
+              )}
+              sx={{ mb: 2 }}
+            />
+
+            <Box sx={{ mb: 3 }}>
+              <FormLabel>
+                Years of Experience: {formData.yearsExperience}
+              </FormLabel>
+              <Slider
+                name="yearsExperience"
+                value={formData.yearsExperience}
+                onChange={handleSlider("yearsExperience")}
+                min={0}
+                max={20}
+                marks
+                valueLabelDisplay="auto"
+              />
+            </Box>
+
+            <Box sx={{ mb: 3 }}>
+              <Typography gutterBottom>
+                Rate Your Overall Technical Proficiency
+              </Typography>
+              <Rating
+                name="rate"
+                value={formData.selfRating}
+                onChange={(event, newValue) => {
+                  setFormData({ ...formData, selfRating: newValue });
+                }}
+                size="large"
+              />
+            </Box>
+
+            <FormControl component="fieldset" fullWidth sx={{ mb: 3 }}>
+              <FormLabel component="legend">
+                Employment Type Preference
+              </FormLabel>
+              <RadioGroup
+                name="employmentType"
+                value={formData.employmentType}
+                onChange={handleChange("employmentType")}
+              >
                 <FormControlLabel
-                  key={benefit}
-                  name="benefits"
+                  value="fulltime"
+                  control={<Radio />}
+                  label="Full-Time"
+                />
+                <FormControlLabel
+                  value="parttime"
+                  control={<Radio />}
+                  label="Part-Time"
+                />
+                <FormControlLabel
+                  value="contract"
+                  control={<Radio />}
+                  label="Contract"
+                />
+                <FormControlLabel
+                  value="freelance"
+                  control={<Radio />}
+                  label="Freelance"
+                />
+              </RadioGroup>
+            </FormControl>
+
+            <FormControl component="fieldset" fullWidth sx={{ mb: 3 }}>
+              <FormLabel component="legend">
+                Work Location Preferences
+              </FormLabel>
+              <FormGroup>
+                <FormControlLabel
                   control={
                     <Checkbox
-                      value={benefit}
-                      checked={formData.benefits.includes(benefit)}
-                      onChange={handleCheckboxArray("benefits")}
+                      value="remote"
+                      checked={formData.workPreferences.remote}
+                      onChange={handleCheckboxGroup}
                     />
                   }
-                  label={benefit}
+                  label="Remote Work"
                 />
-              ))}
-            </FormGroup>
-          </FormControl>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      name="workPreferences"
+                      value="hybrid"
+                      checked={formData.workPreferences.hybrid}
+                      onChange={handleCheckboxGroup}
+                    />
+                  }
+                  label="Hybrid Work"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      name="workPreferences"
+                      value="onsite"
+                      checked={formData.workPreferences.onsite}
+                      onChange={handleCheckboxGroup}
+                    />
+                  }
+                  label="On-Site Work"
+                />
+              </FormGroup>
+            </FormControl>
 
-          <FormControl component="fieldset" fullWidth sx={{ mb: 3 }}>
-            <FormLabel component="legend">Open to Relocation?</FormLabel>
-            <RadioGroup
-              name="relocation"
-              value={formData.relocation}
-              onChange={handleChange("relocation")}
-            >
-              <FormControlLabel value="yes" control={<Radio />} label="Yes" />
-              <FormControlLabel value="no" control={<Radio />} label="No" />
+            <FormControl component="fieldset" fullWidth sx={{ mb: 3 }}>
+              <FormLabel component="legend">
+                Important Benefits (Select all that apply)
+              </FormLabel>
+              <FormGroup>
+                {benefitOptions.map((benefit) => (
+                  <FormControlLabel
+                    key={benefit}
+                    name="benefits"
+                    control={
+                      <Checkbox
+                        value={benefit}
+                        checked={formData.benefits.includes(benefit)}
+                        onChange={handleCheckboxArray("benefits")}
+                      />
+                    }
+                    label={benefit}
+                  />
+                ))}
+              </FormGroup>
+            </FormControl>
+
+            <FormControl component="fieldset" fullWidth sx={{ mb: 3 }}>
+              <FormLabel component="legend">Open to Relocation?</FormLabel>
+              <RadioGroup
+                name="relocation"
+                value={formData.relocation}
+                onChange={handleChange("relocation")}
+              >
+                <FormControlLabel value="yes" control={<Radio />} label="Yes" />
+                <FormControlLabel value="no" control={<Radio />} label="No" />
+                <FormControlLabel
+                  value="maybe"
+                  control={<Radio />}
+                  label="Maybe, depends on location"
+                />
+              </RadioGroup>
+            </FormControl>
+
+            <Box sx={{ mb: 3 }}>
               <FormControlLabel
-                value="maybe"
-                control={<Radio />}
-                label="Maybe, depends on location"
+                name="immediateStart"
+                control={
+                  <Switch
+                    checked={formData.immediateStart}
+                    onChange={handleSwitch("immediateStart")}
+                  />
+                }
+                label="Available for Immediate Start"
               />
-            </RadioGroup>
-          </FormControl>
+            </Box>
 
-          <Box sx={{ mb: 3 }}>
-            <FormControlLabel
-              name="immediateStart"
-              control={
-                <Switch
-                  checked={formData.immediateStart}
-                  onChange={handleSwitch("immediateStart")}
-                />
-              }
-              label="Available for Immediate Start"
+            <Box sx={{ mb: 3 }}>
+              <FormControlLabel
+                name="referral"
+                control={
+                  <Switch
+                    checked={formData.referral}
+                    onChange={handleSwitch("referral")}
+                  />
+                }
+                label="Were you referred by an employee?"
+              />
+            </Box>
+
+            <TextField
+              fullWidth
+              label="Available Start Date"
+              name="availableFrom"
+              type="date"
+              value={formData.availableFrom}
+              onChange={handleChange("availableFrom")}
+              InputLabelProps={{
+                shrink: true,
+              }}
+              sx={{ mb: 3 }}
             />
-          </Box>
 
-          <Box sx={{ mb: 3 }}>
-            <FormControlLabel
-              name="referral"
-              control={
-                <Switch
-                  checked={formData.referral}
-                  onChange={handleSwitch("referral")}
-                />
-              }
-              label="Were you referred by an employee?"
+            <Box sx={{ mb: 3 }}>
+              <FormLabel>
+                Salary Expectation: $
+                {formData.salaryExpectation.toLocaleString()}
+              </FormLabel>
+              <Slider
+                name="salaryExpectation"
+                value={formData.salaryExpectation}
+                onChange={handleSlider("salaryExpectation")}
+                min={30000}
+                max={250000}
+                step={5000}
+                valueLabelDisplay="auto"
+                valueLabelFormat={(value) => `$${value.toLocaleString()}`}
+              />
+            </Box>
+
+            <TextField
+              fullWidth
+              label="Cover Letter"
+              multiline
+              rows={6}
+              name="coverLetter"
+              value={formData.coverLetter}
+              onChange={handleChange("coverLetter")}
+              placeholder="Tell us why you're interested in this position..."
+              sx={{ mb: 2 }}
             />
-          </Box>
 
-          <TextField
-            fullWidth
-            label="Available Start Date"
-            name="availableFrom"
-            type="date"
-            value={formData.availableFrom}
-            onChange={handleChange("availableFrom")}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            sx={{ mb: 3 }}
-          />
-
-          <Box sx={{ mb: 3 }}>
-            <FormLabel>
-              Salary Expectation: ${formData.salaryExpectation.toLocaleString()}
-            </FormLabel>
-            <Slider
-              name="salaryExpectation"
-              value={formData.salaryExpectation}
-              onChange={handleSlider("salaryExpectation")}
-              min={30000}
-              max={250000}
-              step={5000}
-              valueLabelDisplay="auto"
-              valueLabelFormat={(value) => `$${value.toLocaleString()}`}
+            <TextField
+              fullWidth
+              label="Key Achievements"
+              multiline
+              rows={4}
+              value={formData.achievements}
+              name="achievements"
+              onChange={handleChange("achievements")}
+              placeholder="List your most significant professional achievements..."
+              sx={{ mb: 3 }}
             />
-          </Box>
 
-          <TextField
-            fullWidth
-            label="Cover Letter"
-            multiline
-            rows={6}
-            name="coverLetter"
-            value={formData.coverLetter}
-            onChange={handleChange("coverLetter")}
-            placeholder="Tell us why you're interested in this position..."
-            sx={{ mb: 2 }}
-          />
-
-          <TextField
-            fullWidth
-            label="Key Achievements"
-            multiline
-            rows={4}
-            value={formData.achievements}
-            name="achievements"
-            onChange={handleChange("achievements")}
-            placeholder="List your most significant professional achievements..."
-            sx={{ mb: 3 }}
-          />
-
-          <Button
-            type="submit"
-            variant="contained"
-            size="large"
-            fullWidth
-            sx={{ mt: 2 }}
-          >
-            Submit Application
-          </Button>
-        </form>
-      </Paper>
-    </Container>
+            <Button
+              type="submit"
+              variant="contained"
+              size="large"
+              fullWidth
+              sx={{ mt: 2 }}
+            >
+              Submit Application
+            </Button>
+          </form>
+        </Paper>
+      </Container>
+    </div>
   );
 }
