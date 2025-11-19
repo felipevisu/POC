@@ -8,6 +8,7 @@ import {
   Badge,
   CloseButton,
 } from "react-bootstrap";
+import { Rating } from "react-simple-star-rating";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 interface FormData {
@@ -446,47 +447,22 @@ export default function JobApplicationForm(): JSX.Element {
               <Form.Group className="mb-3">
                 <Form.Label>Rate Your Overall Technical Proficiency</Form.Label>
                 <div>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Form.Check
-                      key={star}
-                      inline
-                      type="radio"
-                      name="rate"
-                      id={`rate${star}`}
-                      value={star}
-                      checked={formData.selfRating === star}
-                      onChange={() =>
-                        setFormData({ ...formData, selfRating: star })
-                      }
-                      label={
-                        <span
-                          className={`btn ${
-                            formData.selfRating && formData.selfRating >= star
-                              ? "btn-warning"
-                              : "btn-outline-secondary"
-                          }`}
-                          style={{ fontSize: "1.5rem" }}
-                        >
-                          ★
-                        </span>
-                      }
-                      style={{ display: "none" }}
-                    />
-                  ))}
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <label
-                      key={`label-${star}`}
-                      className={`btn ${
-                        formData.selfRating && formData.selfRating >= star
-                          ? "btn-warning"
-                          : "btn-outline-secondary"
-                      } me-2`}
-                      htmlFor={`rate${star}`}
-                      style={{ fontSize: "1.5rem" }}
-                    >
-                      ★
-                    </label>
-                  ))}
+                  <Rating
+                    onClick={(rate) =>
+                      setFormData({ ...formData, selfRating: rate })
+                    }
+                    initialValue={formData.selfRating || 0}
+                    size={30}
+                    allowFraction={false}
+                    transition
+                    fillColor="#ffc107"
+                    emptyColor="#e0e0e0"
+                  />
+                  <input
+                    type="hidden"
+                    name="rate"
+                    value={formData.selfRating || ""}
+                  />
                 </div>
               </Form.Group>
 
@@ -645,7 +621,7 @@ export default function JobApplicationForm(): JSX.Element {
                 </Form.Label>
                 <Form.Range
                   name="salaryExpectation"
-                  min={30000}
+                  min={0}
                   max={250000}
                   step={5000}
                   value={formData.salaryExpectation}
