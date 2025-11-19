@@ -621,7 +621,7 @@ export default function JobApplicationForm(): JSX.Element {
                 </Form.Label>
                 <Form.Range
                   name="salaryExpectation"
-                  min={0}
+                  min={30000}
                   max={250000}
                   step={5000}
                   value={formData.salaryExpectation}

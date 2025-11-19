@@ -111,7 +111,7 @@ describe("template spec", () => {
       .and("contain", "Application submitted successfully");
   });
 
-  it.skip("generic code", () => {
+  it("generic code", () => {
     cy.fillJobApplicationForm();
   });
 });

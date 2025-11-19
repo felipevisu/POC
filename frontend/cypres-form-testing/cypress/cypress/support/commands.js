@@ -14,6 +14,48 @@ Cypress.Commands.add("smartSelect", (labelText, optionText) => {
     });
 });
 
+Cypress.Commands.add(
+  "setRating",
+  { prevSubject: "element" },
+  ($subject, value) => {
+    cy.wrap($subject).then(($el) => {
+      // Try to find hidden input (Material UI, Bootstrap react-simple-star-rating)
+      let hiddenInput = $el.find('input[type="hidden"]');
+
+      if (hiddenInput.length) {
+        // Force change the hidden input value
+        const input = hiddenInput[0];
+        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+          window.HTMLInputElement.prototype,
+          "value"
+        ).set;
+        nativeInputValueSetter.call(input, value);
+
+        const inputEvent = new Event("input", { bubbles: true });
+        input.dispatchEvent(inputEvent);
+
+        const changeEvent = new Event("change", { bubbles: true });
+        input.dispatchEvent(changeEvent);
+        return;
+      }
+
+      // Fallback: find all radio inputs and click the last one (5 stars)
+      const radioInputs = $el.find('input[type="radio"]');
+      if (radioInputs.length) {
+        cy.wrap(radioInputs.last()).click({ force: true });
+        return;
+      }
+
+      // If no inputs found, try clicking SVG stars (for custom implementations)
+      const stars = $el.find("svg.star-svg");
+      if (stars.length) {
+        // Click the star at the index based on value (value-1 because 0-indexed)
+        cy.wrap(stars.eq(value - 1)).click({ force: true });
+      }
+    });
+  }
+);
+
 Cypress.Commands.add("toggleSwitch", (labelText) => {
   // 1. Find the element containing the label text
   cy.contains(labelText).then(($labelText) => {
@@ -36,6 +78,39 @@ Cypress.Commands.add("toggleSwitch", (labelText) => {
     cy.wrap($parent).find('input[type="checkbox"]').click({ force: true });
   });
 });
+
+Cypress.Commands.add(
+  "setRangeValue",
+  { prevSubject: "element" },
+  ($subject, value) => {
+    cy.wrap($subject).then(($el) => {
+      // Check if the element itself is an input[type="range"]
+      let range;
+      if ($el.is("input")) {
+        range = $el[0];
+      } else {
+        // If not, find the input[type="range"] inside it
+        range = $el.find("input")[0];
+      }
+
+      if (!range) {
+        return cy.wrap($el).click({ position: "center", force: true });
+      }
+
+      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype,
+        "value"
+      ).set;
+      nativeInputValueSetter.call(range, value);
+
+      const inputEvent = new Event("input", { bubbles: true });
+      range.dispatchEvent(inputEvent);
+
+      const changeEvent = new Event("change", { bubbles: true });
+      range.dispatchEvent(changeEvent);
+    });
+  }
+);
 
 Cypress.Commands.add("fillJobApplicationForm", () => {
   // Personal Information
@@ -71,11 +146,11 @@ Cypress.Commands.add("fillJobApplicationForm", () => {
   cy.get('[role="option"]').contains("Los Angeles").click();
 
   // Years of Experience
-  cy.contains("label", "Years of Experience").next().click("center");
+  cy.contains("label", "Years of Experience").next().setRangeValue(10);
 
   // Rating
-  cy.get('[aria-label="5 stars"], span:contains("5 Stars")')
-    .first()
+  cy.get('[aria-label="5 stars"], span:contains("5 Stars"), svg.star-svg')
+    .last()
     .click({ force: true });
 
   // Employment Type
@@ -100,7 +175,7 @@ Cypress.Commands.add("fillJobApplicationForm", () => {
   cy.contains("label", "Available Start Date").next().type("2025-12-01");
 
   // Salary Expectation
-  cy.contains("label", "Salary Expectation").next().click("center");
+  cy.contains("label", "Salary Expectation").next().setRangeValue(150000);
 
   // Textareas
   cy.contains("label", "Cover Letter").next().type("Nothing to say");
