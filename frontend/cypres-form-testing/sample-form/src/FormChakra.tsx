@@ -229,7 +229,7 @@ export default function JobApplicationForm(): JSX.Element {
         </Heading>
 
         {submitted && (
-          <Alert.Root status="success" mb={6} borderRadius="md">
+          <Alert.Root role="alert" status="success" mb={6} borderRadius="md">
             <Alert.Indicator />
             <Alert.Content>
               <Alert.Title>Success!</Alert.Title>
@@ -564,17 +564,7 @@ export default function JobApplicationForm(): JSX.Element {
                     }
                   >
                     <RatingGroup.HiddenInput />
-                    <RatingGroup.Control>
-                      <For each={[1, 2, 3, 4, 5]}>
-                        {(index) => (
-                          <RatingGroup.Item key={index} index={index}>
-                            <RatingGroup.ItemIndicator>
-                              ★
-                            </RatingGroup.ItemIndicator>
-                          </RatingGroup.Item>
-                        )}
-                      </For>
-                    </RatingGroup.Control>
+                    <RatingGroup.Control />
                   </RatingGroup.Root>
                 </Field.Root>
 
@@ -706,7 +696,6 @@ export default function JobApplicationForm(): JSX.Element {
                 </Field.Root>
 
                 <Flex alignItems="center" gap={4}>
-                  <Text flex="1">Available for Immediate Start</Text>
                   <Switch.Root
                     id="immediateStart"
                     checked={formData.immediateStart}
@@ -722,10 +711,10 @@ export default function JobApplicationForm(): JSX.Element {
                       <Switch.Thumb />
                     </Switch.Control>
                   </Switch.Root>
+                  <Text flex="1">Available for Immediate Start</Text>
                 </Flex>
 
                 <Flex alignItems="center" gap={4}>
-                  <Text flex="1">Were you referred by an employee?</Text>
                   <Switch.Root
                     id="referral"
                     checked={formData.referral}
@@ -741,6 +730,7 @@ export default function JobApplicationForm(): JSX.Element {
                       <Switch.Thumb />
                     </Switch.Control>
                   </Switch.Root>
+                  <Text flex="1">Were you referred by an employee?</Text>
                 </Flex>
 
                 <Field.Root>

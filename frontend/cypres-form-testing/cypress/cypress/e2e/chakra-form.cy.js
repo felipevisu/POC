@@ -1,6 +1,6 @@
 describe("template spec", () => {
   it("passes", () => {
-    cy.visit("http://localhost:5173/material");
+    cy.visit("http://localhost:5173/chakra");
     cy.fillJobApplicationForm();
   });
 });
