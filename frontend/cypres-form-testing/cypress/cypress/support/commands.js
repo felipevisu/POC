@@ -1,30 +1,64 @@
+Cypress.Commands.add("smartSelect", (labelText, optionText) => {
+  // Find label, then the dropdown after it
+  cy.contains("label", labelText)
+    .next()
+    .then(($el) => {
+      // Case 1: Native select
+      if ($el.is("select")) {
+        cy.wrap($el).select(optionText);
+      } else {
+        cy.wrap($el).click();
+        cy.get('[role="option"]').contains(optionText).click();
+      }
+      cy.get("body").click(0, 0);
+    });
+});
+
+Cypress.Commands.add("toggleSwitch", (labelText) => {
+  // 1. Find the element containing the label text
+  cy.contains(labelText).then(($labelText) => {
+    const $parent = $labelText.parent();
+
+    // --- Case 1: Material UI: label wraps the text ---
+    if ($parent.is("label")) {
+      cy.wrap($parent).find('input[type="checkbox"]').click({ force: true });
+      return;
+    }
+
+    // --- Case 2: Chakra UI: label is previous sibling ---
+    const $prev = $labelText.prev("label");
+    if ($prev.length) {
+      cy.wrap($prev).find('input[type="checkbox"]').click({ force: true });
+      return;
+    }
+
+    // Fallback: try to find ANY checkbox inside parent tree
+    cy.wrap($parent).find('input[type="checkbox"]').click({ force: true });
+  });
+});
+
 Cypress.Commands.add("fillJobApplicationForm", () => {
   // Personal Information
-  cy.get('input[name="fullname"]').type("John Doe");
-  cy.get('input[name="email"]').type("john-doe@example.com");
-  cy.get('input[name="phone"]').type("+5511987654321");
-  cy.get('input[name="linkedin"]').type("johndoe");
-  cy.get('input[name="portfolio"]').type("https://johndoe.com.br");
+  cy.contains("label", "Full Name").next().type("John Doe");
+  cy.contains("label", "Email Address").next().type("john-doe@example.com");
+  cy.contains("label", "Phone Number").next().type("+5511987654321");
+  cy.contains("label", "LinkedIn Profile").next().type("johndoe");
+  cy.contains("label", "Portfolio Website")
+    .next()
+    .type("https://johndoe.com.br");
 
   // Position Applying For
-  cy.contains("label", "Position Applying For").next().click();
-  cy.get('[role="option"]').contains("Frontend Engineer").click();
+  cy.smartSelect("Position Applying For", "Frontend Engineer");
 
   // Department
-  cy.contains("label", "Department").next().click();
-  cy.get('[role="option"]').contains("Engineering").click();
+  cy.smartSelect("Department", "Engineering");
 
   // Experience Level
-  cy.contains("label", "Experience Level").next().click();
-  cy.get('[role="option"]').contains("Junior").click();
+  cy.smartSelect("Experience Level", "Junior (0-2 years)");
 
   // Technical Skills
-  cy.contains("label", "Technical Skills").next().click();
-  cy.get('[role="option"]').contains("JavaScript").click();
-  cy.get("body").click(0, 0);
-  cy.contains("label", "Technical Skills").next().click();
-  cy.get('[role="option"]').contains("React").click();
-  cy.get("body").click(0, 0);
+  cy.smartSelect("Technical Skills", "JavaScript");
+  cy.smartSelect("Technical Skills", "React");
 
   // Preferred Locations
   cy.get('input[name="preferredLocations"]').type("New York", {
@@ -59,18 +93,18 @@ Cypress.Commands.add("fillJobApplicationForm", () => {
   cy.contains("label", "Maybe, depends on location").click();
 
   // Switches
-  cy.contains("Available for Immediate Start").prev().click();
-  cy.contains("Were you referred by an employee?").prev().click();
+  cy.toggleSwitch("Available for Immediate Start");
+  cy.toggleSwitch("Were you referred by an employee?");
 
   // Available Start Date
-  cy.get('input[name="availableFrom"]').type("2025-12-01");
+  cy.contains("label", "Available Start Date").next().type("2025-12-01");
 
   // Salary Expectation
   cy.contains("label", "Salary Expectation").next().click("center");
 
   // Textareas
-  cy.get('textarea[name="coverLetter"]').type("Nothing to say");
-  cy.get('textarea[name="achievements"]').type("Nothing to say");
+  cy.contains("label", "Cover Letter").next().type("Nothing to say");
+  cy.contains("label", "Key Achievements").next().type("Nothing to say");
 
   // Submit
   cy.get("button").contains("Submit Application").click();
