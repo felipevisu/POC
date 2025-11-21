@@ -102,6 +102,75 @@ paths:
                     type: integer
                     example: 204
 
+  /surveys/{survey_id}/results:
+    get:
+      summary: Get Survey Results
+      tags: [Management]
+      parameters:
+        - name: survey_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Survey ID
+      responses:
+        "200":
+          description: Survey results retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  results:
+                    type: object
+                    properties:
+                      survey:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            example: "1"
+                          title:
+                            type: string
+                            example: Elections Survey
+                      totalResponses:
+                        type: integer
+                        example: 150
+                      questions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: "1"
+                            title:
+                              type: string
+                              example: Who would you vote for president?
+                            order:
+                              type: integer
+                              example: 0
+                            options:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  id:
+                                    type: string
+                                    example: "1"
+                                  text:
+                                    type: string
+                                    example: Homer Simpson
+                                  order:
+                                    type: integer
+                                    example: 0
+                                  votes:
+                                    type: integer
+                                    example: 85
+
   /surveys/{id}/questions:
     post:
       summary: Create Question

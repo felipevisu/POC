@@ -302,6 +302,65 @@ DELETE /surveys/<survey_id>
 }
 ```
 
+#### Get Survey Results
+
+GET /surveys/<survey_id>/results
+
+**Response**
+
+```json
+{
+  "status": 200,
+  "results": {
+    "survey": {
+      "id": "1",
+      "title": "Elections Survey"
+    },
+    "totalResponses": 150,
+    "questions": [
+      {
+        "id": "1",
+        "title": "Who would you vote for president?",
+        "order": 0,
+        "options": [
+          {
+            "id": "1",
+            "text": "Homer Simpson",
+            "order": 0,
+            "votes": 85
+          },
+          {
+            "id": "2",
+            "text": "Ned Flanders",
+            "order": 1,
+            "votes": 65
+          }
+        ]
+      },
+      {
+        "id": "2",
+        "title": "Who would you vote for minister?",
+        "order": 1,
+        "options": [
+          {
+            "id": "3",
+            "text": "Montgomery Burns",
+            "order": 0,
+            "votes": 70
+          },
+          {
+            "id": "4",
+            "text": "Sideshow Bob",
+            "order": 1,
+            "votes": 80
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
 ### Public
 
 #### Create Response
