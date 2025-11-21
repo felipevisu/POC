@@ -1,0 +1,673 @@
+openapi: 3.0.0
+info:
+  title: Voting System API
+  version: 1.0.0
+  description: API for managing surveys, questions, options and collecting responses
+
+servers:
+  - url: https://api.example.com/v1
+    description: Production server
+  - url: http://localhost:3000/v1
+    description: Development server
+
+tags:
+  - name: Management
+    description: Survey management endpoints
+  - name: Public
+    description: Public endpoints for responses and answers
+
+paths:
+  /surveys:
+    post:
+      summary: Create Survey
+      tags: [Management]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSurveyRequest"
+      responses:
+        "201":
+          description: Survey created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 201
+                  survey:
+                    $ref: "#/components/schemas/Survey"
+
+  /surveys/{id}:
+    put:
+      summary: Update Survey
+      tags: [Management]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Elections Survey For President
+      responses:
+        "200":
+          description: Survey updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  survey:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "1"
+                      title:
+                        type: string
+                        example: Elections Survey For President
+    delete:
+      summary: Delete Survey
+      tags: [Management]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Survey deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 204
+
+  /surveys/{id}/questions:
+    post:
+      summary: Create Question
+      tags: [Management]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Survey ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateQuestionRequest"
+      responses:
+        "201":
+          description: Question created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 201
+                  question:
+                    $ref: "#/components/schemas/Question"
+
+  /surveys/{survey_id}/questions/{question_id}:
+    put:
+      summary: Update Question
+      tags: [Management]
+      parameters:
+        - name: survey_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: question_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Who would you vote for minister next year?
+                min:
+                  type: integer
+                  example: 1
+                max:
+                  type: integer
+                  example: 1
+                order:
+                  type: integer
+                  example: 1
+      responses:
+        "200":
+          description: Question updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  question:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "2"
+                      title:
+                        type: string
+                        example: Who would you vote for minister next year?
+                      min:
+                        type: integer
+                        example: 1
+                      max:
+                        type: integer
+                        example: 1
+                      order:
+                        type: integer
+                        example: 1
+    delete:
+      summary: Delete Question
+      tags: [Management]
+      parameters:
+        - name: survey_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: question_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Question deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 204
+
+  /surveys/{survey_id}/questions/{question_id}/options:
+    post:
+      summary: Create Option
+      tags: [Management]
+      parameters:
+        - name: survey_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: question_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+                - order
+              properties:
+                text:
+                  type: string
+                  example: Marge Simpson
+                order:
+                  type: integer
+                  example: 2
+      responses:
+        "201":
+          description: Option created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 201
+                  option:
+                    $ref: "#/components/schemas/Option"
+
+  /surveys/{survey_id}/questions/{question_id}/options/{option_id}:
+    put:
+      summary: Update Option
+      tags: [Management]
+      parameters:
+        - name: survey_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: question_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: option_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  example: Marge Bouvier Simpson
+                order:
+                  type: integer
+                  example: 2
+      responses:
+        "200":
+          description: Option updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  option:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "5"
+                      text:
+                        type: string
+                        example: Marge Bouvier Simpson
+                      order:
+                        type: integer
+                        example: 2
+    delete:
+      summary: Delete Option
+      tags: [Management]
+      parameters:
+        - name: survey_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: question_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: option_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Option deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 204
+
+  /answers/responses:
+    post:
+      summary: Create Response
+      tags: [Public]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - survey
+              properties:
+                survey:
+                  type: string
+                  example: "1"
+      responses:
+        "201":
+          description: Response created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 201
+                  response:
+                    $ref: "#/components/schemas/Response"
+
+  /answers/responses/{response_id}:
+    put:
+      summary: Update Response
+      tags: [Public]
+      parameters:
+        - name: response_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                finished:
+                  type: string
+                  format: date-time
+                  example: "2025-11-21T10:35:00Z"
+      responses:
+        "200":
+          description: Response updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  response:
+                    $ref: "#/components/schemas/Response"
+
+  /answers:
+    post:
+      summary: Create Answer
+      tags: [Public]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAnswerRequest"
+      responses:
+        "201":
+          description: Answer created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 201
+                  answer:
+                    $ref: "#/components/schemas/Answer"
+
+  /answers/{answer_id}:
+    put:
+      summary: Update Answer
+      tags: [Public]
+      parameters:
+        - name: answer_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                option:
+                  type: string
+                  example: "2"
+                text:
+                  type: string
+                  example: Changed my mind
+      responses:
+        "200":
+          description: Answer updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  answer:
+                    $ref: "#/components/schemas/Answer"
+
+components:
+  schemas:
+    Survey:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "1"
+        title:
+          type: string
+          example: Elections Survey
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Question"
+
+    Question:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "1"
+        title:
+          type: string
+          example: Who would you vote for president?
+        description:
+          type: string
+        min:
+          type: integer
+          example: 1
+        max:
+          type: integer
+          example: 2
+        order:
+          type: integer
+          example: 0
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/Option"
+
+    Option:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "1"
+        text:
+          type: string
+          example: Homer Simpson
+        order:
+          type: integer
+          example: 0
+
+    Response:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "1"
+        survey:
+          type: string
+          example: "1"
+        initialized:
+          type: string
+          format: date-time
+          example: "2025-11-21T10:30:00Z"
+        finished:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+
+    Answer:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "1"
+        response:
+          type: string
+          example: "1"
+        question:
+          type: string
+          example: "1"
+        option:
+          type: string
+          example: "1"
+        text:
+          type: string
+          example: ""
+
+    CreateSurveyRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          example: Elections Survey
+        questions:
+          type: array
+          items:
+            type: object
+            required:
+              - title
+              - min
+              - max
+              - order
+            properties:
+              title:
+                type: string
+                example: Who would you vote for president?
+              min:
+                type: integer
+                example: 1
+              max:
+                type: integer
+                example: 2
+              order:
+                type: integer
+                example: 0
+              options:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - text
+                    - order
+                  properties:
+                    text:
+                      type: string
+                      example: Homer Simpson
+                    order:
+                      type: integer
+                      example: 0
+
+    CreateQuestionRequest:
+      type: object
+      required:
+        - title
+        - min
+        - max
+        - order
+      properties:
+        title:
+          type: string
+          example: Who would you vote for minister?
+        min:
+          type: integer
+          example: 1
+        max:
+          type: integer
+          example: 2
+        order:
+          type: integer
+          example: 1
+        options:
+          type: array
+          items:
+            type: object
+            required:
+              - text
+              - order
+            properties:
+              text:
+                type: string
+                example: Montgomery Burns
+              order:
+                type: integer
+                example: 0
+
+    CreateAnswerRequest:
+      type: object
+      required:
+        - response
+        - question
+        - option
+      properties:
+        response:
+          type: string
+          example: "1"
+        question:
+          type: string
+          example: "1"
+        option:
+          type: string
+          example: "1"
+        text:
+          type: string
+          example: ""
