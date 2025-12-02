@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  postgis:
+    image: postgis/postgis:16-3.4
+    container_name: postgis_db
+    environment:
+      POSTGRES_DB: pubcrawlmap
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecretpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgis
+    environment:
+      - DEBUG=True
+      - DATABASE_URL=postgis://postgres:mysecretpass@postgis:5432/pubcrawlmap
+
+volumes:
+  postgis_data:
