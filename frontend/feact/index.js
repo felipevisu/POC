@@ -21,6 +21,11 @@ function createElement(type, props, ...children) {
 }
 
 function render(element, container) {
+  if (typeof element.type === "function") {
+    const component = element.type(element.props);
+    return render(component, container);
+  }
+
   const dom =
     element.type === "TEXT"
       ? document.createTextNode("")
@@ -37,12 +42,21 @@ function render(element, container) {
   container.appendChild(dom);
 }
 
-const element = createElement(
-  "div",
-  { id: "header" },
-  createElement("h1", null, "Feact"),
-  createElement("h2", null, "Felipe Faria React")
-);
+const Feact = {
+  createElement,
+  render,
+};
+
+/** @jsx Feact.createElement */
+function Header() {
+  return (
+    <div>
+      <h1>React</h1>
+      <h2>Felipe Faria React Clone</h2>
+    </div>
+  );
+}
+const element = <Header />;
 
 const container = document.getElementById("root");
 render(element, container);
