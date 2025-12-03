@@ -1,0 +1,82 @@
+.logs-container {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  color: #333;
+}
+
+.logs-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.logs-table thead {
+  background-color: #f8f8f8;
+}
+
+.logs-table th {
+  text-align: left;
+  padding: 12px 10px;
+  font-weight: 600;
+  border-bottom: 2px solid #ddd;
+  color: #333;
+}
+
+.log-date-header {
+  width: 150px;
+}
+
+.log-user-header {
+  width: 100px;
+}
+
+.log-action-header {
+  width: 120px;
+}
+
+.log-row {
+  border-bottom: 1px solid #eee;
+}
+
+.log-row:hover {
+  background-color: #f9f9f9;
+}
+
+.logs-table td {
+  padding: 10px;
+}
+
+.log-date {
+  color: #666;
+  font-size: 12px;
+}
+
+.log-user {
+  font-weight: 600;
+}
+
+.log-action {
+  color: #0066cc;
+}
+
+.log-message {
+  color: #666;
+}
+
+.logs-error {
+  padding: 12px;
+  background-color: #fee;
+  color: #c00;
+  border-radius: 4px;
+}
+
+.logs-loading {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+}
+
+.logs-empty {
+  padding: 20px;
+  text-align: center;
+  color: #999;
+}
