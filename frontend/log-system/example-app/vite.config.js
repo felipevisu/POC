@@ -6,10 +6,9 @@ export default defineConfig({
   plugins: [
     react(),
     federation({
-      name: "log-ui",
-      filename: "remoteEntry.js",
-      exposes: {
-        "./LogComponent": "./src/index.jsx",
+      name: "example-app",
+      remotes: {
+        logUI: "http://localhost:3001/assets/remoteEntry.js",
       },
       shared: {
         react: {
@@ -29,11 +28,10 @@ export default defineConfig({
     cssCodeSplit: false,
   },
   server: {
-    port: 3001,
-    cors: true,
+    port: 3002,
+    open: true,
   },
   preview: {
-    port: 3001,
-    cors: true,
+    port: 3002,
   },
 });
