@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pub Crawl Map - São Paulo</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="map"></div>
+    <div class="info-panel">
+      <h2>🍺 Pub Crawl Map</h2>
+      <p><strong>Pubs nearby:</strong> <span id="pub-count">0</span></p>
+      <p><strong>Search radius:</strong> <span id="radius">5</span> km</p>
+      <p id="loading-status"></p>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

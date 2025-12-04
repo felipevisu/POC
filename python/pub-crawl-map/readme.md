@@ -34,3 +34,9 @@ http://localhost:8000/admin
 http://localhost:8000/api/pubs/?lat=-23.574791579997157&lng=-46.63641014985918&radius=5
 
 <img src="./screnshoots/02.png" alt="endpoint" />
+
+### Web
+
+http://localhost:3000
+
+<img src="./screnshoots/03.png" alt="web" />

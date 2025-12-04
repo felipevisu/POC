@@ -9,12 +9,12 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: mysecretpass
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgis_data:/var/lib/postgresql/data
     restart: unless-stopped
 
-  web:
+  backend:
     container_name: django
     build: .
     command: python manage.py runserver 0.0.0.0:8000
@@ -27,6 +27,16 @@ services:
     environment:
       - DEBUG=True
       - DATABASE_URL=postgis://postgres:mysecretpass@postgis:5432/pubcrawlmap
+
+  frontend:
+    container_name: frontend
+    image: nginx:alpine
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
 
 volumes:
   postgis_data:
