@@ -40,3 +40,9 @@ http://localhost:8000/api/pubs/?lat=-23.574791579997157&lng=-46.63641014985918&r
 http://localhost:3000
 
 <img src="./screnshoots/03.png" alt="web" />
+
+## Demo
+
+<video  controls>
+  <source src="./screnshoots/video.mp4" type="video/mp4">
+</video>
