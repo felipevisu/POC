@@ -42,7 +42,7 @@ public class SimpleProcessor {
                 .groupByKey()
                 .count(Named.as("events-per-user"))
                 .toStream()
-                .mapValues((user, count) -> String.format("{\"user\":\"%s\",\"event_count\":%d}", user, count))
+                .mapValues((user, count) -> "{\"user\":\"%s\",\"event_count\":%d}".formatted(user, count))
                 .to("user-statistics", Produced.with(Serdes.String(), Serdes.String()));
 
         KafkaStreams streams = new KafkaStreams(builder.build(), props);
@@ -71,7 +71,7 @@ public class SimpleProcessor {
                 }
             }
 
-            return processed + String.format(",\"processed_at\":%d,\"priority\":\"%s\",\"version\":\"1.0\"}",
+            return processed + ",\"processed_at\":%d,\"priority\":\"%s\",\"version\":\"1.0\"}".formatted(
                     System.currentTimeMillis(), priority);
 
         } catch (Exception e) {
