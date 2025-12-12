@@ -53,7 +53,9 @@ function render(element, container) {
 }
 
 let state = [];
+let effects = [];
 let stateIndex = 0;
+let effectIndex = 0;
 
 const useState = (initialState) => {
   const currentIndex = stateIndex;
@@ -65,11 +67,30 @@ const useState = (initialState) => {
   const setState = (newState) => {
     state[currentIndex] = newState;
     stateIndex = 0;
+    effectIndex = 0;
     reRender();
   };
 
   stateIndex++;
   return [state[currentIndex], setState];
+};
+
+const useEffect = (callback, dependencies) => {
+  const currentIndex = effectIndex;
+  const hasNoDeps = !dependencies;
+  const prevEffect = effects[currentIndex];
+  const hasChangedDeps = prevEffect
+    ? !dependencies.every((dep, i) => dep === prevEffect.dependencies[i])
+    : true;
+
+  if (hasNoDeps || hasChangedDeps) {
+    effects[currentIndex] = {
+      callback,
+      dependencies,
+    };
+  }
+
+  effectIndex++;
 };
 
 const Feact = {
@@ -80,6 +101,16 @@ const Feact = {
 /** @jsx Feact.createElement */
 function Header() {
   const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    console.log("Component mounted!");
+  }, []);
+
+  useEffect(() => {
+    console.log("Count changed to:", count);
+    document.title = `Count: ${count}`;
+  }, [count]);
+
   return (
     <div>
       <h1>React</h1>
@@ -93,10 +124,22 @@ function Header() {
 const element = <Header />;
 
 const container = document.getElementById("root");
+
+const runEffects = () => {
+  effects.forEach((effect) => {
+    if (effect && effect.callback) {
+      effect.callback();
+    }
+  });
+};
+
 render(element, container);
+runEffects();
 
 const reRender = () => {
   container.innerHTML = "";
-  stateIndex = 0; // Reset state index before re-render
+  stateIndex = 0;
+  effectIndex = 0;
   render(element, container);
+  runEffects();
 };
