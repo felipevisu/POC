@@ -6,11 +6,4 @@
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
-
-<nav>
-	<a href="/">Home</a>
-	<a href="/about">About</a>
-	<a href="/blog">blog</a>
-</nav>
-
 {@render children()}

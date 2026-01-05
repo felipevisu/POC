@@ -1,16 +1,20 @@
 <script lang="ts">
-	import type { PageProps } from './$types';
+	import type { PageData } from './$types';
 
-	let { data }: PageProps = $props();
+	let { data }: { data: PageData } = $props();
 </script>
 
-<h1>Blog</h1>
+<article class="mx-auto max-w-4xl px-4 py-8">
+	<header class="mb-8">
+		<h1 class="mb-4 text-4xl font-bold">{data.post.title}</h1>
+		<div class="flex gap-4 text-gray-600">
+			<span>By {data.post.author}</span>
+			<span>•</span>
+			<time>{new Date(data.post.published_date).toLocaleDateString()}</time>
+		</div>
+	</header>
 
-<div>
-	<h2>{data.user}</h2>
-	<ul>
-		{#each data.repos as repo}
-			<li><a href={repo.html_url}>{repo.name}</a></li>
-		{/each}
-	</ul>
-</div>
+	<div class="prose prose-lg max-w-none">
+		{@html data.post.content}
+	</div>
+</article>
