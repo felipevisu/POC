@@ -1,7 +1,10 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+	let index = $derived(data.posts.findIndex((post) => post.slug === page.params.slug));
+	let next = $derived(data.posts[index + 1]);
 </script>
 
 <article class="mx-auto max-w-4xl px-4 py-8">
@@ -17,4 +20,9 @@
 	<div class="prose prose-lg max-w-none">
 		{@html data.post.content}
 	</div>
+
+	{#if next}
+		<hr class="my-6" />
+		<p>Next post: <a href="/blog/{next.slug}">{next.title}</a></p>
+	{/if}
 </article>
