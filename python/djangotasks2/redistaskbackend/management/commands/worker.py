@@ -47,10 +47,10 @@ class Worker:
                     print(".", end="", flush=True)
 
             except KeyboardInterrupt:
-                print("\nWorker shutting down...")
+                print("Worker shutting down")
                 self.running = False
             except Exception as e:
-                print(f"\nError in worker loop: {e}")
+                print(f"Error in worker loop: {e}")
                 traceback.print_exc()
 
     def process_task(self, task_json):
