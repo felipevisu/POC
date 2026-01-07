@@ -4,3 +4,40 @@ services:
     command: redis-server
     ports:
       - "6379:6379"
+    volumes:
+      - redis:/data
+
+  django:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - app:/app
+    depends_on:
+      - redis
+    ports:
+      - 8000:8000
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+
+  worker:
+    build:
+      context: .
+    command: python manage.py worker
+    volumes:
+      - app:/app
+    depends_on:
+      - django
+      - redis
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+
+volumes:
+  app:
+    driver: local
+  redis:
+    driver: local

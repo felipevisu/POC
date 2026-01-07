@@ -5,7 +5,7 @@ from django.tasks import Task
 from django.tasks.backends.base import BaseTaskBackend
 
 
-class TaskBackend(BaseTaskBackend):
+class RedisTaskBackend(BaseTaskBackend):
     def __init__(self, alias, params):
         super().__init__(alias, params)
         host = self.options.get("HOST", "localhost")

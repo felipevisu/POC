@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -39,7 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # apps
     "store",
-    "taskbackend",
+    "redistaskbackend",
 ]
 
 MIDDLEWARE = [
@@ -54,12 +55,12 @@ MIDDLEWARE = [
 
 TASKS = {
     "default": {
-        "BACKEND": "taskbackend.backend.TaskBackend",
+        "BACKEND": "redistaskbackend.backend.RedisTaskBackend",
         "QUEUES": ["high_priority", "default"],
         "OPTIONS": {
-            "HOST": "localhost",
-            "PORT": 6379,
-            "DB": 0,
+            "HOST": os.environ.get("REDIS_HOST", "localhost"),
+            "PORT": int(os.environ.get("REDIS_PORT", 6379)),
+            "DB": int(os.environ.get("REDIS_DB", 0)),
         },
     }
 }
