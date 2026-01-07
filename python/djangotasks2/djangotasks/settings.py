@@ -52,7 +52,17 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-TASKS = {"default": {"BACKEND": "django.tasks.backends.immediate.ImmediateBackend"}}
+TASKS = {
+    "default": {
+        "BACKEND": "taskbackend.backend.TaskBackend",
+        "QUEUES": ["high_priority", "default"],
+        "OPTIONS": {
+            "HOST": "localhost",
+            "PORT": 6379,
+            "DB": 0,
+        },
+    }
+}
 
 ROOT_URLCONF = "djangotasks.urls"
 
