@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script
+      src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"
+      integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <h1>HTMX</h1>
+    <hr />
+    <session>
+      <h3>Example 1 - Load html from another url</h3>
+      <button hx-get="/messages" hx-target="#message">
+        Click to get the message
+      </button>
+      <div id="message">
+        <p>The message will appear here</p>
+      </div>
+      <hr />
+    </session>
+    <session>
+      <h3>Example 2 - Search items from an endpoint</h3>
+      <input
+        type="text"
+        name="q"
+        hx-get="/music"
+        hx-trigger="keyup changed delay:500ms"
+        hx-target="#results"
+        placeholder="Search..."
+      />
+      <div id="results"></div>
+    </session>
+  </body>
+</html>
