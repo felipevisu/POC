@@ -34,6 +34,19 @@
         placeholder="Search..."
       />
       <div id="results"></div>
+      <hr />
+    </session>
+    <session>
+      <h3>Example 3 -Task poolingt</h3>
+      <div id="task-container">
+        <button
+          hx-post="/start-task"
+          hx-target="#task-container"
+          hx-swap="innerHTML"
+        >
+          Start Task
+        </button>
+      </div>
     </session>
   </body>
 </html>

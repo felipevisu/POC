@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -49,6 +50,88 @@ app.get("/music", (req, res) => {
   html += "</ul>";
 
   res.send(html);
+});
+
+const tasks = {};
+
+function runTask(taskId) {
+  let progress = 0;
+
+  const interval = setInterval(() => {
+    progress += 10;
+
+    if (progress <= 100) {
+      tasks[taskId] = {
+        progress: progress,
+        status: progress < 100 ? "Processing..." : "Done!",
+        complete: progress === 100,
+        result: progress === 100 ? "Task finished successfully!" : null,
+      };
+    }
+
+    if (progress >= 100) {
+      clearInterval(interval);
+    }
+  }, 1000);
+}
+
+app.post("/start-task", (req, res) => {
+  const taskId = randomUUID();
+
+  tasks[taskId] = {
+    progress: 0,
+    status: "Starting...",
+    complete: false,
+  };
+
+  runTask(taskId);
+
+  res.send(`
+        <div hx-get="/check-progress/${taskId}"
+             hx-trigger="every 1s"
+             hx-target="this"
+             hx-swap="outerHTML">
+            <h3>Task Starting...</h3>
+            <p>Progress: 0%</p>
+        </div>
+    `);
+});
+
+app.get("/check-progress/:taskId", (req, res) => {
+  const { taskId } = req.params;
+  const task = tasks[taskId] || {};
+
+  if (task.complete) {
+    res.send(`
+            <div>
+                <h3>✓ Task Complete!</h3>
+                <div style="width: 100%; background: #eee; border-radius: 4px; overflow: hidden;">
+                    <div style="width: 100%; background: green; height: 20px;"></div>
+                </div>
+                <p><strong>${task.result}</strong></p>
+                <button hx-post="/start-task"
+                        hx-target="#task-container"
+                        hx-swap="innerHTML"
+                        class="btn">
+                    Start New Task
+                </button>
+            </div>
+        `);
+  } else {
+    res.send(`
+            <div hx-get="/check-progress/${taskId}"
+                 hx-trigger="every 1s"
+                 hx-target="this"
+                 hx-swap="outerHTML">
+                <h3>Task in Progress...</h3>
+                <div style="width: 100%; background: #eee; border-radius: 4px; overflow: hidden;">
+                    <div style="width: ${task.progress}%; background: blue; height: 20px; transition: width 0.3s;"></div>
+                </div>
+                <p>Progress: ${task.progress}%</p>
+                <p>Status: ${task.status}</p>
+            </div>
+        `);
+  }
 });
 
 app.listen(PORT, () => {
