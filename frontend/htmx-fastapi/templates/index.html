@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script
+      src="https://unpkg.com/htmx.org@2.0.0"
+      integrity="sha384-wS5l5IKJBvK6sPTKa2WZ1js3d947pvWXbPJ1OmWfEuxLgeHcEbjUUA5i9V5ZkpCw"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>HTMX with FastAPI</title>
+  </head>
+  <body class="bg-gray-50 min-h-screen py-8 px-4">
+    <div class="max-w-2xl mx-auto">
+      <h1 class="text-4xl font-bold text-gray-800 mb-8 text-center">HTMX ToDo List</h1>
+      <form
+        class="bg-white rounded-lg shadow-md p-6 mb-6"
+        hx-post="/todos"
+        hx-target="#todos"
+        hx-swap="innerHTML"
+        hx-on:htmx:after-request="this.reset()"
+      >
+        <div class="flex gap-2">
+          <input
+            type="text"
+            name="todo"
+            placeholder="I have to do..."
+            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          />
+          <button class="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition duration-200 shadow-sm">
+            Create
+          </button>
+        </div>
+      </form>
+      <ul id="todos" class="space-y-2" hx-get="/todos" hx-swap="innerHTML" hx-trigger="load"></ul>
+    </div>
+  </body>
+</html>
