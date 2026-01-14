@@ -1,0 +1,11 @@
+<ul style="list-style: none; padding: 0;">
+  <% if (songs.length > 0) { %>
+    <% songs.forEach(song => { %>
+      <li style="padding: 8px; border-bottom: 1px solid #eee;">
+        <strong><%= song.title %></strong> - <%= song.artist %>
+      </li>
+    <% }); %>
+  <% } else { %>
+    <li style="padding: 8px; color: #999;">No songs found</li>
+  <% } %>
+</ul>

@@ -1,0 +1,13 @@
+<div>
+    <h3>✓ Task Complete!</h3>
+    <div style="width: 100%; background: #eee; border-radius: 4px; overflow: hidden;">
+        <div style="width: 100%; background: green; height: 20px;"></div>
+    </div>
+    <p><strong><%= result %></strong></p>
+    <button hx-post="/start-task"
+            hx-target="#task-container"
+            hx-swap="innerHTML"
+            class="btn">
+        Start New Task
+    </button>
+</div>

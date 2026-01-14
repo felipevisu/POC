@@ -2,12 +2,16 @@ import { randomUUID } from "crypto";
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
+import ejs from "ejs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = 3000;
+
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
 const songs = [
   { id: 1, title: "Bohemian Rhapsody", artist: "Queen" },
@@ -24,7 +28,7 @@ const songs = [
 
 app.use(express.static(__dirname));
 
-app.get("/music", (req, res) => {
+app.get("/music", async (req, res) => {
   const query = req.query.q || "";
 
   let filteredSongs = songs;
@@ -37,18 +41,10 @@ app.get("/music", (req, res) => {
     );
   }
 
-  let html = '<ul style="list-style: none; padding: 0;">';
-  if (filteredSongs.length > 0) {
-    filteredSongs.forEach((song) => {
-      html += `<li style="padding: 8px; border-bottom: 1px solid #eee;">
-        <strong>${song.title}</strong> - ${song.artist}
-      </li>`;
-    });
-  } else {
-    html += '<li style="padding: 8px; color: #999;">No songs found</li>';
-  }
-  html += "</ul>";
-
+  const html = await ejs.renderFile(
+    path.join(__dirname, "views", "song-list.ejs"),
+    { songs: filteredSongs }
+  );
   res.send(html);
 });
 
@@ -75,7 +71,7 @@ function runTask(taskId) {
   }, 1000);
 }
 
-app.post("/start-task", (req, res) => {
+app.post("/start-task", async (req, res) => {
   const taskId = randomUUID();
 
   tasks[taskId] = {
@@ -86,51 +82,29 @@ app.post("/start-task", (req, res) => {
 
   runTask(taskId);
 
-  res.send(`
-        <div hx-get="/check-progress/${taskId}"
-             hx-trigger="every 1s"
-             hx-target="this"
-             hx-swap="outerHTML">
-            <h3>Task Starting...</h3>
-            <p>Progress: 0%</p>
-        </div>
-    `);
+  const html = await ejs.renderFile(
+    path.join(__dirname, "views", "task-starting.ejs"),
+    { taskId }
+  );
+  res.send(html);
 });
 
-app.get("/check-progress/:taskId", (req, res) => {
+app.get("/check-progress/:taskId", async (req, res) => {
   const { taskId } = req.params;
   const task = tasks[taskId] || {};
 
   if (task.complete) {
-    res.send(`
-            <div>
-                <h3>✓ Task Complete!</h3>
-                <div style="width: 100%; background: #eee; border-radius: 4px; overflow: hidden;">
-                    <div style="width: 100%; background: green; height: 20px;"></div>
-                </div>
-                <p><strong>${task.result}</strong></p>
-                <button hx-post="/start-task"
-                        hx-target="#task-container"
-                        hx-swap="innerHTML"
-                        class="btn">
-                    Start New Task
-                </button>
-            </div>
-        `);
+    const html = await ejs.renderFile(
+      path.join(__dirname, "views", "task-complete.ejs"),
+      { result: task.result }
+    );
+    res.send(html);
   } else {
-    res.send(`
-            <div hx-get="/check-progress/${taskId}"
-                 hx-trigger="every 1s"
-                 hx-target="this"
-                 hx-swap="outerHTML">
-                <h3>Task in Progress...</h3>
-                <div style="width: 100%; background: #eee; border-radius: 4px; overflow: hidden;">
-                    <div style="width: ${task.progress}%; background: blue; height: 20px; transition: width 0.3s;"></div>
-                </div>
-                <p>Progress: ${task.progress}%</p>
-                <p>Status: ${task.status}</p>
-            </div>
-        `);
+    const html = await ejs.renderFile(
+      path.join(__dirname, "views", "task-progress.ejs"),
+      { taskId, progress: task.progress, status: task.status }
+    );
+    res.send(html);
   }
 });
 

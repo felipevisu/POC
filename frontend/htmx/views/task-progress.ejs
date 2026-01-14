@@ -1,0 +1,11 @@
+<div hx-get="/check-progress/<%= taskId %>"
+     hx-trigger="every 1s"
+     hx-target="this"
+     hx-swap="outerHTML">
+    <h3>Task in Progress...</h3>
+    <div style="width: 100%; background: #eee; border-radius: 4px; overflow: hidden;">
+        <div style="width: <%= progress %>%; background: blue; height: 20px; transition: width 0.3s;"></div>
+    </div>
+    <p>Progress: <%= progress %>%</p>
+    <p>Status: <%= status %></p>
+</div>
