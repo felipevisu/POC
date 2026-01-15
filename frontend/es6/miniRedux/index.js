@@ -1,33 +1,4 @@
-function createStore(reducer, initialState) {
-  const state = { ...initialState };
-
-  const handler = {
-    get(target, prop) {
-      return prop in target ? target[prop] : null;
-    },
-    set(target, prop, value) {
-      target[prop] = value;
-      return true;
-    },
-  };
-
-  const proxy = new Proxy(state, handler);
-
-  function getState() {
-    return proxy;
-  }
-
-  function dispatch(action) {
-    const newState = reducer(state, action);
-    Object.keys(state).forEach((key) => delete state[key]);
-    Object.assign(state, newState);
-  }
-
-  return {
-    getState,
-    dispatch,
-  };
-}
+import createStore from "./store.js";
 
 function reducer(state, action) {
   switch (action.type) {
@@ -53,7 +24,9 @@ const store = createStore(reducer, {
 
 const state = store.getState();
 console.log(state);
+// { posts: [ 'Learn ES6' ], categories: [ 'Frontend' ] }
 
 store.dispatch({ type: "ADD_CATEGORY", payload: "Backend" });
-
+store.dispatch({ type: "ADD_POST", payload: "Learn Java" });
 console.log(state);
+// { posts: [ 'Learn ES6', 'Learn Java' ], categories: [ 'Frontend', 'Backend' ] }
