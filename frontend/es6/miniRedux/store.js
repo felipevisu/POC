@@ -1,5 +1,6 @@
 function createStore(reducer, initialState) {
-  const state = { ...initialState };
+  let state = { ...initialState };
+  let listeners = [];
 
   const handler = {
     get(target, prop) {
@@ -20,11 +21,20 @@ function createStore(reducer, initialState) {
     const newState = reducer(state, action);
     Object.keys(state).forEach((key) => delete state[key]);
     Object.assign(state, newState);
+    listeners.forEach((listener) => listener());
+  }
+
+  function subscribe(listener) {
+    listeners.push(listener);
+    return function unsubscribe() {
+      listeners = listeners.filter((l) => l !== listener);
+    };
   }
 
   return {
     getState,
     dispatch,
+    subscribe,
   };
 }
 
