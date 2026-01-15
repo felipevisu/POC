@@ -23,10 +23,15 @@ const store = createStore(reducer, {
 });
 
 const state = store.getState();
-console.log(state);
-// { posts: [ 'Learn ES6' ], categories: [ 'Frontend' ] }
+console.log(state); // { posts: [ 'Learn ES6' ], categories: [ 'Frontend' ] }
 
 store.dispatch({ type: "ADD_CATEGORY", payload: "Backend" });
 store.dispatch({ type: "ADD_POST", payload: "Learn Java" });
-console.log(state);
-// { posts: [ 'Learn ES6', 'Learn Java' ], categories: [ 'Frontend', 'Backend' ] }
+console.log(state); // { posts: [ 'Learn ES6', 'Learn Java' ], categories: [ 'Frontend', 'Backend' ] }
+
+try {
+  store.getState().categories = []; // This will not work because proxy set is not implemented
+} catch (e) {
+  console.log(e.message); //Cannot mutate direcly, use dispatch()
+  console.log(state); // { posts: [ 'Learn ES6', 'Learn Java' ], categories: [ 'Frontend', 'Backend' ] }
+}

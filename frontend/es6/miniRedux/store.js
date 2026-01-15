@@ -6,8 +6,7 @@ function createStore(reducer, initialState) {
       return prop in target ? target[prop] : null;
     },
     set(target, prop, value) {
-      target[prop] = value;
-      return true;
+      throw new Error("Cannot mutate direcly, use dispatch()");
     },
   };
 
