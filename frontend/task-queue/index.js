@@ -1,27 +1,47 @@
+const _queue = Symbol("queue");
+const _timestamps = Symbol("timestamps");
+const _metadata = Symbol("metadata");
+
 class RequestQueue {
   constructor(maxRequests, timeWindow) {
     this.maxRequests = maxRequests;
     this.timeWindow = timeWindow;
-    this.queue = [];
-    this.executing = [];
+    this[_queue] = [];
+    this[_metadata] = new WeakMap();
+    this[_timestamps] = new Map();
   }
 
-  enqueue(url, options = {}) {
-    this.queue.push({ url, options, timestamp: Date.now() });
+  enqueue(url, options = {}, priority = 0) {
+    const request = { url, options, id: Date.now() + Math.random() };
+    this[_queue].push(request);
+    this[_metadata].set(request, {
+      priority,
+      attempts: 0,
+      addedAt: Date.now(),
+    });
+    return request;
   }
 
   canMakeRequest() {
     const now = Date.now();
-    this.executing = this.executing.filter(
-      (time) => now - time < this.timeWindow
-    );
-    return this.executing.length < this.maxRequests;
+    for (const [id, timestamp] of this[_timestamps]) {
+      if (now - timestamp >= this.timeWindow) {
+        this[_timestamps].delete(id);
+      }
+    }
+    return this[_timestamps].size < this.maxRequests;
   }
 
   async executeNext() {
-    const request = this.queue.shift();
-    this.executing.push(Date.now());
-    console.log("Executing", request);
+    const request = this[_queue].shift();
+    const requestId = `req_${Date.now()}`;
+    this[_timestamps].set(requestId, Date.now());
+    const metadata = this[_metadata].get(request);
+    if (metadata) {
+      metadata.attempts++;
+      metadata.lastAttempt = Date.now();
+    }
+    console.log("Executing request", request, metadata);
     try {
       const response = await fetch(request.url, request.options);
       const data = await response.json();
@@ -37,7 +57,7 @@ class RequestQueue {
   }
 
   async start() {
-    while (this.queue.length > 0) {
+    while (this[_queue].length > 0) {
       if (this.canMakeRequest()) {
         this.executeNext();
       } else {
