@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download with progress - Fetch</title>
+    <style>
+      *{
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body{
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .progress-container {
+        width: 100%;
+        background-color: #f0f0f0;
+        border-radius: 8px;
+      }
+      .progress-bar {
+        height: 30px;
+        background-color: #4CAF50;
+        border-radius: 8px;
+        transition: width 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+      }
+      img{
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        background: #ccc;
+        border-radius: 16px;
+        display: block;
+        position: relative;
+      }
+      button{
+        all: unset;
+        border-radius: 8px;
+        padding: 12px;
+        text-align: center;
+        width: 100%;
+        background: green;
+        box-sizing: border-box;
+        color: white;
+        cursor: pointer;
+      }
+  </style>
+</head>
+<body>
+
+  <div>
+    <button onclick="downloadWithProgress()">Download File</button>
+  </div>
+  
+  <div>
+    <img id="img">
+  </div>
+
+  
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar" style="width: 0%">0%</div>
+  </div>
+
+  <script>
+    async function downloadWithProgress(){
+      const url = "https://fetch-progress.anthum.com/30kbps/images/sunrise-baseline.jpg"
+      try{
+        const response = await fetch(url);
+
+        const contentLength = response.headers.get('content-length');
+        const total = parseInt(contentLength, 10);
+
+        const reader = response.body.getReader();
+        
+        let receivedLength = 0;
+        let chunks = [];
+
+        while (true) {
+          const {done, value} = await reader.read();
+          
+          if (done) break;
+          
+          chunks.push(value);
+          receivedLength += value.length;
+
+          const progress = (receivedLength / total) * 100;
+          updateProgress(progress);
+        }
+
+        const blob = new Blob(chunks);
+        const objectURL = URL.createObjectURL(blob);
+
+        const img = document.querySelector("img");
+        img.src = objectURL;
+
+        console.log('Download complete!');
+      } catch {
+        console.log('Download failed!');
+      }
+    }
+
+    function updateProgress(percent) {
+      const progressBar = document.getElementById('progressBar');
+      progressBar.style.width = percent + '%';
+      progressBar.textContent = Math.round(percent) + '%';
+    }
+  </script>
+</body>
+</html>
