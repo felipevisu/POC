@@ -22,3 +22,9 @@ while (true) {
     chunks.push(value);
 }
 ```
+
+And finally transform the chunks in blob
+
+```js
+const blob = new Blob(chunks);
+```
