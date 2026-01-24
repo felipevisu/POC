@@ -1,0 +1,13 @@
+nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+nav a {
+  color: blug;
+  text-decoration: none;
+}
+
+nav .active {
+  color: green;
+}
