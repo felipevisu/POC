@@ -78,6 +78,10 @@ A Message Broker is middleware that translates and routes messages between diffe
 
 ## New Solution
 
+## Diagram
+
+<img src="./DataKata.drawio.png" alt="diagram" />
+
 ### Data Sources
 
 #### Postgresql
