@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: electromart-postgres
+    environment:
+      POSTGRES_USER: electromart
+      POSTGRES_PASSWORD: electromart123
+      POSTGRES_DB: electromart
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U electromart -d electromart"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  data-generator:
+    build:
+      context: .
+      dockerfile: ./data-sources/postgresql/Dockerfile
+    container_name: electromart-data-generator
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: electromart
+      DB_PASSWORD: electromart123
+      DB_NAME: electromart
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
