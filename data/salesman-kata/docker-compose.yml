@@ -17,12 +17,14 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - electromart-network
 
-  data-generator:
+  postgres-data-generator:
     build:
-      context: .
-      dockerfile: ./data-sources/postgresql/Dockerfile
-    container_name: electromart-data-generator
+      context: ./data-sources/postgresql
+      dockerfile: Dockerfile
+    container_name: electromart-postgres-generator
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
@@ -32,6 +34,27 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - electromart-network
+
+  csv-files:
+    build:
+      context: ./data-sources/csv-files
+      dockerfile: Dockerfile
+    container_name: electromart-csv-files
+    environment:
+      OUTPUT_DIR: /data/inbox
+      GENERATION_INTERVAL: 10000
+      RECORDS_PER_FILE: 50
+    volumes:
+      - csv_data:/data/inbox
+    networks:
+      - electromart-network
 
 volumes:
   postgres_data:
+  csv_data:
+
+networks:
+  electromart-network:
+    driver: bridge
