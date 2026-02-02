@@ -91,10 +91,10 @@ function generateAndSaveFile() {
 async function main() {
   ensureOutputDir();
 
-  console.log('Generating initial CSV file...');
+  console.log('Generating initial CSV file');
   const initial = generateAndSaveFile();
   console.log(`Created: ${initial.fileName} (${initial.recordCount} records)`);
-  console.log('Starting continuous CSV generation...');
+  console.log('Starting continuous CSV generation');
 
   let totalFiles = 1;
   let totalRecords = initial.recordCount;
@@ -116,12 +116,12 @@ async function main() {
 }
 
 process.on('SIGINT', () => {
-  console.log('\nShutting down gracefully...');
+  console.log('\nShutting down');
   process.exit(0);
 });
 
 process.on('SIGTERM', () => {
-  console.log('\nShutting down gracefully...');
+  console.log('\nShutting down');
   process.exit(0);
 });
 

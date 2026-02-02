@@ -131,14 +131,27 @@ Content-Type: text/xml
 
 ## Services needed
 
-| # | Service/Component | Purpose |
-|---|-------------------|---------|
-| 1 | Relational DB (PostgreSQL) | Source 1 - Sales transactions |
-| 2 | File Storage (MinIO/Local) | Source 2 - CSV/JSON files |
-| 3 | SOAP Service (Mock WS-*) | Source 3 - Legacy service |
-| 4 | Message Broker (Kafka) | Event streaming backbone |
-| 5 | Stream Processor (Flink/Kafka Streams) | Processing & aggregation |
-| 6 | Lineage Tool (OpenLineage + Marquez) | Track data flow |
-| 7 | Observability Stack (Prometheus + Grafana) | Metrics & monitoring |
-| 8 | Results Database (ClickHouse/TimescaleDB) | Store aggregated results |
-| 9 | REST API (Spring Boot/Go/Node) | Expose results |
+| # | Service/Component | Purpose | Implemented |
+|---|-------------------|---------|-------------|
+| 1 | Relational DB (PostgreSQL) | Source 1 - Sales transactions | Yes |
+| 2 | File Storage (MinIO/Local) | Source 2 - CSV/JSON files | Yes |
+| 3 | SOAP Service (Mock WS-*) | Source 3 - Legacy service | No |
+| 4 | Message Broker (Kafka) | Event streaming backbone | No |
+| 5 | Stream Processor (Flink/Kafka Streams) | Processing & aggregation | No |
+| 6 | Lineage Tool (OpenLineage + Marquez) | Track data flow | No |
+| 7 | Observability Stack (Prometheus + Grafana) | Metrics & monitoring | No |
+| 8 | Results Database (ClickHouse/TimescaleDB) | Store aggregated results | No |
+| 9 | REST API (Spring Boot/Go/Node) | Expose results | No |
+
+## How to Run
+
+```bash
+# Start all services
+docker-compose up -d
+
+# Check running containers
+docker-compose ps
+
+# Stop all services
+docker-compose down
+```

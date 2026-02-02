@@ -164,12 +164,12 @@ async function main() {
 }
 
 process.on('SIGINT', async () => {
-  console.log('\nShutting down gracefully...');
+  console.log('\nShutting down');
   process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
-  console.log('\nShutting down gracefully...');
+  console.log('\nShutting down');
   process.exit(0);
 });
 
