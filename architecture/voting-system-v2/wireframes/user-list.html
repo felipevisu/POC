@@ -3,55 +3,37 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Available Surveys - Voting System</title>
+    <title>Available Surveys - Wireframe</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body class="bg-gray-50 min-h-screen">
-    <nav class="bg-white border-b-2 border-gray-300 px-8 py-4">
-      <div class="max-w-4xl mx-auto flex justify-between items-center">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-            <svg
-              class="w-4 h-4 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-              />
-            </svg>
-          </div>
-          <span class="font-bold text-gray-800">Voting System</span>
+  <body class="bg-white min-h-screen">
+    <nav class="border-b-2 border-black px-6 py-3">
+      <div class="max-w-3xl mx-auto flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 border border-black flex items-center justify-center text-xs">[L]</div>
+          <span class="font-bold">Voting System</span>
         </div>
-        <div class="flex items-center gap-4">
-          <span class="text-sm text-gray-600">john.doe@example.com</span>
-          <button class="text-sm text-gray-600 hover:text-gray-800">
-            Logout
-          </button>
+        <div class="flex items-center gap-4 text-sm">
+          <span>john.doe@example.com</span>
+          <button class="underline">Logout</button>
         </div>
       </div>
     </nav>
 
-    <div class="max-w-4xl mx-auto p-8">
-      <div class="bg-white border-2 border-gray-300 rounded-lg p-6 mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Available Surveys</h1>
-        <p class="text-gray-600">Participate in surveys and share your opinion</p>
+    <div class="max-w-3xl mx-auto p-6">
+      <div class="border-2 border-black p-4 mb-4">
+        <h1 class="text-lg font-bold">Available Surveys</h1>
+        <p class="text-sm text-gray-600">Participate in surveys and share your opinion</p>
       </div>
 
-      <div class="bg-white border-2 border-gray-300 rounded-lg p-6 mb-6">
+      <div class="border-2 border-black p-4 mb-4">
         <div class="flex gap-4">
           <input
             type="text"
             placeholder="Search surveys..."
-            class="flex-1 px-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+            class="flex-1 px-3 py-2 border border-black text-sm"
           />
-          <select
-            class="px-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-          >
+          <select class="px-3 py-2 border border-black text-sm">
             <option>All Surveys</option>
             <option>Not Started</option>
             <option>Completed</option>
@@ -59,159 +41,95 @@
         </div>
       </div>
 
-      <div class="space-y-4">
-        <div class="bg-white border-2 border-gray-300 rounded-lg p-6 hover:border-blue-400 transition-colors">
+      <div class="space-y-3">
+        <div class="border-2 border-black p-4">
           <div class="flex justify-between items-start">
             <div class="flex-1">
-              <div class="flex items-center gap-3 mb-2">
-                <h2 class="text-xl font-semibold text-gray-800">Elections Survey</h2>
-                <span
-                  class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium"
-                >
-                  New
-                </span>
+              <div class="flex items-center gap-2 mb-1">
+                <h2 class="font-bold">Elections Survey</h2>
+                <span class="text-xs border border-black px-2">New</span>
               </div>
-              <p class="text-gray-600 mb-4">
+              <p class="text-sm text-gray-600 mb-3">
                 Share your opinion on the upcoming elections. Your vote matters!
               </p>
-              <div class="flex items-center gap-6 text-sm text-gray-500">
-                <span class="flex items-center gap-1">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  3 questions
-                </span>
-                <span class="flex items-center gap-1">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Closes Feb 15
-                </span>
+              <div class="flex items-center gap-4 text-xs text-gray-600">
+                <span>3 questions</span>
+                <span>Closes Feb 15</span>
               </div>
             </div>
-            <a
-              href="answer-survey.html"
-              class="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-            >
+            <a href="answer-survey.html" class="px-4 py-2 bg-black text-white text-sm">
               Start Survey
             </a>
           </div>
         </div>
 
-        <div class="bg-white border-2 border-gray-300 rounded-lg p-6 hover:border-blue-400 transition-colors">
+        <div class="border-2 border-black p-4">
           <div class="flex justify-between items-start">
             <div class="flex-1">
-              <div class="flex items-center gap-3 mb-2">
-                <h2 class="text-xl font-semibold text-gray-800">Employee Satisfaction</h2>
-              </div>
-              <p class="text-gray-600 mb-4">
-                Help us improve your workplace. Tell us what you think about your work environment.
+              <h2 class="font-bold mb-1">Employee Satisfaction</h2>
+              <p class="text-sm text-gray-600 mb-3">
+                Help us improve your workplace. Tell us what you think.
               </p>
-              <div class="flex items-center gap-6 text-sm text-gray-500">
-                <span class="flex items-center gap-1">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  10 questions
-                </span>
-                <span class="flex items-center gap-1">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Closes Feb 28
-                </span>
+              <div class="flex items-center gap-4 text-xs text-gray-600">
+                <span>10 questions</span>
+                <span>Closes Feb 28</span>
               </div>
             </div>
-            <button class="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+            <button class="px-4 py-2 bg-black text-white text-sm">
               Start Survey
             </button>
           </div>
         </div>
 
-        <div class="bg-white border-2 border-gray-300 rounded-lg p-6 hover:border-blue-400 transition-colors">
+        <div class="border-2 border-black p-4">
           <div class="flex justify-between items-start">
             <div class="flex-1">
-              <div class="flex items-center gap-3 mb-2">
-                <h2 class="text-xl font-semibold text-gray-800">Product Roadmap Priorities</h2>
-                <span
-                  class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium"
-                >
-                  In Progress
-                </span>
+              <div class="flex items-center gap-2 mb-1">
+                <h2 class="font-bold">Product Roadmap Priorities</h2>
+                <span class="text-xs border border-black px-2">In Progress</span>
               </div>
-              <p class="text-gray-600 mb-4">
-                Help us decide which features to build next. Vote for your priorities.
+              <p class="text-sm text-gray-600 mb-3">
+                Help us decide which features to build next.
               </p>
-              <div class="flex items-center gap-6 text-sm text-gray-500">
-                <span class="flex items-center gap-1">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  5 questions
-                </span>
-                <span class="flex items-center gap-1">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Closes Mar 01
-                </span>
-                <span class="text-blue-600 font-medium">2 of 5 answered</span>
+              <div class="flex items-center gap-4 text-xs text-gray-600">
+                <span>5 questions</span>
+                <span>Closes Mar 01</span>
+                <span class="font-medium">2 of 5 answered</span>
               </div>
-              <div class="mt-3">
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div class="bg-blue-500 h-2 rounded-full" style="width: 40%"></div>
-                </div>
+              <div class="mt-2 w-full h-2 border border-black">
+                <div class="h-full bg-black" style="width: 40%"></div>
               </div>
             </div>
-            <button class="px-6 py-2 border-2 border-blue-500 text-blue-500 rounded-md hover:bg-blue-50">
+            <button class="px-4 py-2 border border-black text-sm">
               Continue
             </button>
           </div>
         </div>
 
-        <div class="bg-white border-2 border-gray-300 rounded-lg p-6 opacity-75">
+        <div class="border-2 border-black p-4 bg-gray-100">
           <div class="flex justify-between items-start">
             <div class="flex-1">
-              <div class="flex items-center gap-3 mb-2">
-                <h2 class="text-xl font-semibold text-gray-800">Team Building Activities</h2>
-                <span
-                  class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium"
-                >
-                  Completed
-                </span>
+              <div class="flex items-center gap-2 mb-1">
+                <h2 class="font-bold text-gray-600">Team Building Activities</h2>
+                <span class="text-xs border border-black px-2">Completed</span>
               </div>
-              <p class="text-gray-600 mb-4">
-                Your responses have been recorded. Thank you for participating!
+              <p class="text-sm text-gray-500 mb-3">
+                Your responses have been recorded. Thank you!
               </p>
-              <div class="flex items-center gap-6 text-sm text-gray-500">
-                <span class="flex items-center gap-1">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  4 questions
-                </span>
-                <span class="flex items-center gap-1">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                  Submitted Jan 20
-                </span>
+              <div class="flex items-center gap-4 text-xs text-gray-500">
+                <span>4 questions</span>
+                <span>Submitted Jan 20</span>
               </div>
             </div>
-            <button
-              class="px-6 py-2 border-2 border-gray-300 text-gray-500 rounded-md cursor-not-allowed"
-              disabled
-            >
+            <button class="px-4 py-2 border border-black text-sm text-gray-500" disabled>
               Completed
             </button>
           </div>
         </div>
       </div>
 
-      <div class="mt-6 text-center">
-        <button
-          class="px-6 py-2 border-2 border-gray-300 text-gray-600 rounded-md hover:bg-gray-50"
-        >
+      <div class="mt-4 text-center">
+        <button class="px-4 py-2 border border-black text-sm">
           Load More Surveys
         </button>
       </div>
