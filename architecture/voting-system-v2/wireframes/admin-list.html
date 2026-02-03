@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - Voting System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <nav class="bg-white border-b-2 border-gray-300 px-8 py-4">
+      <div class="max-w-6xl mx-auto flex justify-between items-center">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+            <svg
+              class="w-4 h-4 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+              />
+            </svg>
+          </div>
+          <span class="font-bold text-gray-800">Voting System</span>
+          <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
+            Admin
+          </span>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-sm text-gray-600">admin@example.com</span>
+          <button class="text-sm text-gray-600 hover:text-gray-800">
+            Logout
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto p-8">
+      <div class="bg-white border-2 border-gray-300 rounded-lg p-6 mb-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-800">Survey Management</h1>
+            <p class="text-gray-600">Create and manage your surveys</p>
+          </div>
+          <a
+            href="create-survey.html"
+            class="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+          >
+            + Create Survey
+          </a>
+        </div>
+      </div>
+
+      <div class="bg-white border-2 border-gray-300 rounded-lg p-6 mb-6">
+        <div class="flex gap-4 mb-4">
+          <input
+            type="text"
+            placeholder="Search surveys..."
+            class="flex-1 px-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+          />
+          <select
+            class="px-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+          >
+            <option>All Status</option>
+            <option>Active</option>
+            <option>Draft</option>
+            <option>Closed</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-4 gap-4 text-sm">
+          <div class="bg-gray-50 border-2 border-gray-200 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-gray-800">12</div>
+            <div class="text-gray-600">Total Surveys</div>
+          </div>
+          <div class="bg-green-50 border-2 border-green-200 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-green-600">5</div>
+            <div class="text-green-700">Active</div>
+          </div>
+          <div class="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-yellow-600">3</div>
+            <div class="text-yellow-700">Drafts</div>
+          </div>
+          <div class="bg-gray-50 border-2 border-gray-200 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-gray-500">4</div>
+            <div class="text-gray-600">Closed</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white border-2 border-gray-300 rounded-lg overflow-hidden">
+        <table class="w-full">
+          <thead class="bg-gray-50 border-b-2 border-gray-300">
+            <tr>
+              <th class="text-left px-6 py-3 text-sm font-semibold text-gray-700">
+                Survey Title
+              </th>
+              <th class="text-left px-6 py-3 text-sm font-semibold text-gray-700">
+                Status
+              </th>
+              <th class="text-left px-6 py-3 text-sm font-semibold text-gray-700">
+                Responses
+              </th>
+              <th class="text-left px-6 py-3 text-sm font-semibold text-gray-700">
+                Created
+              </th>
+              <th class="text-right px-6 py-3 text-sm font-semibold text-gray-700">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-gray-200 hover:bg-gray-50">
+              <td class="px-6 py-4">
+                <div class="font-medium text-gray-800">Elections Survey</div>
+                <div class="text-sm text-gray-500">3 questions</div>
+              </td>
+              <td class="px-6 py-4">
+                <span
+                  class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium"
+                >
+                  Active
+                </span>
+              </td>
+              <td class="px-6 py-4 text-gray-600">142 responses</td>
+              <td class="px-6 py-4 text-gray-600">Jan 15, 2026</td>
+              <td class="px-6 py-4 text-right">
+                <button class="text-blue-500 hover:text-blue-700 text-sm mr-3">
+                  View Results
+                </button>
+                <button class="text-gray-500 hover:text-gray-700 text-sm mr-3">
+                  Edit
+                </button>
+                <button class="text-red-500 hover:text-red-700 text-sm">
+                  Delete
+                </button>
+              </td>
+            </tr>
+            <tr class="border-b border-gray-200 hover:bg-gray-50">
+              <td class="px-6 py-4">
+                <div class="font-medium text-gray-800">Employee Satisfaction</div>
+                <div class="text-sm text-gray-500">10 questions</div>
+              </td>
+              <td class="px-6 py-4">
+                <span
+                  class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium"
+                >
+                  Active
+                </span>
+              </td>
+              <td class="px-6 py-4 text-gray-600">89 responses</td>
+              <td class="px-6 py-4 text-gray-600">Jan 10, 2026</td>
+              <td class="px-6 py-4 text-right">
+                <button class="text-blue-500 hover:text-blue-700 text-sm mr-3">
+                  View Results
+                </button>
+                <button class="text-gray-500 hover:text-gray-700 text-sm mr-3">
+                  Edit
+                </button>
+                <button class="text-red-500 hover:text-red-700 text-sm">
+                  Delete
+                </button>
+              </td>
+            </tr>
+            <tr class="border-b border-gray-200 hover:bg-gray-50">
+              <td class="px-6 py-4">
+                <div class="font-medium text-gray-800">Product Feedback Q1</div>
+                <div class="text-sm text-gray-500">5 questions</div>
+              </td>
+              <td class="px-6 py-4">
+                <span
+                  class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium"
+                >
+                  Draft
+                </span>
+              </td>
+              <td class="px-6 py-4 text-gray-400">-</td>
+              <td class="px-6 py-4 text-gray-600">Jan 20, 2026</td>
+              <td class="px-6 py-4 text-right">
+                <button class="text-blue-500 hover:text-blue-700 text-sm mr-3">
+                  Publish
+                </button>
+                <button class="text-gray-500 hover:text-gray-700 text-sm mr-3">
+                  Edit
+                </button>
+                <button class="text-red-500 hover:text-red-700 text-sm">
+                  Delete
+                </button>
+              </td>
+            </tr>
+            <tr class="border-b border-gray-200 hover:bg-gray-50">
+              <td class="px-6 py-4">
+                <div class="font-medium text-gray-800">Annual Meeting Vote</div>
+                <div class="text-sm text-gray-500">2 questions</div>
+              </td>
+              <td class="px-6 py-4">
+                <span
+                  class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm font-medium"
+                >
+                  Closed
+                </span>
+              </td>
+              <td class="px-6 py-4 text-gray-600">256 responses</td>
+              <td class="px-6 py-4 text-gray-600">Dec 01, 2025</td>
+              <td class="px-6 py-4 text-right">
+                <button class="text-blue-500 hover:text-blue-700 text-sm mr-3">
+                  View Results
+                </button>
+                <button class="text-gray-500 hover:text-gray-700 text-sm mr-3">
+                  Clone
+                </button>
+                <button class="text-red-500 hover:text-red-700 text-sm">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="px-6 py-4 border-t-2 border-gray-200 flex justify-between items-center">
+          <span class="text-sm text-gray-600">Showing 4 of 12 surveys</span>
+          <div class="flex gap-2">
+            <button
+              class="px-3 py-1 border-2 border-gray-300 rounded-md text-gray-600 hover:bg-gray-50"
+            >
+              Previous
+            </button>
+            <button
+              class="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            >
+              1
+            </button>
+            <button
+              class="px-3 py-1 border-2 border-gray-300 rounded-md text-gray-600 hover:bg-gray-50"
+            >
+              2
+            </button>
+            <button
+              class="px-3 py-1 border-2 border-gray-300 rounded-md text-gray-600 hover:bg-gray-50"
+            >
+              3
+            </button>
+            <button
+              class="px-3 py-1 border-2 border-gray-300 rounded-md text-gray-600 hover:bg-gray-50"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
