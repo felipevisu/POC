@@ -1,0 +1,80 @@
+.container {
+  max-width: 600px;
+  margin: 80px auto;
+  padding: 0 20px;
+  font-family: system-ui, sans-serif;
+}
+
+.title {
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: #666;
+  margin-bottom: 32px;
+}
+
+.form {
+  display: flex;
+  gap: 8px;
+}
+
+.input {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #0070f3;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.button:disabled {
+  background-color: #999;
+  cursor: not-allowed;
+}
+
+.loading-text {
+  margin-top: 24px;
+  color: #666;
+}
+
+.error-text {
+  margin-top: 24px;
+  color: red;
+}
+
+.result-card {
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.result-label {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+.result-product {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.result-price {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0070f3;
+}
