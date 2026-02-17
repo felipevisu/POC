@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import puppeteer from "puppeteer";
 import Anthropic from "@anthropic-ai/sdk";
+import { writeFileSync } from "fs";
+import { join } from "path";
 
 export const maxDuration = 60;
 
@@ -13,8 +15,19 @@ export async function POST(request) {
 
   let browser;
   try {
-    browser = await puppeteer.launch({ headless: true });
+    browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-blink-features=AutomationControlled",
+      ],
+    });
     const page = await browser.newPage();
+
+    await page.setUserAgent(
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+    );
+    await page.setViewport({ width: 1366, height: 768 });
 
     await page.goto(url, { waitUntil: "networkidle0", timeout: 60000 });
 
@@ -34,6 +47,9 @@ export async function POST(request) {
 
       return document.body.innerHTML;
     });
+
+    writeFileSync(join(process.cwd(), "page.html"), html, "utf-8");
+    console.log(`Scraped HTML saved to page.html (${(html.length / 1024).toFixed(1)} KB)`);
 
     await browser.close();
     browser = null;
