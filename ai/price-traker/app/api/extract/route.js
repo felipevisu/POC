@@ -68,6 +68,19 @@ export async function POST(request) {
     });
 
     let text = response.content[0].text;
+    const { input_tokens, output_tokens } = response.usage;
+
+    // Haiku 4.5 pricing: $1.00/MTok input, $5.00/MTok output
+    const inputCost = (input_tokens / 1_000_000) * 1.0;
+    const outputCost = (output_tokens / 1_000_000) * 5.0;
+    const totalCost = inputCost + outputCost;
+
+    const usage = {
+      input_tokens,
+      output_tokens,
+      total_tokens: input_tokens + output_tokens,
+      cost_usd: `$${totalCost.toFixed(6)}`,
+    };
 
     const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (codeBlockMatch) {
@@ -76,9 +89,9 @@ export async function POST(request) {
 
     try {
       const data = JSON.parse(text);
-      return NextResponse.json(data);
+      return NextResponse.json({ ...data, usage });
     } catch {
-      return NextResponse.json({ product: text, price: "N/A" });
+      return NextResponse.json({ product: text, price: "N/A", usage });
     }
   } catch (error) {
     return NextResponse.json(

@@ -73,8 +73,17 @@
 }
 
 .result-price {
-  margin: 0;
+  margin: 0 0 16px;
   font-size: 24px;
   font-weight: 700;
   color: #0070f3;
+}
+
+.usage-info {
+  display: flex;
+  gap: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+  font-size: 13px;
+  color: #999;
 }

@@ -71,6 +71,14 @@ export default function Home() {
           <p className="result-product">{result.product}</p>
           <p className="result-label">Price</p>
           <p className="result-price">{result.price}</p>
+
+          {result.usage && (
+            <div className="usage-info">
+              <span>{result.usage.input_tokens} input tokens</span>
+              <span>{result.usage.output_tokens} output tokens</span>
+              <span>{result.usage.cost_usd}</span>
+            </div>
+          )}
         </div>
       )}
     </div>
