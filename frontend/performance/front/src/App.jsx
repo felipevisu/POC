@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, memo } from 'react'
 
-function Product({ product }){
+const Product = memo(function Product({ product }) {
   const renderCount = useRef(0);
   renderCount.current += 1;
 
@@ -12,7 +12,7 @@ function Product({ product }){
       <p>This component has rendered {renderCount.current} times</p>
     </li>
   )
-}
+})
 
 function App() {
   const [products, setProducts] = useState([])
@@ -31,10 +31,10 @@ function App() {
   return (
     <>
       <h1>{count}</h1>
-      <button onClick={() => setCount(count+1)}>Increment</button>
+      <button onClick={() => setCount(c => c + 1)}>Increment</button>
       <ul>
         {products.map((product) => 
-          <Product product={product} />
+          <Product key={product.id} product={product} />
         )}
       </ul>
     </>
