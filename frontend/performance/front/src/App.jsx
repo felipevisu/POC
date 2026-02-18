@@ -1,8 +1,22 @@
-import './App.css'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+
+function Product({ product }){
+  const renderCount = useRef(0);
+  renderCount.current += 1;
+
+  return (
+    <li>
+      <p>{product.name}</p>
+      <p>{product.description}</p>
+      <p>{product.price}</p>
+      <p>This component has rendered {renderCount.current} times</p>
+    </li>
+  )
+}
 
 function App() {
   const [products, setProducts] = useState([])
+  const [count, setCount] = useState(0)
 
   useEffect(() => {
      async function fetchProducts(){
@@ -15,9 +29,15 @@ function App() {
   }, [])
 
   return (
-    <ul>
-      {products.map((product) => <li key={product.id}>{product.name}</li>)}
-    </ul>
+    <>
+      <h1>{count}</h1>
+      <button onClick={() => setCount(count+1)}>Increment</button>
+      <ul>
+        {products.map((product) => 
+          <Product product={product} />
+        )}
+      </ul>
+    </>
   )
 }
 
