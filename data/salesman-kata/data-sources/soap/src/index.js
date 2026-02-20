@@ -1,13 +1,14 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
-const { generatePaymentConfirmation } = require('./data');
+const { generateSale } = require('./data');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://mongo:27017';
-const DB_NAME = 'electromart_payments';
-const COLLECTION = 'confirmations';
+const DB_NAME = 'electromart_sales';
+const COLLECTION = 'sales';
 const DEFAULT_PAGE_SIZE = 100;
+const GENERATION_INTERVAL = parseInt(process.env.GENERATION_INTERVAL) || 5000;
 
 app.use(express.json());
 app.use(express.text({ type: 'text/xml' }));
@@ -18,29 +19,27 @@ async function connectMongo() {
   const client = new MongoClient(MONGO_URI);
   await client.connect();
   db = client.db(DB_NAME);
-  await db.collection(COLLECTION).createIndex({ paymentId: 1 }, { unique: true });
+  await db.collection(COLLECTION).createIndex({ saleId: 1 }, { unique: true });
   console.log('Connected to MongoDB');
+}
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+async function generateAndStoreSales(count) {
+  const sales = [];
+  for (let i = 0; i < count; i++) {
+    const sale = generateSale();
+    await db.collection(COLLECTION).insertOne(sale);
+    sales.push(sale);
+  }
+  return sales;
 }
 
 app.get('/health', (req, res) => {
   if (!db) return res.status(503).json({ status: 'unavailable' });
   res.json({ status: 'ok' });
-});
-
-app.post('/notify-payment', async (req, res) => {
-  const { saleId, amount } = req.body;
-
-  if (!saleId || amount == null) {
-    return res.status(400).json({ error: 'saleId and amount are required' });
-  }
-
-  const confirmation = generatePaymentConfirmation(saleId, amount);
-
-  await db.collection(COLLECTION).insertOne(confirmation);
-
-  console.log(`Payment ${confirmation.paymentId} for sale ${saleId}: ${confirmation.status} (${confirmation.amount} BRL)`);
-
-  res.json({ paymentId: confirmation.paymentId, status: confirmation.status });
 });
 
 function parseCursorFromXml(xml) {
@@ -56,64 +55,90 @@ function parseCursorFromXml(xml) {
   return { cursor, pageSize };
 }
 
-app.post('/payment-validation', async (req, res) => {
+app.post('/sales', async (req, res) => {
   const { cursor, pageSize } = parseCursorFromXml(req.body || '');
 
-  const query = cursor ? { paymentId: { $gt: cursor } } : {};
-  const confirmations = await db.collection(COLLECTION)
+  const query = cursor ? { saleId: { $gt: cursor } } : {};
+  const sales = await db.collection(COLLECTION)
     .find(query)
-    .sort({ paymentId: 1 })
+    .sort({ saleId: 1 })
     .limit(pageSize)
     .toArray();
 
-  const nextCursor = confirmations.length > 0
-    ? confirmations[confirmations.length - 1].paymentId
+  const nextCursor = sales.length > 0
+    ? sales[sales.length - 1].saleId
     : cursor || '';
 
-  const hasMore = confirmations.length === pageSize;
+  const hasMore = sales.length === pageSize;
 
-  const paymentsXml = confirmations.map(p => {
-    let extra = '';
-    if (p.rejectionReason) {
-      extra = `\n          <pay:rejectionReason>${p.rejectionReason}</pay:rejectionReason>`;
-    }
-    return `        <pay:payment>
-          <pay:paymentId>${p.paymentId}</pay:paymentId>
-          <pay:saleId>${p.saleId}</pay:saleId>
-          <pay:status>${p.status}</pay:status>
-          <pay:amount>${p.amount}</pay:amount>
-          <pay:currency>${p.currency}</pay:currency>
-          <pay:paymentMethod>${p.paymentMethod}</pay:paymentMethod>
-          <pay:bankReference>${p.bankReference}</pay:bankReference>
-          <pay:confirmationDate>${p.confirmationDate}</pay:confirmationDate>${extra}
-        </pay:payment>`;
-  }).join('\n');
+  const salesXml = sales.map(s => `        <sale:record>
+          <sale:saleId>${s.saleId}</sale:saleId>
+          <sale:productCode>${s.productCode}</sale:productCode>
+          <sale:productName>${s.productName}</sale:productName>
+          <sale:category>${s.category}</sale:category>
+          <sale:brand>${s.brand}</sale:brand>
+          <sale:salesmanName>${s.salesmanName}</sale:salesmanName>
+          <sale:salesmanEmail>${s.salesmanEmail}</sale:salesmanEmail>
+          <sale:region>${s.region}</sale:region>
+          <sale:storeName>${s.storeName}</sale:storeName>
+          <sale:city>${s.city}</sale:city>
+          <sale:storeType>${s.storeType}</sale:storeType>
+          <sale:quantity>${s.quantity}</sale:quantity>
+          <sale:unitPrice>${s.unitPrice}</sale:unitPrice>
+          <sale:totalAmount>${s.totalAmount}</sale:totalAmount>
+          <sale:status>${s.status}</sale:status>
+          <sale:saleTimestamp>${s.saleTimestamp}</sale:saleTimestamp>
+        </sale:record>`).join('\n');
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                  xmlns:pay="http://bank.electromart.com/payment-validation">
+                  xmlns:sale="http://electromart.com/sales">
   <soapenv:Body>
-    <pay:GetPaymentConfirmationsResponse>
-      <pay:totalRecords>${confirmations.length}</pay:totalRecords>
-      <pay:nextCursor>${nextCursor}</pay:nextCursor>
-      <pay:hasMore>${hasMore}</pay:hasMore>
-      <pay:confirmations>
-${paymentsXml}
-      </pay:confirmations>
-    </pay:GetPaymentConfirmationsResponse>
+    <sale:GetSalesResponse>
+      <sale:totalRecords>${sales.length}</sale:totalRecords>
+      <sale:nextCursor>${nextCursor}</sale:nextCursor>
+      <sale:hasMore>${hasMore}</sale:hasMore>
+      <sale:sales>
+${salesXml}
+      </sale:sales>
+    </sale:GetSalesResponse>
   </soapenv:Body>
 </soapenv:Envelope>`;
 
   res.set('Content-Type', 'text/xml');
   res.send(xml);
 
-  console.log(`SOAP poll: returned ${confirmations.length} confirmations (cursor: ${cursor || 'none'}, hasMore: ${hasMore})`);
+  console.log(`SOAP poll: returned ${sales.length} sales (cursor: ${cursor || 'none'}, hasMore: ${hasMore})`);
 });
 
 async function start() {
   await connectMongo();
+
+  console.log('Generating initial sales batch...');
+  const initialSales = await generateAndStoreSales(100);
+  console.log(`Generated ${initialSales.length} initial sales`);
+
+  let totalGenerated = initialSales.length;
+
+  console.log(`Starting continuous sales generation (every ${GENERATION_INTERVAL / 1000}s)...`);
+  setInterval(async () => {
+    try {
+      const count = randomInt(1, 5);
+      const newSales = await generateAndStoreSales(count);
+      totalGenerated += count;
+
+      const timestamp = new Date().toISOString();
+      console.log(`[${timestamp}] Generated ${count} new sales | Total: ${totalGenerated}`);
+      newSales.forEach(s => {
+        console.log(`  -> Sale ${s.saleId}: ${s.productName} x${s.quantity} = R$${s.totalAmount} (${s.status})`);
+      });
+    } catch (err) {
+      console.error('Error generating sales:', err.message);
+    }
+  }, GENERATION_INTERVAL);
+
   app.listen(PORT, () => {
-    console.log(`SOAP Payment Service running on port ${PORT}`);
+    console.log(`SOAP Sales Service running on port ${PORT}`);
   });
 }
 

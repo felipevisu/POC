@@ -25,7 +25,7 @@ Data Analyst Maria does:
 
 1. Export data from PostgreSQL → Excel        (2 hours)
 2. Download CSV files from shared folder      (30 min)
-3. Manually call bank API for confirmations   (3 hours)
+3. Manually poll SOAP service for sales data  (3 hours)
 4. Merge everything in Excel                  (4 hours)
 5. Create pivot tables and charts             (2 hours)
 6. Send email to CEO                          (30 min) 
@@ -84,12 +84,32 @@ A Message Broker is middleware that translates and routes messages between diffe
 
 ### Data Sources
 
+All three data sources share the same consistent master data: **22 products**, **15 salesmen**, and **18 stores** across Brazil.
+
 #### Postgresql
 
 Origin: Original ERP system (SAP on PostgreSQL)<br/>
 Data: Real-time sales from POS terminals<br/>
 Volume: ~50,000 transactions per day<br/>
-Update freq: Real-time (continuous)
+Update freq: Real-time (continuous, every 5 seconds)<br/>
+Database: `electromart`
+
+Schema is initialized automatically via `init.sql` mounted into the PostgreSQL container (`/docker-entrypoint-initdb.d/`). The Node.js generator only inserts new sales.
+
+**Tables:** `products`, `salesmen`, `stores`, `sales`
+
+```sql
+-- Sales table structure
+sale_id     BIGSERIAL PRIMARY KEY
+product_id  INTEGER  (FK → products)
+salesman_id INTEGER  (FK → salesmen)
+store_id    INTEGER  (FK → stores)
+quantity    INTEGER
+unit_price  DECIMAL(10,2)
+total_amount DECIMAL(12,2)
+status      VARCHAR(20)  -- PENDING | CONFIRMED | CANCELLED
+sale_timestamp TIMESTAMP
+```
 
 <img src="./data-sources/postgresql/Postgresql.drawio.png" alt="postgresql"/>
 
@@ -97,79 +117,88 @@ Update freq: Real-time (continuous)
 
 Origin: Acquired company's legacy system (2018)<br/>
 Data: Daily sales export<br/>
-Volume: ~10,000 records per file<br/>
-Update freq: Once per day (6:00 AM)<br/>
+Volume: 25-50 records per file<br/>
+Update freq: Every 10 seconds<br/>
 Location: /data/inbox/
 
 ```csv
-sale_id,product_code,seller_code,amount,city,sale_date
-A001,IPHONE15PRO256,SEL042,1199.00,Barcelona,2024-01-15
-A002,GALAXYS24ULTRA,SEL018,899.00,Valencia,2024-01-15
-A003,MACBOOKPRO14,SEL042,2499.00,Barcelona,2024-01-15
-A004,SONYXM5,SEL007,349.00,Lisbon,2024-01-15
-A005,LGOLEDC2,SEL023,1899.00,Madrid,2024-01-15
-A006,IPADPRO12,SEL018,1099.00,Valencia,2024-01-15
-A007,PS5CONSOLE,SEL055,549.00,Milan,2024-01-15
-A008,GALAXYTABS9,SEL007,849.00,Lisbon,2024-01-15
-A009,AIRPODSPRO2,SEL042,279.00,Barcelona,2024-01-15
-A010,DYSONV15,SEL031,699.00,Berlin,2024-01-15
+sale_id,product_code,product_name,category,brand,salesman_name,salesman_email,region,store_name,city,store_type,quantity,unit_price,total_amount,status,sale_date
+CSV2024011543210,IPHONE15PRO256,iPhone 15 Pro 256GB,SMARTPHONE,Apple,João Silva,joao.silva@electromart.com.br,São Paulo,Magazine Luiza Paulista,São Paulo,RETAIL,2,8999.00,17998.00,PENDING,2024-01-15 10:32:15
+CSV2024011554321,GALAXYS24ULTRA,Galaxy S24 Ultra,SMARTPHONE,Samsung,Maria Oliveira,maria.oliveira@electromart.com.br,São Paulo,Fast Shop Morumbi,São Paulo,RETAIL,1,7999.00,7999.00,CONFIRMED,2024-01-15 11:05:42
+CSV2024011565432,MACBOOKPRO14,MacBook Pro 14",LAPTOP,Apple,Pedro Santos,pedro.santos@electromart.com.br,Rio de Janeiro,Magazine Luiza Copacabana,Rio de Janeiro,RETAIL,1,18999.00,18999.00,CANCELLED,2024-01-15 14:22:08
 ```
 
 #### SOAP
 
-Origin: Bank payment validation service (2012)<br/>
-Data: Payment confirmations<br/>
-Volume: ~800-1000 confirmations per batch<br/>
-Update freq: Polled every 5 minutes<br/>
-Protocol: SOAP 1.1 / XML
+Origin: Legacy sales system (2012)<br/>
+Data: Sales transactions<br/>
+Volume: ~800-1000 records per batch<br/>
+Update freq: Self-generates every 5 seconds, polled via cursor-based pagination<br/>
+Protocol: SOAP 1.1 / XML<br/>
+Storage: MongoDB
 
 ```
-URL: http://bank.com/payment-validation
+URL: http://localhost:8080/sales
 Method: POST
 Content-Type: text/xml
+```
+
+**Request (cursor-based pagination)**
+
+```xml
+<cursor>SOAP-20240115-00050</cursor>
+<pageSize>100</pageSize>
 ```
 
 **Example SOAP Response**
 
 ```xml
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:pay="http://bank.com/payment-validation">
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:sale="http://electromart.com/sales">
   <soapenv:Body>
-    <pay:GetPaymentConfirmationsResponse>
-      <pay:totalRecords>3</pay:totalRecords>
-      <pay:confirmations>
-        <pay:payment>
-          <pay:paymentId>PAY-20240115-00001</pay:paymentId>
-          <pay:saleId>A001</pay:saleId>
-          <pay:status>CONFIRMED</pay:status>
-          <pay:amount>1199.00</pay:amount>
-          <pay:currency>EUR</pay:currency>
-          <pay:paymentMethod>CREDIT_CARD</pay:paymentMethod>
-          <pay:bankReference>BNK-REF-8A3F21</pay:bankReference>
-          <pay:confirmationDate>2024-01-15T10:32:15</pay:confirmationDate>
-        </pay:payment>
-        <pay:payment>
-          <pay:paymentId>PAY-20240115-00002</pay:paymentId>
-          <pay:saleId>A002</pay:saleId>
-          <pay:status>CONFIRMED</pay:status>
-          <pay:amount>899.00</pay:amount>
-          <pay:currency>EUR</pay:currency>
-          <pay:paymentMethod>DEBIT</pay:paymentMethod>
-          <pay:bankReference>BNK-REF-7B2E44</pay:bankReference>
-          <pay:confirmationDate>2024-01-15T11:05:42</pay:confirmationDate>
-        </pay:payment>
-        <pay:payment>
-          <pay:paymentId>PAY-20240115-00003</pay:paymentId>
-          <pay:saleId>A005</pay:saleId>
-          <pay:status>REJECTED</pay:status>
-          <pay:amount>1899.00</pay:amount>
-          <pay:currency>EUR</pay:currency>
-          <pay:paymentMethod>CREDIT_CARD</pay:paymentMethod>
-          <pay:bankReference>BNK-REF-9C1D55</pay:bankReference>
-          <pay:rejectionReason>INSUFFICIENT_FUNDS</pay:rejectionReason>
-          <pay:confirmationDate>2024-01-15T14:22:08</pay:confirmationDate>
-        </pay:payment>
-      </pay:confirmations>
-    </pay:GetPaymentConfirmationsResponse>
+    <sale:GetSalesResponse>
+      <sale:totalRecords>3</sale:totalRecords>
+      <sale:nextCursor>SOAP-20240115-00003</sale:nextCursor>
+      <sale:hasMore>false</sale:hasMore>
+      <sale:sales>
+        <sale:record>
+          <sale:saleId>SOAP-20240115-00001</sale:saleId>
+          <sale:productCode>IPHONE15PRO256</sale:productCode>
+          <sale:productName>iPhone 15 Pro 256GB</sale:productName>
+          <sale:category>SMARTPHONE</sale:category>
+          <sale:brand>Apple</sale:brand>
+          <sale:salesmanName>João Silva</sale:salesmanName>
+          <sale:salesmanEmail>joao.silva@electromart.com.br</sale:salesmanEmail>
+          <sale:region>São Paulo</sale:region>
+          <sale:storeName>Magazine Luiza Paulista</sale:storeName>
+          <sale:city>São Paulo</sale:city>
+          <sale:storeType>RETAIL</sale:storeType>
+          <sale:quantity>2</sale:quantity>
+          <sale:unitPrice>8999.00</sale:unitPrice>
+          <sale:totalAmount>17998.00</sale:totalAmount>
+          <sale:status>PENDING</sale:status>
+          <sale:saleTimestamp>2024-01-15T10:32:15Z</sale:saleTimestamp>
+        </sale:record>
+        <sale:record>
+          <sale:saleId>SOAP-20240115-00002</sale:saleId>
+          <sale:productCode>GALAXYS24ULTRA</sale:productCode>
+          <sale:productName>Galaxy S24 Ultra</sale:productName>
+          <sale:category>SMARTPHONE</sale:category>
+          <sale:brand>Samsung</sale:brand>
+          <sale:salesmanName>Pedro Santos</sale:salesmanName>
+          <sale:salesmanEmail>pedro.santos@electromart.com.br</sale:salesmanEmail>
+          <sale:region>Rio de Janeiro</sale:region>
+          <sale:storeName>Casas Bahia Madureira</sale:storeName>
+          <sale:city>Rio de Janeiro</sale:city>
+          <sale:storeType>RETAIL</sale:storeType>
+          <sale:quantity>1</sale:quantity>
+          <sale:unitPrice>7999.00</sale:unitPrice>
+          <sale:totalAmount>7999.00</sale:totalAmount>
+          <sale:status>CONFIRMED</sale:status>
+          <sale:saleTimestamp>2024-01-15T11:05:42Z</sale:saleTimestamp>
+        </sale:record>
+      </sale:sales>
+    </sale:GetSalesResponse>
   </soapenv:Body>
 </soapenv:Envelope>
 ```
@@ -180,7 +209,7 @@ Content-Type: text/xml
 |---|-------------------|---------|-------------|
 | 1 | Relational DB (PostgreSQL) | Source 1 - Sales transactions | Yes |
 | 2 | File Storage (MinIO/Local) | Source 2 - CSV/JSON files | Yes |
-| 3 | SOAP Service (Mock WS-*) | Source 3 - Legacy service | No |
+| 3 | SOAP Service (Mock WS-*) | Source 3 - Legacy sales service | Yes |
 | 4 | Message Broker (Kafka) | Event streaming backbone | No |
 | 5 | Stream Processor (Flink/Kafka Streams) | Processing & aggregation | No |
 | 6 | Lineage Tool (OpenLineage + Marquez) | Track data flow | No |

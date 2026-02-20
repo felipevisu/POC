@@ -1,28 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const http = require('http');
 const mockData = require('./data');
-
-const SOAP_HOST = process.env.SOAP_HOST || 'soap-service';
-const SOAP_PORT = process.env.SOAP_PORT || 8080;
-
-function notifySoapService(saleId, amount) {
-  const payload = JSON.stringify({ saleId: String(saleId), amount: parseFloat(amount) });
-  const req = http.request({
-    hostname: SOAP_HOST,
-    port: SOAP_PORT,
-    path: '/notify-payment',
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) }
-  }, (res) => {
-    res.resume();
-  });
-  req.on('error', (err) => {
-    console.error(`SOAP notification failed for sale ${saleId}: ${err.message}`);
-  });
-  req.write(payload);
-  req.end();
-}
 
 const OUTPUT_DIR = process.env.OUTPUT_DIR || '/data/inbox';
 const GENERATION_INTERVAL = parseInt(process.env.GENERATION_INTERVAL) || 10000;
@@ -36,15 +14,22 @@ function randomElement(array) {
   return array[Math.floor(Math.random() * array.length)];
 }
 
+function randomStatus() {
+  const rand = Math.random();
+  if (rand < 0.7) return 'PENDING';
+  if (rand < 0.95) return 'CONFIRMED';
+  return 'CANCELLED';
+}
+
 function generateSaleId() {
   const date = new Date();
   const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
   const random = randomInt(10000, 99999);
-  return `TB${dateStr}${random}`;
+  return `CSV${dateStr}${random}`;
 }
 
 function formatDate(date) {
-  return date.toISOString().slice(0, 10);
+  return date.toISOString().slice(0, 19).replace('T', ' ');
 }
 
 function formatAmount(amount) {
@@ -53,29 +38,39 @@ function formatAmount(amount) {
 
 function generateRecord() {
   const product = randomElement(mockData.products);
-  const seller = randomElement(mockData.sellers);
-  const city = randomElement(mockData.cities);
-  const quantity = randomInt(1, 3);
-  const amount = product.price * quantity;
-  
+  const salesman = randomElement(mockData.salesmen);
+  const store = randomElement(mockData.stores);
+  const quantity = randomInt(1, 5);
+  const unitPrice = product.price;
+  const totalAmount = quantity * unitPrice;
+
   const date = new Date();
   date.setHours(date.getHours() - randomInt(0, 24));
 
   return {
     sale_id: generateSaleId(),
     product_code: product.code,
-    seller_code: seller.code,
+    product_name: product.name,
+    category: product.category,
+    brand: product.brand,
+    salesman_name: salesman.name,
+    salesman_email: salesman.email,
+    region: salesman.region,
+    store_name: store.name,
+    city: store.city,
+    store_type: store.type,
     quantity: quantity,
-    amount: formatAmount(amount),
-    city: city,
+    unit_price: formatAmount(unitPrice),
+    total_amount: formatAmount(totalAmount),
+    status: randomStatus(),
     sale_date: formatDate(date)
   };
 }
 
 function generateCSVContent(records) {
-  const header = 'sale_id,product_code,seller_code,quantity,amount,city,sale_date';
-  const rows = records.map(r => 
-    `${r.sale_id},${r.product_code},${r.seller_code},${r.quantity},${r.amount},${r.city},${r.sale_date}`
+  const header = 'sale_id,product_code,product_name,category,brand,salesman_name,salesman_email,region,store_name,city,store_type,quantity,unit_price,total_amount,status,sale_date';
+  const rows = records.map(r =>
+    `${r.sale_id},${r.product_code},${r.product_name},${r.category},${r.brand},${r.salesman_name},${r.salesman_email},${r.region},${r.store_name},${r.city},${r.store_type},${r.quantity},${r.unit_price},${r.total_amount},${r.status},${r.sale_date}`
   );
   return [header, ...rows].join('\n');
 }
@@ -96,7 +91,7 @@ function ensureOutputDir() {
 function generateAndSaveFile() {
   const records = [];
   const recordCount = randomInt(Math.floor(RECORDS_PER_FILE / 2), RECORDS_PER_FILE);
-  
+
   for (let i = 0; i < recordCount; i++) {
     records.push(generateRecord());
   }
@@ -106,8 +101,6 @@ function generateAndSaveFile() {
   const filePath = path.join(OUTPUT_DIR, fileName);
 
   fs.writeFileSync(filePath, csvContent);
-
-  records.forEach(r => notifySoapService(r.sale_id, r.amount));
 
   return { fileName, recordCount, filePath };
 }

@@ -1,29 +1,4 @@
-const http = require('http');
 const { Client } = require('pg');
-const createTablesSQL = require('./sql');
-const mockData = require('./data');
-
-const SOAP_HOST = process.env.SOAP_HOST || 'soap-service';
-const SOAP_PORT = process.env.SOAP_PORT || 8080;
-
-function notifySoapService(saleId, amount) {
-  const payload = JSON.stringify({ saleId: String(saleId), amount: parseFloat(amount) });
-  const req = http.request({
-    hostname: SOAP_HOST,
-    port: SOAP_PORT,
-    path: '/notify-payment',
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) }
-  }, (res) => {
-    res.resume();
-    console.log(`  → Notified SOAP service for sale #${saleId}`);
-  });
-  req.on('error', (err) => {
-    console.error(`  → SOAP notification failed for sale #${saleId}: ${err.message}`);
-  });
-  req.write(payload);
-  req.end();
-}
 
 const config = {
   host: process.env.DB_HOST || 'localhost',
@@ -48,63 +23,6 @@ function randomStatus() {
   return 'CANCELLED';
 }
 
-async function createTables(client) {
-  console.log('Creating tables...');
-  await client.query(createTablesSQL);
-  console.log('Tables created successfully!');
-}
-
-async function seedProducts(client) {
-  const existingProducts = await client.query('SELECT COUNT(*) FROM products');
-  if (parseInt(existingProducts.rows[0].count) > 0) {
-    console.log('Products already seeded, skipping...');
-    return;
-  }
-
-  console.log('Seeding products...');
-  for (const product of mockData.products) {
-    await client.query(
-      'INSERT INTO products (name, code, category, brand, base_price) VALUES ($1, $2, $3, $4, $5)',
-      [product.name, product.code, product.category, product.brand, product.price]
-    );
-  }
-  console.log(`Seeded ${mockData.products.length} products`);
-}
-
-async function seedSalesmen(client) {
-  const existingSalesmen = await client.query('SELECT COUNT(*) FROM salesmen');
-  if (parseInt(existingSalesmen.rows[0].count) > 0) {
-    console.log('Salesmen already seeded, skipping...');
-    return;
-  }
-
-  console.log('Seeding salesmen...');
-  for (const salesman of mockData.salesmen) {
-    await client.query(
-      'INSERT INTO salesmen (name, email, phone, region) VALUES ($1, $2, $3, $4)',
-      [salesman.name, salesman.email, salesman.phone, salesman.region]
-    );
-  }
-  console.log(`Seeded ${mockData.salesmen.length} salesmen`);
-}
-
-async function seedStores(client) {
-  const existingStores = await client.query('SELECT COUNT(*) FROM stores');
-  if (parseInt(existingStores.rows[0].count) > 0) {
-    console.log('Stores already seeded, skipping...');
-    return;
-  }
-
-  console.log('Seeding stores...');
-  for (const store of mockData.stores) {
-    await client.query(
-      'INSERT INTO stores (name, city, country, address, store_type) VALUES ($1, $2, $3, $4, $5)',
-      [store.name, store.city, store.country, store.address, store.type]
-    );
-  }
-  console.log(`Seeded ${mockData.stores.length} stores`);
-}
-
 async function generateSale(client) {
   const products = await client.query('SELECT id, base_price FROM products');
   const salesmen = await client.query('SELECT id FROM salesmen');
@@ -126,10 +44,7 @@ async function generateSale(client) {
     [product.id, salesman.id, store.id, quantity, unitPrice, totalAmount, status]
   );
 
-  const sale = result.rows[0];
-  notifySoapService(sale.sale_id, sale.total_amount);
-
-  return sale;
+  return result.rows[0];
 }
 
 async function generateMultipleSales(client, count) {
@@ -149,16 +64,10 @@ async function main() {
     await client.connect();
     console.log('Connected successfully!');
 
-    await createTables(client);
-
-    await seedProducts(client);
-    await seedSalesmen(client);
-    await seedStores(client);
-
     console.log('Generating initial sales batch...');
     const initialSales = await generateMultipleSales(client, 100);
     console.log(`Generated ${initialSales.length} initial sales`);
-    
+
     console.log('Starting continuous data generation (every 5 seconds)...');
     console.log('Press Ctrl+C to stop\n');
 
@@ -172,9 +81,9 @@ async function main() {
 
         const timestamp = new Date().toISOString();
         console.log(`[${timestamp}] Generated ${count} new sales | Total: ${totalGenerated}`);
-        
+
         newSales.forEach(sale => {
-          console.log(`  → Sale #${sale.sale_id}: €${sale.total_amount} (${sale.status})`);
+          console.log(`  -> Sale #${sale.sale_id}: R$${sale.total_amount} (${sale.status})`);
         });
 
       } catch (err) {

@@ -12,6 +12,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./data-sources/postgresql/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U electromart -d electromart"]
       interval: 5s
@@ -63,8 +64,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      soap-service:
-        condition: service_healthy
     networks:
       - electromart-network
 
@@ -77,9 +76,6 @@ services:
       OUTPUT_DIR: /data/inbox
       GENERATION_INTERVAL: 10000
       RECORDS_PER_FILE: 50
-    depends_on:
-      soap-service:
-        condition: service_healthy
     volumes:
       - csv_data:/data/inbox
     networks:
