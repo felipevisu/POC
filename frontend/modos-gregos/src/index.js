@@ -292,6 +292,10 @@ function generateScale(mode, note) {
   return scale;
 }
 
+function notesMatch(a, b) {
+  return a === b || normalizeNote(a) === b || a === normalizeNote(b);
+}
+
 function normalizeNote(note) {
   const enharmonicMap = {
     "C#": "Db",
@@ -344,6 +348,158 @@ function getScaleDegree(fretNote, scale) {
     }
   }
   return null;
+}
+
+function getPositionFrets(scale, tuning, fretCount) {
+  const arm = generateArmMatrix(tuning, fretCount);
+  const lowStringIndex = tuning.length - 1;
+  const frets = [];
+  const maxFret = Math.min(fretCount, 11);
+  for (let fret = 0; fret <= maxFret; fret++) {
+    if (isNoteInScale(arm[lowStringIndex][fret], scale)) {
+      frets.push(fret);
+    }
+  }
+  return frets;
+}
+
+function computePositionNotes(scale, arm, strings, posFret, fretCount) {
+  const lowStringIdx = strings - 1;
+
+  // Find which scale degree sits at posFret on the low string
+  let startDegree = -1;
+  const posNote = arm[lowStringIdx][posFret];
+  for (let i = 0; i < scale.length; i++) {
+    if (notesMatch(posNote, scale[i])) {
+      startDegree = i;
+      break;
+    }
+  }
+  if (startDegree === -1) return [];
+
+  const cells = [];
+  let currentDegree = startDegree;
+  let refFret = posFret;
+
+  // Walk strings from low to high (arm indices high→0)
+  for (let s = lowStringIdx; s >= 0; s--) {
+    const stringCells = [];
+
+    for (let n = 0; n < 3; n++) {
+      const degIdx = (currentDegree + n) % scale.length;
+      const targetNote = scale[degIdx];
+      // First note on the string: search from near refFret
+      // Subsequent notes: search above the previous note on this string
+      const prev = n > 0 ? stringCells[n - 1] : null;
+      if (n > 0 && !prev) break; // previous note wasn't found, skip rest
+      const minFret = n === 0
+        ? Math.max(0, refFret - 1)
+        : prev.fret + 1;
+
+      for (let fret = minFret; fret <= fretCount; fret++) {
+        const note = arm[s][fret];
+        if (notesMatch(note, targetNote)) {
+          stringCells.push({ string: s, fret, degreeIndex: degIdx });
+          break;
+        }
+      }
+    }
+
+    cells.push(...stringCells);
+    if (stringCells.length > 0) {
+      refFret = stringCells[0].fret;
+    }
+    currentDegree += 3;
+  }
+
+  return cells;
+}
+
+function renderPositionFretboards(scale, rootNote, tuning, fretCount, degreeLabels) {
+  const container = document.getElementById("scalePositions");
+  container.innerHTML = "";
+
+  const positionFrets = getPositionFrets(scale, tuning, fretCount);
+  const arm = generateArmMatrix(tuning, fretCount);
+  const reversedTuning = [...tuning].reverse();
+  const strings = tuning.length;
+
+  for (const posFret of positionFrets) {
+    const cells = computePositionNotes(scale, arm, strings, posFret, fretCount);
+    if (cells.length === 0) continue;
+
+    // Derive fret range from actual note positions
+    const allFrets = cells.map((c) => c.fret);
+    const minFret = Math.min(...allFrets);
+    const maxFret = Math.max(...allFrets);
+
+    // Build lookup: "string-fret" → degreeIndex
+    const cellMap = new Map();
+    for (const c of cells) {
+      cellMap.set(`${c.string}-${c.fret}`, c.degreeIndex);
+    }
+
+    const board = document.createElement("div");
+    board.className = "position-board";
+
+    const heading = document.createElement("h3");
+    heading.className = "position-heading";
+    const lowNote = arm[tuning.length - 1][posFret];
+    heading.textContent = `Fret ${posFret} — ${lowNote}`;
+    board.appendChild(heading);
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "position-fretboard";
+
+    const table = document.createElement("table");
+    table.className = "fretboard-table";
+
+    const headerRow = document.createElement("tr");
+    headerRow.appendChild(document.createElement("th"));
+    for (let fret = minFret; fret <= maxFret; fret++) {
+      const th = document.createElement("th");
+      th.textContent = fret;
+      th.className = "fret-header";
+      if (doubleDotFrets.has(fret)) th.className += " has-double-dot";
+      else if (dotFrets.has(fret)) th.className += " has-dot";
+      headerRow.appendChild(th);
+    }
+    table.appendChild(headerRow);
+
+    for (let string = 0; string < strings; string++) {
+      const row = document.createElement("tr");
+
+      const stringCell = document.createElement("td");
+      stringCell.textContent = reversedTuning[string];
+      stringCell.className = "string-label";
+      row.appendChild(stringCell);
+
+      for (let fret = minFret; fret <= maxFret; fret++) {
+        const cell = document.createElement("td");
+        const note = arm[string][fret];
+        cell.className = "fret-cell";
+
+        const key = `${string}-${fret}`;
+        if (cellMap.has(key)) {
+          const degIdx = cellMap.get(key);
+          const label = degreeLabels ? degreeLabels[degIdx] : degIdx + 1;
+          cell.innerHTML = `<span class="note-badge"><span class="note-name">${note}</span><span class="degree-number">${label}</span></span>`;
+          if (normalizeNote(note) === normalizeNote(rootNote) || note === rootNote) {
+            cell.className += " root-note";
+          } else {
+            cell.className += " note-in-scale";
+          }
+        }
+
+        row.appendChild(cell);
+      }
+      table.appendChild(row);
+    }
+
+    wrapper.appendChild(table);
+    board.appendChild(wrapper);
+    container.appendChild(board);
+  }
 }
 
 const dotFrets = new Set([3, 5, 7, 9, 15, 17, 19, 21]);
@@ -435,6 +591,14 @@ function updateFretboard() {
   modeDesc.textContent = t("modeDescriptions")[selectedMode];
 
   renderFretboard(scale, selectedNote, tuning, fretCount, degreeLabels);
+
+  const greekModes = ["jonio", "dorico", "frigio", "lidio", "mixolidio", "eolio", "locrio"];
+  const posContainer = document.getElementById("scalePositions");
+  if (greekModes.includes(selectedMode)) {
+    renderPositionFretboards(scale, selectedNote, tuning, fretCount, degreeLabels);
+  } else {
+    posContainer.innerHTML = "";
+  }
 }
 
 function initTuningControls() {
