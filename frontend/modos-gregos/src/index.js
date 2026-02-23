@@ -363,7 +363,7 @@ function getPositionFrets(scale, tuning, fretCount) {
   return frets;
 }
 
-function computePositionNotes(scale, arm, strings, posFret, fretCount) {
+function computePositionNotes(scale, arm, strings, posFret, fretCount, notesPerString) {
   const lowStringIdx = strings - 1;
 
   // Find which scale degree sits at posFret on the low string
@@ -385,13 +385,11 @@ function computePositionNotes(scale, arm, strings, posFret, fretCount) {
   for (let s = lowStringIdx; s >= 0; s--) {
     const stringCells = [];
 
-    for (let n = 0; n < 3; n++) {
+    for (let n = 0; n < notesPerString; n++) {
       const degIdx = (currentDegree + n) % scale.length;
       const targetNote = scale[degIdx];
-      // First note on the string: search from near refFret
-      // Subsequent notes: search above the previous note on this string
       const prev = n > 0 ? stringCells[n - 1] : null;
-      if (n > 0 && !prev) break; // previous note wasn't found, skip rest
+      if (n > 0 && !prev) break;
       const minFret = n === 0
         ? Math.max(0, refFret - 1)
         : prev.fret + 1;
@@ -409,13 +407,14 @@ function computePositionNotes(scale, arm, strings, posFret, fretCount) {
     if (stringCells.length > 0) {
       refFret = stringCells[0].fret;
     }
-    currentDegree += 3;
+    currentDegree += notesPerString;
   }
 
   return cells;
 }
 
-function renderPositionFretboards(scale, rootNote, tuning, fretCount, degreeLabels) {
+function renderPositionFretboards(scale, rootNote, tuning, fretCount, degreeLabels, opts = {}) {
+  const { notesPerString = 3, blueNote = null } = opts;
   const container = document.getElementById("scalePositions");
   container.innerHTML = "";
 
@@ -425,18 +424,64 @@ function renderPositionFretboards(scale, rootNote, tuning, fretCount, degreeLabe
   const strings = tuning.length;
 
   for (const posFret of positionFrets) {
-    const cells = computePositionNotes(scale, arm, strings, posFret, fretCount);
+    const cells = computePositionNotes(scale, arm, strings, posFret, fretCount, notesPerString);
     if (cells.length === 0) continue;
 
-    // Derive fret range from actual note positions
+    // Derive fret range from pentatonic notes only (before adding blue note)
     const allFrets = cells.map((c) => c.fret);
     const minFret = Math.min(...allFrets);
     const maxFret = Math.max(...allFrets);
 
-    // Build lookup: "string-fret" → degreeIndex
+    // Add blue note: one per position, only within the existing fret range
+    if (blueNote) {
+      const byString = new Map();
+      for (const c of cells) {
+        if (!byString.has(c.string)) byString.set(c.string, []);
+        byString.get(c.string).push(c);
+      }
+      const sortedStrings = [...byString.keys()].sort((a, b) => b - a);
+      let blueAdded = false;
+      // Pass 1: strictly between the two pentatonic notes on a string
+      for (const s of sortedStrings) {
+        if (blueAdded) break;
+        const sCells = byString.get(s);
+        if (sCells.length < 2) continue;
+        sCells.sort((a, b) => a.fret - b.fret);
+        const lo = sCells[0].fret;
+        const hi = sCells[sCells.length - 1].fret;
+        for (let fret = lo + 1; fret < hi; fret++) {
+          if (notesMatch(arm[s][fret], blueNote)) {
+            cells.push({ string: s, fret, degreeIndex: -1, isBlueNote: true });
+            blueAdded = true;
+            break;
+          }
+        }
+      }
+      // Pass 2: adjacent (lo-1 or hi+1) but still within the position fret range
+      if (!blueAdded) {
+        for (const s of sortedStrings) {
+          if (blueAdded) break;
+          const sCells = byString.get(s);
+          if (sCells.length < 2) continue;
+          sCells.sort((a, b) => a.fret - b.fret);
+          const lo = sCells[0].fret;
+          const hi = sCells[sCells.length - 1].fret;
+          const checkFrets = [lo - 1, hi + 1].filter((f) => f >= minFret && f <= maxFret && f >= 0 && f <= fretCount);
+          for (const fret of checkFrets) {
+            if (notesMatch(arm[s][fret], blueNote)) {
+              cells.push({ string: s, fret, degreeIndex: -1, isBlueNote: true });
+              blueAdded = true;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // Build lookup: "string-fret" → cell data
     const cellMap = new Map();
     for (const c of cells) {
-      cellMap.set(`${c.string}-${c.fret}`, c.degreeIndex);
+      cellMap.set(`${c.string}-${c.fret}`, { degreeIndex: c.degreeIndex, isBlueNote: !!c.isBlueNote });
     }
 
     const board = document.createElement("div");
@@ -481,13 +526,18 @@ function renderPositionFretboards(scale, rootNote, tuning, fretCount, degreeLabe
 
         const key = `${string}-${fret}`;
         if (cellMap.has(key)) {
-          const degIdx = cellMap.get(key);
-          const label = degreeLabels ? degreeLabels[degIdx] : degIdx + 1;
-          cell.innerHTML = `<span class="note-badge"><span class="note-name">${note}</span><span class="degree-number">${label}</span></span>`;
-          if (normalizeNote(note) === normalizeNote(rootNote) || note === rootNote) {
-            cell.className += " root-note";
+          const cellData = cellMap.get(key);
+          if (cellData.isBlueNote) {
+            cell.innerHTML = `<span class="note-badge"><span class="note-name">${note}</span></span>`;
+            cell.className += " blue-note";
           } else {
-            cell.className += " note-in-scale";
+            const label = degreeLabels ? degreeLabels[cellData.degreeIndex] : cellData.degreeIndex + 1;
+            cell.innerHTML = `<span class="note-badge"><span class="note-name">${note}</span><span class="degree-number">${label}</span></span>`;
+            if (notesMatch(note, rootNote)) {
+              cell.className += " root-note";
+            } else {
+              cell.className += " note-in-scale";
+            }
           }
         }
 
@@ -505,7 +555,7 @@ function renderPositionFretboards(scale, rootNote, tuning, fretCount, degreeLabe
 const dotFrets = new Set([3, 5, 7, 9, 15, 17, 19, 21]);
 const doubleDotFrets = new Set([12, 24]);
 
-function renderFretboard(scale, rootNote, tuning, fretCount, degreeLabels) {
+function renderFretboard(scale, rootNote, tuning, fretCount, degreeLabels, blueNote) {
   const arm = generateArmMatrix(tuning, fretCount);
   const reversedTuning = [...tuning].reverse();
   const strings = tuning.length;
@@ -539,17 +589,19 @@ function renderFretboard(scale, rootNote, tuning, fretCount, degreeLabels) {
       const note = arm[string][fret];
       cell.className = "fret-cell";
 
-      const degree = getScaleDegree(note, scale);
-      if (degree !== null) {
-        const label = degreeLabels ? degreeLabels[degree - 1] : degree;
-        cell.innerHTML = `<span class="note-badge"><span class="note-name">${note}</span><span class="degree-number">${label}</span></span>`;
-        if (
-          normalizeNote(note) === normalizeNote(rootNote) ||
-          note === rootNote
-        ) {
-          cell.className += " root-note";
-        } else {
-          cell.className += " note-in-scale";
+      if (blueNote && notesMatch(note, blueNote)) {
+        cell.innerHTML = `<span class="note-badge"><span class="note-name">${note}</span></span>`;
+        cell.className += " blue-note";
+      } else {
+        const degree = getScaleDegree(note, scale);
+        if (degree !== null) {
+          const label = degreeLabels ? degreeLabels[degree - 1] : degree;
+          cell.innerHTML = `<span class="note-badge"><span class="note-name">${note}</span><span class="degree-number">${label}</span></span>`;
+          if (notesMatch(note, rootNote)) {
+            cell.className += " root-note";
+          } else {
+            cell.className += " note-in-scale";
+          }
         }
       }
 
@@ -590,12 +642,26 @@ function updateFretboard() {
   const modeDesc = document.getElementById("modeDescription");
   modeDesc.textContent = t("modeDescriptions")[selectedMode];
 
-  renderFretboard(scale, selectedNote, tuning, fretCount, degreeLabels);
-
   const greekModes = ["jonio", "dorico", "frigio", "lidio", "mixolidio", "eolio", "locrio"];
+  const pentaModes = ["penta_maior", "penta_menor"];
+  const bluesBlueIndex = { blues_menor: 3, blues_maior: 2 };
+  let blueNote = null;
+
+  if (bluesBlueIndex[selectedMode] !== undefined) {
+    blueNote = scale[bluesBlueIndex[selectedMode]];
+  }
+
+  renderFretboard(scale, selectedNote, tuning, fretCount, degreeLabels, blueNote);
+
   const posContainer = document.getElementById("scalePositions");
   if (greekModes.includes(selectedMode)) {
-    renderPositionFretboards(scale, selectedNote, tuning, fretCount, degreeLabels);
+    renderPositionFretboards(scale, selectedNote, tuning, fretCount, degreeLabels, { notesPerString: 3 });
+  } else if (pentaModes.includes(selectedMode)) {
+    renderPositionFretboards(scale, selectedNote, tuning, fretCount, degreeLabels, { notesPerString: 2 });
+  } else if (blueNote) {
+    const blueIdx = bluesBlueIndex[selectedMode];
+    const pentaScale = scale.filter((_, i) => i !== blueIdx);
+    renderPositionFretboards(pentaScale, selectedNote, tuning, fretCount, null, { notesPerString: 2, blueNote });
   } else {
     posContainer.innerHTML = "";
   }

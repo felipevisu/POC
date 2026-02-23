@@ -310,6 +310,15 @@ tr:not(:first-child) td.fret-cell:first-of-type {
   box-shadow: 0 2px 8px rgba(231, 76, 60, 0.4);
 }
 
+.blue-note {
+  color: white !important;
+}
+
+.blue-note .note-badge {
+  background: linear-gradient(135deg, #2196F3, #1565C0);
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
+}
+
 .root-note {
   color: #1a1a2e !important;
 }
