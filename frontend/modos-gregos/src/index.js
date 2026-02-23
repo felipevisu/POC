@@ -1,3 +1,20 @@
+import i18next from "i18next";
+import en from "./locales/en.json";
+import pt from "./locales/pt.json";
+import es from "./locales/es.json";
+
+i18next.init({
+  lng: localStorage.getItem("lang") || "pt",
+  fallbackLng: "pt",
+  resources: {
+    en: { translation: en },
+    pt: { translation: pt },
+    es: { translation: es },
+  },
+  returnObjects: true,
+  initImmediate: false,
+});
+
 const notes = ["A", "B", "C", "D", "E", "F", "G"];
 const intervals = [1, 0.5, 1, 1, 0.5, 1, 1];
 
@@ -10,6 +27,13 @@ const tuningPresets = {
   drop_d: ["D", "A", "D", "G", "B", "E"],
   dadgad: ["D", "A", "D", "G", "A", "D"],
   open_g: ["D", "G", "D", "G", "B", "D"],
+  standard_7: ["B", "E", "A", "D", "G", "B", "E"],
+  drop_a_7: ["A", "E", "A", "D", "G", "B", "E"],
+  bass_standard: ["E", "A", "D", "G"],
+  bass_drop_d: ["D", "A", "D", "G"],
+  bass_5_standard: ["B", "E", "A", "D", "G"],
+  ukulele_standard: ["G", "C", "E", "A"],
+  ukulele_baritone: ["D", "G", "B", "E"],
 };
 
 const modes = {
@@ -20,6 +44,13 @@ const modes = {
   mixolidio: [1, 1, 0.5, 1, 1, 0.5, 1],
   eolio: [1, 0.5, 1, 1, 0.5, 1, 1],
   locrio: [0.5, 1, 1, 0.5, 1, 1, 1],
+  harmonic_minor: [1, 0.5, 1, 1, 0.5, 1.5, 0.5],
+  melodic_minor: [1, 0.5, 1, 1, 1, 1, 0.5],
+  phrygian_dom: [0.5, 1.5, 0.5, 1, 0.5, 1, 1],
+  lydian_s2: [1.5, 0.5, 1, 0.5, 1, 1, 0.5],
+  lydian_dom: [1, 1, 1, 0.5, 1, 0.5, 1],
+  altered: [0.5, 1, 0.5, 1, 1, 1, 1],
+  hungarian_minor: [1, 0.5, 1.5, 0.5, 0.5, 1.5, 0.5],
 };
 
 const pentatonics = {
@@ -27,166 +58,31 @@ const pentatonics = {
   penta_menor: { parent: "eolio", degrees: [1, 3, 4, 5, 7] },
 };
 
-// ── i18n ──
-
-const translations = {
-  en: {
-    title: "Guitar Fretboard — Scales & Modes",
-    labelRoot: "Root Note:",
-    labelMode: "Scale / Mode:",
-    labelFrets: "Frets:",
-    labelTuning: "Tuning:",
-    noteNames: {
-      C: "C (Do)", "C#": "C# (Do#)", Db: "Db (Reb)",
-      D: "D (Re)", "D#": "D# (Re#)", Eb: "Eb (Mib)",
-      E: "E (Mi)", F: "F (Fa)", "F#": "F# (Fa#)",
-      Gb: "Gb (Solb)", G: "G (Sol)", "G#": "G# (Sol#)",
-      Ab: "Ab (Lab)", A: "A (La)", "A#": "A# (La#)",
-      Bb: "Bb (Sib)", B: "B (Si)",
-    },
-    modeNames: {
-      jonio: "Ionian (Major)",
-      dorico: "Dorian",
-      frigio: "Phrygian",
-      lidio: "Lydian",
-      mixolidio: "Mixolydian",
-      eolio: "Aeolian (Minor)",
-      locrio: "Locrian",
-      penta_maior: "Major Pentatonic",
-      penta_menor: "Minor Pentatonic",
-    },
-    groupModes: "Greek Modes",
-    groupPentatonics: "Pentatonics",
-    modeDescriptions: {
-      jonio: "Bright, happy sound — the traditional major scale",
-      dorico: "Minor with a major 6th — jazzy and sophisticated",
-      frigio: "Minor with a minor 2nd — exotic and Spanish-flavored",
-      lidio: "Major with a raised 4th — ethereal and mysterious",
-      mixolidio: "Major with a minor 7th — rock and blues",
-      eolio: "Natural minor — melancholic and sad",
-      locrio: "Diminished and unstable — rarely used in popular music",
-      penta_maior: "5 notes from the major scale — versatile and consonant, widely used in rock, country, and pop",
-      penta_menor: "5 notes from the minor scale — essential for blues, rock, and improvisation",
-    },
-    tuningStandard: "Standard (E-A-D-G-B-E)",
-    tuningDropD: "Drop D (D-A-D-G-B-E)",
-    tuningDADGAD: "DADGAD (D-A-D-G-A-D)",
-    tuningOpenG: "Open G (D-G-D-G-B-D)",
-    tuningCustom: "Custom",
-    stringOrdinal: (n) => {
-      const suffixes = { 1: "st", 2: "nd", 3: "rd" };
-      return (suffixes[n] || "th");
-    },
-    legendText: "Root = gold &nbsp;|&nbsp; Scale notes = red",
-    scaleInfoPrefix: "in",
-    scaleInfoPlaceholder: "Select a note and a mode to see the scale",
-  },
-  pt: {
-    title: "Braço da Guitarra — Escalas e Modos",
-    labelRoot: "Nota Fundamental:",
-    labelMode: "Escala / Modo:",
-    labelFrets: "Trastes:",
-    labelTuning: "Afinação:",
-    noteNames: {
-      C: "C (Dó)", "C#": "C# (Dó#)", Db: "Db (Réb)",
-      D: "D (Ré)", "D#": "D# (Ré#)", Eb: "Eb (Mib)",
-      E: "E (Mi)", F: "F (Fá)", "F#": "F# (Fá#)",
-      Gb: "Gb (Solb)", G: "G (Sol)", "G#": "G# (Sol#)",
-      Ab: "Ab (Láb)", A: "A (Lá)", "A#": "A# (Lá#)",
-      Bb: "Bb (Sib)", B: "B (Si)",
-    },
-    modeNames: {
-      jonio: "Jônio (Maior)",
-      dorico: "Dórico",
-      frigio: "Frígio",
-      lidio: "Lídio",
-      mixolidio: "Mixolídio",
-      eolio: "Eólio (Menor)",
-      locrio: "Lócrio",
-      penta_maior: "Pentatônica Maior",
-      penta_menor: "Pentatônica Menor",
-    },
-    groupModes: "Modos Gregos",
-    groupPentatonics: "Pentatônicas",
-    modeDescriptions: {
-      jonio: "Som alegre e brilhante - escala maior tradicional",
-      dorico: "Som menor com 6ª maior - jazzy e sofisticado",
-      frigio: "Som menor com 2ª menor - exótico e espanhol",
-      lidio: "Som maior com 4ª aumentada - etéreo e misterioso",
-      mixolidio: "Som maior com 7ª menor - rock e blues",
-      eolio: "Som menor natural - melancólico e triste",
-      locrio: "Som diminuto e instável - raro na música popular",
-      penta_maior: "5 notas da escala maior - versátil e consonante, muito usada em rock, country e pop",
-      penta_menor: "5 notas da escala menor - essencial para blues, rock e improvisação",
-    },
-    tuningStandard: "Padrão (E-A-D-G-B-E)",
-    tuningDropD: "Drop D (D-A-D-G-B-E)",
-    tuningDADGAD: "DADGAD (D-A-D-G-A-D)",
-    tuningOpenG: "Open G (D-G-D-G-B-D)",
-    tuningCustom: "Personalizado",
-    stringOrdinal: () => "ª",
-    legendText: "Fundamental = dourado &nbsp;|&nbsp; Notas da escala = vermelho",
-    scaleInfoPrefix: "em",
-    scaleInfoPlaceholder: "Selecione uma nota e um modo para ver a escala",
-  },
-  es: {
-    title: "Mástil de Guitarra — Escalas y Modos",
-    labelRoot: "Nota Fundamental:",
-    labelMode: "Escala / Modo:",
-    labelFrets: "Trastes:",
-    labelTuning: "Afinación:",
-    noteNames: {
-      C: "C (Do)", "C#": "C# (Do#)", Db: "Db (Reb)",
-      D: "D (Re)", "D#": "D# (Re#)", Eb: "Eb (Mib)",
-      E: "E (Mi)", F: "F (Fa)", "F#": "F# (Fa#)",
-      Gb: "Gb (Solb)", G: "G (Sol)", "G#": "G# (Sol#)",
-      Ab: "Ab (Lab)", A: "A (La)", "A#": "A# (La#)",
-      Bb: "Bb (Sib)", B: "B (Si)",
-    },
-    modeNames: {
-      jonio: "Jónico (Mayor)",
-      dorico: "Dórico",
-      frigio: "Frigio",
-      lidio: "Lidio",
-      mixolidio: "Mixolidio",
-      eolio: "Eólico (Menor)",
-      locrio: "Locrio",
-      penta_maior: "Pentatónica Mayor",
-      penta_menor: "Pentatónica Menor",
-    },
-    groupModes: "Modos Griegos",
-    groupPentatonics: "Pentatónicas",
-    modeDescriptions: {
-      jonio: "Sonido alegre y brillante — la escala mayor tradicional",
-      dorico: "Menor con 6ª mayor — jazzy y sofisticado",
-      frigio: "Menor con 2ª menor — exótico y español",
-      lidio: "Mayor con 4ª aumentada — etéreo y misterioso",
-      mixolidio: "Mayor con 7ª menor — rock y blues",
-      eolio: "Menor natural — melancólico y triste",
-      locrio: "Disminuido e inestable — raro en la música popular",
-      penta_maior: "5 notas de la escala mayor — versátil y consonante, muy usada en rock, country y pop",
-      penta_menor: "5 notas de la escala menor — esencial para blues, rock e improvisación",
-    },
-    tuningStandard: "Estándar (E-A-D-G-B-E)",
-    tuningDropD: "Drop D (D-A-D-G-B-E)",
-    tuningDADGAD: "DADGAD (D-A-D-G-A-D)",
-    tuningOpenG: "Open G (D-G-D-G-B-D)",
-    tuningCustom: "Personalizado",
-    stringOrdinal: () => "ª",
-    legendText: "Fundamental = dorado &nbsp;|&nbsp; Notas de la escala = rojo",
-    scaleInfoPrefix: "en",
-    scaleInfoPlaceholder: "Seleccione una nota y un modo para ver la escala",
-  },
+const chromaticScales = {
+  blues_menor: [0, 3, 5, 6, 7, 10],
+  blues_maior: [0, 2, 3, 4, 7, 9],
+  whole_tone: [0, 2, 4, 6, 8, 10],
+  dim_hw: [0, 1, 3, 4, 6, 7, 9, 10],
+  dim_wh: [0, 2, 3, 5, 6, 8, 9, 11],
 };
 
-let currentLang = localStorage.getItem("lang") || "pt";
+function generateChromaticScale(offsets, rootNote) {
+  const rootIndex = chromaticNotes.indexOf(
+    chromaticNotes.find(
+      (n) => n === rootNote || normalizeNote(n) === normalizeNote(rootNote)
+    )
+  );
+  return offsets.map((offset) => chromaticNotes[(rootIndex + offset) % 12]);
+}
+
+// ── i18n ──
 
 function t(key) {
-  return translations[currentLang][key];
+  return i18next.t(key);
 }
 
 function setLanguage(lang) {
-  currentLang = lang;
+  i18next.changeLanguage(lang);
   localStorage.setItem("lang", lang);
 
   document.documentElement.lang = lang === "pt" ? "pt-BR" : lang;
@@ -237,8 +133,19 @@ function setLanguage(lang) {
     drop_d: "tuningDropD",
     dadgad: "tuningDADGAD",
     open_g: "tuningOpenG",
+    standard_7: "tuningStandard7",
+    drop_a_7: "tuningDropA7",
+    bass_standard: "tuningBassStandard",
+    bass_drop_d: "tuningBassDropD",
+    bass_5_standard: "tuningBass5Standard",
+    ukulele_standard: "tuningUkuleleStandard",
+    ukulele_baritone: "tuningUkuleleBaritone",
     custom: "tuningCustom",
   };
+  Array.from(tuningSelect.querySelectorAll("optgroup")).forEach((group) => {
+    const key = group.getAttribute("data-i18n");
+    if (key) group.label = t(key);
+  });
   Array.from(tuningSelect.options).forEach((opt) => {
     const tKey = tuningMap[opt.value];
     if (tKey) opt.textContent = t(tKey);
@@ -248,8 +155,8 @@ function setLanguage(lang) {
   // Update string ordinal labels
   const stringLabels = document.querySelectorAll(".string-tuning label");
   stringLabels.forEach((lbl, i) => {
-    const n = 6 - i;
-    lbl.textContent = n + t("stringOrdinal")(n);
+    const n = stringLabels.length - i;
+    lbl.textContent = n + i18next.t("stringOrdinal", { count: n, ordinal: true });
   });
 
   // Update language switcher active state
@@ -263,8 +170,35 @@ function setLanguage(lang) {
 // ── End i18n ──
 
 function getCurrentTuning() {
-  const ids = ["string6", "string5", "string4", "string3", "string2", "string1"];
-  return ids.map((id) => document.getElementById(id).value);
+  const selects = document.querySelectorAll("#tuningStrings select");
+  return Array.from(selects).map((s) => s.value);
+}
+
+function buildStringControls(tuning) {
+  const container = document.getElementById("tuningStrings");
+  container.innerHTML = "";
+  tuning.forEach((note, i) => {
+    const div = document.createElement("div");
+    div.className = "string-tuning";
+    const n = tuning.length - i;
+    const label = document.createElement("label");
+    label.textContent = n + i18next.t("stringOrdinal", { count: n, ordinal: true });
+    const select = document.createElement("select");
+    chromaticNotes.forEach((cn) => {
+      const option = document.createElement("option");
+      option.value = cn;
+      option.textContent = cn;
+      select.appendChild(option);
+    });
+    select.value = note;
+    select.addEventListener("change", () => {
+      document.getElementById("tuningPreset").value = "custom";
+      updateFretboard();
+    });
+    div.appendChild(label);
+    div.appendChild(select);
+    container.appendChild(div);
+  });
 }
 
 function getCurrentFrets() {
@@ -343,7 +277,7 @@ function generateScale(mode, note) {
     const requiredInterval = modeIntervals[i];
 
     const naturalSemitones = naturalInterval === 1 ? 2 : 1;
-    const requiredSemitones = requiredInterval === 1 ? 2 : 1;
+    const requiredSemitones = requiredInterval * 2;
 
     const difference = requiredSemitones - naturalSemitones;
     const nextAccidentals = currentAccidentals + difference;
@@ -415,7 +349,7 @@ function getScaleDegree(fretNote, scale) {
 const dotFrets = new Set([3, 5, 7, 9, 15, 17, 19, 21]);
 const doubleDotFrets = new Set([12, 24]);
 
-function renderFretboard(scale, rootNote, tuning, fretCount) {
+function renderFretboard(scale, rootNote, tuning, fretCount, degreeLabels) {
   const arm = generateArmMatrix(tuning, fretCount);
   const reversedTuning = [...tuning].reverse();
   const strings = tuning.length;
@@ -440,7 +374,7 @@ function renderFretboard(scale, rootNote, tuning, fretCount) {
 
     const stringCell = document.createElement("td");
     const n = string + 1;
-    stringCell.textContent = `${n}${t("stringOrdinal")(n)} (${reversedTuning[string]})`;
+    stringCell.textContent = `${n}${i18next.t("stringOrdinal", { count: n, ordinal: true })} (${reversedTuning[string]})`;
     stringCell.className = "string-label";
     row.appendChild(stringCell);
 
@@ -451,7 +385,8 @@ function renderFretboard(scale, rootNote, tuning, fretCount) {
 
       const degree = getScaleDegree(note, scale);
       if (degree !== null) {
-        cell.innerHTML = `<span class="note-badge"><span class="note-name">${note}</span><span class="degree-number">${degree}</span></span>`;
+        const label = degreeLabels ? degreeLabels[degree - 1] : degree;
+        cell.innerHTML = `<span class="note-badge"><span class="note-name">${note}</span><span class="degree-number">${label}</span></span>`;
         if (
           normalizeNote(note) === normalizeNote(rootNote) ||
           note === rootNote
@@ -475,10 +410,14 @@ function updateFretboard() {
   const fretCount = getCurrentFrets();
 
   let scale;
-  if (pentatonics[selectedMode]) {
+  let degreeLabels;
+  if (chromaticScales[selectedMode]) {
+    scale = generateChromaticScale(chromaticScales[selectedMode], selectedNote);
+  } else if (pentatonics[selectedMode]) {
     const penta = pentatonics[selectedMode];
     const fullScale = generateScale(penta.parent, selectedNote);
     scale = penta.degrees.map((d) => fullScale[d - 1]);
+    degreeLabels = penta.degrees;
   } else {
     scale = generateScale(selectedMode, selectedNote);
   }
@@ -495,35 +434,16 @@ function updateFretboard() {
   const modeDesc = document.getElementById("modeDescription");
   modeDesc.textContent = t("modeDescriptions")[selectedMode];
 
-  renderFretboard(scale, selectedNote, tuning, fretCount);
+  renderFretboard(scale, selectedNote, tuning, fretCount, degreeLabels);
 }
 
 function initTuningControls() {
-  const stringIds = ["string6", "string5", "string4", "string3", "string2", "string1"];
-  const defaultTuning = tuningPresets.standard;
-
-  stringIds.forEach((id, i) => {
-    const select = document.getElementById(id);
-    chromaticNotes.forEach((note) => {
-      const option = document.createElement("option");
-      option.value = note;
-      option.textContent = note;
-      select.appendChild(option);
-    });
-    select.value = defaultTuning[i];
-    select.addEventListener("change", () => {
-      document.getElementById("tuningPreset").value = "custom";
-      updateFretboard();
-    });
-  });
+  buildStringControls(tuningPresets.standard);
 
   document.getElementById("tuningPreset").addEventListener("change", (e) => {
     const preset = e.target.value;
     if (preset === "custom") return;
-    const tuning = tuningPresets[preset];
-    stringIds.forEach((id, i) => {
-      document.getElementById(id).value = tuning[i];
-    });
+    buildStringControls(tuningPresets[preset]);
     updateFretboard();
   });
 
@@ -538,7 +458,7 @@ document.addEventListener("DOMContentLoaded", function () {
     btn.addEventListener("click", () => setLanguage(btn.dataset.lang));
   });
 
-  setLanguage(currentLang);
+  setLanguage(i18next.language);
 
   document
     .getElementById("noteSelect")

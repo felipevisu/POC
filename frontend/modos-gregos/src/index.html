@@ -52,9 +52,27 @@
               <option value="eolio">Eólio (Menor)</option>
               <option value="locrio">Lócrio</option>
             </optgroup>
-            <optgroup label="Pentatônicas" data-i18n="groupPentatonics">
+            <optgroup label="Pentatônicas e Blues" data-i18n="groupPentaBlues">
               <option value="penta_maior">Pentatônica Maior</option>
               <option value="penta_menor">Pentatônica Menor</option>
+              <option value="blues_menor">Blues Menor</option>
+              <option value="blues_maior">Blues Maior</option>
+            </optgroup>
+            <optgroup label="Escalas Menores" data-i18n="groupMinor">
+              <option value="harmonic_minor">Menor Harmônica</option>
+              <option value="melodic_minor">Menor Melódica</option>
+              <option value="hungarian_minor">Menor Húngara</option>
+            </optgroup>
+            <optgroup label="Modos Derivados" data-i18n="groupDerived">
+              <option value="phrygian_dom">Frígio Dominante</option>
+              <option value="lydian_s2">Lídio #2</option>
+              <option value="lydian_dom">Lídio Dominante</option>
+              <option value="altered">Alterada</option>
+            </optgroup>
+            <optgroup label="Escalas Simétricas" data-i18n="groupSymmetric">
+              <option value="whole_tone">Tons Inteiros</option>
+              <option value="dim_hw">Diminuta (S-T)</option>
+              <option value="dim_wh">Diminuta (T-S)</option>
             </optgroup>
           </select>
         </div>
@@ -69,39 +87,31 @@
         <div class="control-group">
           <label for="tuningPreset" data-i18n="labelTuning">Afinação:</label>
           <select id="tuningPreset">
-            <option value="standard">Padrão (E-A-D-G-B-E)</option>
-            <option value="drop_d">Drop D (D-A-D-G-B-E)</option>
-            <option value="dadgad">DADGAD (D-A-D-G-A-D)</option>
-            <option value="open_g">Open G (D-G-D-G-B-D)</option>
+            <optgroup label="Guitarra (6 cordas)" data-i18n="tuningGroupGuitar6">
+              <option value="standard">Padrão (E-A-D-G-B-E)</option>
+              <option value="drop_d">Drop D (D-A-D-G-B-E)</option>
+              <option value="dadgad">DADGAD (D-A-D-G-A-D)</option>
+              <option value="open_g">Open G (D-G-D-G-B-D)</option>
+            </optgroup>
+            <optgroup label="Guitarra (7 cordas)" data-i18n="tuningGroupGuitar7">
+              <option value="standard_7">Padrão 7 (B-E-A-D-G-B-E)</option>
+              <option value="drop_a_7">Drop A (A-E-A-D-G-B-E)</option>
+            </optgroup>
+            <optgroup label="Baixo (4 cordas)" data-i18n="tuningGroupBass4">
+              <option value="bass_standard">Padrão (E-A-D-G)</option>
+              <option value="bass_drop_d">Drop D (D-A-D-G)</option>
+            </optgroup>
+            <optgroup label="Baixo (5 cordas)" data-i18n="tuningGroupBass5">
+              <option value="bass_5_standard">Padrão (B-E-A-D-G)</option>
+            </optgroup>
+            <optgroup label="Ukulele" data-i18n="tuningGroupUkulele">
+              <option value="ukulele_standard">Padrão (G-C-E-A)</option>
+              <option value="ukulele_baritone">Barítono (D-G-B-E)</option>
+            </optgroup>
             <option value="custom">Personalizado</option>
           </select>
         </div>
-        <div class="tuning-strings">
-          <div class="string-tuning">
-            <label for="string6">6ª</label>
-            <select id="string6"></select>
-          </div>
-          <div class="string-tuning">
-            <label for="string5">5ª</label>
-            <select id="string5"></select>
-          </div>
-          <div class="string-tuning">
-            <label for="string4">4ª</label>
-            <select id="string4"></select>
-          </div>
-          <div class="string-tuning">
-            <label for="string3">3ª</label>
-            <select id="string3"></select>
-          </div>
-          <div class="string-tuning">
-            <label for="string2">2ª</label>
-            <select id="string2"></select>
-          </div>
-          <div class="string-tuning">
-            <label for="string1">1ª</label>
-            <select id="string1"></select>
-          </div>
-        </div>
+        <div class="tuning-strings" id="tuningStrings"></div>
       </div>
 
       <div class="scale-info" id="scaleInfo">
@@ -115,6 +125,6 @@
       <div class="mode-description" id="modeDescription"></div>
     </div>
 
-    <script src="index.js"></script>
+    <script type="module" src="index.js"></script>
   </body>
 </html>
