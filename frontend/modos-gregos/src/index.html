@@ -8,13 +8,14 @@
   </head>
   <body>
     <div class="container">
-      <div class="lang-switcher">
-        <button class="lang-btn" data-lang="en">EN</button>
-        <button class="lang-btn" data-lang="pt">PT</button>
-        <button class="lang-btn" data-lang="es">ES</button>
+      <div class="header-bar">
+        <h1 data-i18n="title">Braço da Guitarra — Escalas e Modos</h1>
+        <div class="lang-switcher">
+          <button class="lang-btn" data-lang="en">EN</button>
+          <button class="lang-btn" data-lang="pt">PT</button>
+          <button class="lang-btn" data-lang="es">ES</button>
+        </div>
       </div>
-
-      <h1 data-i18n="title">Braço da Guitarra — Escalas e Modos</h1>
 
       <div class="controls">
         <div class="control-group">
@@ -81,9 +82,7 @@
           <label for="fretCount" data-i18n="labelFrets">Trastes:</label>
           <input type="number" id="fretCount" min="12" max="24" value="16" />
         </div>
-      </div>
 
-      <div class="tuning-controls">
         <div class="control-group">
           <label for="tuningPreset" data-i18n="labelTuning">Afinação:</label>
           <select id="tuningPreset">
@@ -111,6 +110,7 @@
             <option value="custom">Personalizado</option>
           </select>
         </div>
+
         <div class="tuning-strings" id="tuningStrings"></div>
       </div>
 
@@ -123,8 +123,6 @@
       </div>
 
       <div id="scalePositions" class="scale-positions"></div>
-
-      <div class="mode-description" id="modeDescription"></div>
     </div>
 
     <script type="module" src="index.js"></script>

@@ -633,14 +633,12 @@ function updateFretboard() {
   const scaleInfo = document.getElementById("scaleInfo");
   const modeNames = t("modeNames");
 
+  const modeDescText = t("modeDescriptions")[selectedMode] || "";
   scaleInfo.innerHTML = `
     <div><strong>${modeNames[selectedMode]} ${t("scaleInfoPrefix")} ${selectedNote}</strong></div>
     <div class="scale-notes">${scale.join("  ·  ")}</div>
-    <div class="legend">${t("legendText")}</div>
+    <div class="legend">${t("legendText")}${modeDescText ? "  ·  " + modeDescText : ""}</div>
   `;
-
-  const modeDesc = document.getElementById("modeDescription");
-  modeDesc.textContent = t("modeDescriptions")[selectedMode];
 
   const greekModes = ["jonio", "dorico", "frigio", "lidio", "mixolidio", "eolio", "locrio"];
   const pentaModes = ["penta_maior", "penta_menor"];
