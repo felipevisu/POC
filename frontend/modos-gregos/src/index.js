@@ -354,8 +354,8 @@ function getPositionFrets(scale, tuning, fretCount) {
   const arm = generateArmMatrix(tuning, fretCount);
   const lowStringIndex = tuning.length - 1;
   const frets = [];
-  const maxFret = Math.min(fretCount, 11);
-  for (let fret = 0; fret <= maxFret; fret++) {
+  const maxFret = Math.min(fretCount, 12);
+  for (let fret = 1; fret <= maxFret; fret++) {
     if (isNoteInScale(arm[lowStringIndex][fret], scale)) {
       frets.push(fret);
     }
@@ -391,7 +391,7 @@ function computePositionNotes(scale, arm, strings, posFret, fretCount, notesPerS
       const prev = n > 0 ? stringCells[n - 1] : null;
       if (n > 0 && !prev) break;
       const minFret = n === 0
-        ? Math.max(0, refFret - 1)
+        ? Math.max(1, refFret - 1)
         : prev.fret + 1;
 
       for (let fret = minFret; fret <= fretCount; fret++) {
@@ -554,6 +554,34 @@ function renderPositionFretboards(scale, rootNote, tuning, fretCount, degreeLabe
 
 const dotFrets = new Set([3, 5, 7, 9, 15, 17, 19, 21]);
 const doubleDotFrets = new Set([12, 24]);
+
+const SETUP_KEY = "fretboardSetup";
+
+function saveSetup() {
+  const setup = {
+    note: document.getElementById("noteSelect").value,
+    mode: document.getElementById("modeSelect").value,
+    tuningPreset: document.getElementById("tuningPreset").value,
+    fretCount: document.getElementById("fretCount").value,
+    tuning: getCurrentTuning(),
+  };
+  localStorage.setItem(SETUP_KEY, JSON.stringify(setup));
+}
+
+function loadSetup() {
+  const raw = localStorage.getItem(SETUP_KEY);
+  if (!raw) return;
+  try {
+    const setup = JSON.parse(raw);
+    if (setup.note) document.getElementById("noteSelect").value = setup.note;
+    if (setup.mode) document.getElementById("modeSelect").value = setup.mode;
+    if (setup.fretCount) document.getElementById("fretCount").value = setup.fretCount;
+    if (setup.tuningPreset) document.getElementById("tuningPreset").value = setup.tuningPreset;
+    if (setup.tuning) buildStringControls(setup.tuning);
+  } catch (e) {
+    // ignore corrupt data
+  }
+}
 
 function renderFretboard(scale, rootNote, tuning, fretCount, degreeLabels, blueNote) {
   const arm = generateArmMatrix(tuning, fretCount);
