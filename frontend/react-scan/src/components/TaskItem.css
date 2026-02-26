@@ -1,0 +1,97 @@
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 4px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  transition: all 0.2s;
+}
+
+.task-item.done {
+  background: #f9f9f9;
+  opacity: 0.7;
+}
+
+.task-checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  background: transparent;
+  border: 2px solid;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.task-checkbox--high {
+  border-color: #c33;
+}
+
+.task-checkbox--medium {
+  border-color: #d97706;
+}
+
+.task-checkbox--low {
+  border-color: #059669;
+}
+
+.task-checkbox.checked {
+  background: currentColor;
+  color: #fff;
+}
+
+.task-checkbox-checkmark {
+  color: #fff;
+  font-size: 12px;
+}
+
+.task-title {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+}
+
+.task-title.done {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.task-priority {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: #fff;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.task-priority--high {
+  background: #c33;
+}
+
+.task-priority--medium {
+  background: #d97706;
+}
+
+.task-priority--low {
+  background: #059669;
+}
+
+.task-delete-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #999;
+  font-size: 18px;
+  padding: 0 4px;
+  transition: color 0.2s;
+}
+
+.task-delete-button:hover {
+  color: #c33;
+}

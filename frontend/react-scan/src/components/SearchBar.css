@@ -1,0 +1,20 @@
+.search-bar {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 12px;
+  color: #333;
+  font-size: 14px;
+  width: 100%;
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.search-bar::placeholder {
+  color: #999;
+}
+
+.search-bar:focus {
+  border-color: #0066cc;
+}
