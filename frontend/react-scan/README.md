@@ -6,3 +6,5 @@
 * Inline arrow functions passed as props to TaskItem
 * No React.memo on any component
 * Clock + NotificationBadge re-render the entire tree
+
+<img src="./screenshot.png" alt="screenshot" />
