@@ -1,0 +1,306 @@
+{
+  "modules": [
+    {
+      "id": "module-1",
+      "title": "Módulo 1 — Som e Elementos da Música",
+      "description": "Tipos de som, propriedades do som e elementos básicos da música.",
+      "questions": [
+        {
+          "id": "m1-q1",
+          "question": "Som musical é o resultado de que tipo de vibração sonora?",
+          "options": ["Regular e definida", "Irregular e indefinida", "Apenas silenciosa", "Apenas muito intensa"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q2",
+          "question": "Qual exemplo corresponde a som musical?",
+          "options": ["Piano", "Motor de carro", "Trovão", "Turbina"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q3",
+          "question": "O ruído é caracterizado por vibrações sonoras...",
+          "options": ["Irregulares e indefinidas", "Regulares e definidas", "Sempre longas", "Sempre fracas"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q4",
+          "question": "Qual opção é um exemplo de ruído?",
+          "options": ["Trovão", "Violão", "Sino", "Piano"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q5",
+          "question": "Qual tipo de som pode ser grafado?",
+          "options": ["Som musical", "Ruído", "Apenas o ruído", "Nenhum dos dois"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q6",
+          "question": "Duração é a propriedade do som que indica...",
+          "options": ["O tempo de propagação", "A força aplicada", "A frequência sonora", "A origem do som"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q7",
+          "question": "Quando um som é classificado como longo ou curto, estamos falando de...",
+          "options": ["Duração", "Intensidade", "Altura", "Timbre"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q8",
+          "question": "Intensidade do som depende principalmente de...",
+          "options": ["Força e pressão ao produzir o som", "Frequência sonora", "Origem do som", "Tempo de propagação"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q9",
+          "question": "A intensidade do som pode ser descrita como...",
+          "options": ["Forte ou fraca", "Aguda ou grave", "Longa ou curta", "Clara ou opaca"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q10",
+          "question": "Altura está relacionada a qual aspecto do som?",
+          "options": ["Frequência sonora", "Pressão exercida", "Origem do som", "Tempo de propagação"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q11",
+          "question": "A altura permite classificar se o som é...",
+          "options": ["Grave ou agudo", "Forte ou fraco", "Longo ou curto", "Regular ou irregular"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q12",
+          "question": "Timbre é a qualidade que nos permite...",
+          "options": ["Identificar a origem do som", "Saber a duração", "Medir a intensidade", "Calcular a frequência"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q13",
+          "question": "Qual situação ajuda a identificar o timbre?",
+          "options": ["Distinguir voz humana de um violão", "Perceber que o som é agudo", "Saber que o som é longo", "Notar que o som é forte"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q14",
+          "question": "Um exemplo de origem do timbre pode ser...",
+          "options": ["Canto dos pássaros", "Som sempre agudo", "Som sempre forte", "Som sempre curto"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q15",
+          "question": "Qual alternativa combina corretamente a propriedade com sua descrição?",
+          "options": ["Duração → tempo de propagação", "Intensidade → frequência sonora", "Altura → origem do som", "Timbre → tempo de propagação"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q16",
+          "question": "Som musical e ruído se diferenciam principalmente porque...",
+          "options": ["Som musical é regular e pode ser grafado", "Ruído é sempre curto", "Som musical é sempre forte", "Ruído tem frequência definida"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q17",
+          "question": "Qual propriedade do som ajuda a perceber se ele é grave ou agudo?",
+          "options": ["Altura", "Intensidade", "Duração", "Timbre"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q18",
+          "question": "Qual propriedade está ligada à força usada para produzir o som?",
+          "options": ["Intensidade", "Altura", "Timbre", "Duração"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q19",
+          "question": "A música é formada por quais três elementos principais?",
+          "options": ["Melodia, Harmonia e Ritmo", "Altura, Timbre e Intensidade", "Som, Silêncio e Ruído", "Tom, Semitom e Pausa"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q20",
+          "question": "Melodia é definida como...",
+          "options": ["Combinação de sons sucessivos", "Combinação simultânea de sons", "Sequência de pausas apenas", "Som irregular e indefinido"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q21",
+          "question": "Qual exemplo representa melodia?",
+          "options": ["Assobio de uma pessoa", "Acorde no violão", "Várias vozes em coral", "Turbina de avião"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q22",
+          "question": "Harmonia é a combinação de sons...",
+          "options": ["Simultâneos (ao mesmo tempo)", "Sucessivos (um após o outro)", "Apenas longos", "Apenas curtos"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q23",
+          "question": "Qual exemplo representa harmonia?",
+          "options": ["Um acorde no violão", "Canto de um pássaro", "Assobio isolado", "Som de trovão"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q24",
+          "question": "Ritmo é a combinação de...",
+          "options": ["Sons longos, breves e silêncio", "Apenas sons longos", "Sons simultâneos", "Som irregular sem pausas"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q25",
+          "question": "No ritmo, o silêncio é chamado de...",
+          "options": ["Pausa", "Timbre", "Altura", "Intensidade"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m1-q26",
+          "question": "Qual alternativa relaciona corretamente o elemento com sua descrição?",
+          "options": ["Harmonia → sons simultâneos", "Melodia → sons simultâneos", "Ritmo → apenas sons longos", "Melodia → silêncio (pausa)"],
+          "answerIndex": 0
+        }
+      ]
+    },
+    {
+      "id": "module-2",
+      "title": "Módulo 2 — Notas Musicais e Frequência",
+      "description": "Frequência sonora, notas naturais e disposição ascendente/descendente.",
+      "questions": [
+        {
+          "id": "m2-q1",
+          "question": "Fisicamente, uma nota musical é resultado de quê?",
+          "options": ["Agitação de moléculas de ar", "Luz refletida", "Vibração de água", "Campo magnético"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m2-q2",
+          "question": "As vibrações de uma nota musical são captadas e interpretadas como...",
+          "options": ["Som", "Luz", "Calor", "Cor"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m2-q3",
+          "question": "O que diferencia uma nota musical de outra?",
+          "options": ["A frequência", "A intensidade", "A duração", "O timbre"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m2-q4",
+          "question": "Frequência é a quantidade de ciclos (oscilações) de uma onda sonora em...",
+          "options": ["Um período de tempo", "Um espaço físico", "Um instrumento", "Uma sala"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m2-q5",
+          "question": "Notas mais graves vibram...",
+          "options": ["Menos vezes (menor frequência)", "Mais vezes (maior frequência)", "Sempre igual", "Sem vibração"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m2-q6",
+          "question": "Notas mais agudas vibram...",
+          "options": ["Mais vezes (maior frequência)", "Menos vezes (menor frequência)", "Sem vibração", "Sempre igual"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m2-q7",
+          "question": "Quantas notas naturais compõem o sistema musical apresentado?",
+          "options": ["7", "5", "8", "12"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m2-q8",
+          "question": "Quais são as notas naturais?",
+          "options": ["Dó, Ré, Mi, Fá, Sol, Lá, Si", "Dois, Três, Quatro", "Dó, Ré, Fa#, Sol#, Lá#", "Mi, Fá, Sol, Lá"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m2-q9",
+          "question": "Uma sequência ascendente de notas inicia na região...",
+          "options": ["Grave e vai para a aguda", "Aguda e vai para a grave", "Média e termina no silêncio", "Grave e termina no silêncio"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m2-q10",
+          "question": "Uma sequência descendente de notas inicia na região...",
+          "options": ["Aguda e vai para a grave", "Grave e vai para a aguda", "Média e vai para a aguda", "Grave e termina no silêncio"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m2-q11",
+          "question": "Como chamamos a distância sonora entre duas notas musicais?",
+          "options": ["Intervalo", "Intensidade", "Timbre", "Altura"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m2-q12",
+          "question": "Os intervalos são formados pela combinação de...",
+          "options": ["Tons e semitons", "Melodia e harmonia", "Ritmo e silêncio", "Altura e timbre"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m2-q13",
+          "question": "Semitom (ou meio tom) é...",
+          "options": ["A menor distância entre duas notas", "O dobro de um tom", "A maior distância entre duas notas", "A mesma coisa que tom"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m2-q14",
+          "question": "Tom corresponde a...",
+          "options": ["O dobro de um semitom", "Metade de um semitom", "A menor distância entre notas", "Uma pausa no ritmo"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m2-q15",
+          "question": "Qual afirmação está correta?",
+          "options": ["Tom = 2 semitons", "Semitom = 2 tons", "Intervalo = timbre", "Intervalo = intensidade"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m2-q16",
+          "question": "Sobre os intervalos, o conteúdo afirma que...",
+          "options": ["Serão tratados mais à frente por ser um tópico amplo", "Já foram totalmente explicados", "Não dependem de tons", "Não dependem de semitons"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m2-q17",
+          "question": "Como chamamos as alterações feitas ao adicionar ou reduzir semitons?",
+          "options": ["Acidentes", "Ritmos", "Timbres", "Alturas"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m2-q18",
+          "question": "Sustenido (#) faz o quê com a nota?",
+          "options": ["Eleva em um semitom", "Reduz em um semitom", "Eleva em um tom", "Anula alterações"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m2-q19",
+          "question": "Bemol (b) faz o quê com a nota?",
+          "options": ["Reduz em um semitom", "Eleva em um semitom", "Reduz em um tom", "Anula alterações"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m2-q20",
+          "question": "Dobrado sustenido (x) corresponde a...",
+          "options": ["Elevar a nota em um tom", "Elevar em um semitom", "Reduzir em um tom", "Anular alterações"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m2-q21",
+          "question": "Dobrado bemol (bb) corresponde a...",
+          "options": ["Reduzir a nota em um tom", "Reduzir em um semitom", "Elevar em um tom", "Anular alterações"],
+          "answerIndex": 0
+        },
+        {
+          "id": "m2-q22",
+          "question": "Bequadro (♮) serve para...",
+          "options": ["Anular os sinais de alteração", "Elevar em um semitom", "Reduzir em um semitom", "Dobrar a alteração"],
+          "answerIndex": 0
+        }
+      ]
+    }
+  ]
+}
