@@ -1,0 +1,38 @@
+.stats-bar {
+  display: flex;
+  gap: 12px;
+}
+
+.stat-card {
+  flex: 1;
+  padding: 12px;
+  border-radius: 4px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.stat-value--total {
+  color: #666;
+}
+
+.stat-value--done {
+  color: #059669;
+}
+
+.stat-value--urgent {
+  color: #c33;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: #999;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

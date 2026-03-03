@@ -1,0 +1,15 @@
+.user-greeting {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-greeting-label {
+  font-size: 12px;
+  color: #999;
+}
+
+.user-greeting-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
