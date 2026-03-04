@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>arch·scan report</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Syne:wght@700;800&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0a0f; --surface: #111118; --border: #1e2030;
+    --text: #e2e8f0; --muted: #4a5568; --dim: #2d3748;
+    --cyan: #00d4ff; --purple: #818cf8; --green: #34d399;
+    --red: #fb7185; --amber: #f59e0b; --pink: #a78bfa;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'JetBrains Mono', monospace; padding: 2rem; min-height: 100vh; }
+  header { margin-bottom: 2.5rem; }
+  .logo { font-family: 'Syne', sans-serif; font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 800; letter-spacing: -0.02em; }
+  .logo span:first-child { color: var(--cyan); }
+  .logo span:nth-child(2) { color: var(--purple); }
+  .subtitle { color: var(--muted); font-size: 12px; letter-spacing: 0.08em; margin-top: 6px; }
+  .source-file { color: var(--dim); font-size: 11px; margin-top: 4px; }
+  .source-file span { color: var(--cyan); }
+
+  /* Stats */
+  .stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 2rem; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.5rem; flex: 1; min-width: 120px; }
+  .stat-num { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; }
+  .stat-label { color: var(--muted); font-size: 10px; letter-spacing: 0.08em; margin-top: 3px; }
+
+  /* Filters */
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; cursor: pointer; border: 1px solid var(--dim); color: var(--muted); background: transparent; transition: all 0.15s; font-family: inherit; }
+  .pill:hover { opacity: 0.85; }
+  .pill.active { border-color: currentColor; }
+  .count-badge { background: var(--border); border-radius: 999px; padding: 0 7px; font-size: 10px; color: var(--muted); }
+
+  /* Cards */
+  .cards { display: flex; flex-direction: column; gap: 10px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; transition: border-color 0.2s; }
+  .card:hover { border-color: var(--dim); }
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; }
+  .card-title { display: flex; align-items: center; gap: 10px; }
+  .cat-icon { font-size: 15px; }
+  .tech-name { font-weight: 700; font-size: 15px; }
+  .version-tag { background: rgba(129,140,248,0.15); color: var(--purple); border: 1px solid rgba(129,140,248,0.3); border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
+  .badges { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .badge { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 600; letter-spacing: 0.06em; }
+  .badge-ok { background: rgba(52,211,153,0.12); color: var(--green); border: 1px solid rgba(52,211,153,0.25); }
+  .badge-noversion { background: rgba(251,113,133,0.12); color: var(--red); border: 1px solid rgba(251,113,133,0.28); }
+  .badge-abbr { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.28); }
+  .abbr-row { margin-top: 10px; font-size: 11px; }
+  .abbr-label { color: var(--muted); letter-spacing: 0.05em; }
+  .abbr-tag { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.28); border-radius: 4px; padding: 1px 7px; font-size: 10px; margin-right: 4px; }
+  .context { margin-top: 10px; padding-left: 12px; border-left: 2px solid var(--border); color: var(--muted); font-size: 12px; font-style: italic; line-height: 1.5; }
+  .empty { color: var(--muted); font-size: 13px; padding: 2rem 0; text-align: center; }
+
+  /* Category colors */
+  .cat-languages  { --cat: #00d4ff; }
+  .cat-frameworks { --cat: #a78bfa; }
+  .cat-libraries  { --cat: #34d399; }
+  .cat-services   { --cat: #f59e0b; }
+  .cat-plugins    { --cat: #fb7185; }
+  .cat-patterns   { --cat: #818cf8; }
+  .cat-icon { color: var(--cat, #718096); }
+  .badge-cat { background: color-mix(in srgb, var(--cat, #718096) 15%, transparent); color: var(--cat, #718096); border: 1px solid color-mix(in srgb, var(--cat, #718096) 35%, transparent); }
+  .pill-warnings  { --cat: #fb7185; }
+  .pill-all       { --cat: #e2e8f0; }
+  .pill-languages { --cat: #00d4ff; }
+  .pill-frameworks{ --cat: #a78bfa; }
+  .pill-libraries { --cat: #34d399; }
+  .pill-services  { --cat: #f59e0b; }
+  .pill-plugins   { --cat: #fb7185; }
+  .pill-patterns  { --cat: #818cf8; }
+  .pill.active { color: var(--cat, #e2e8f0); border-color: color-mix(in srgb, var(--cat, #e2e8f0) 70%, transparent); background: color-mix(in srgb, var(--cat, #e2e8f0) 10%, transparent); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span>arch</span><span>·</span>scan</div>
+  <div class="subtitle">ARCHITECTURE DOC TECHNOLOGY REPORT</div>
+  <div class="source-file">source: <span id="source-name">—</span></div>
+</header>
+
+<div class="stats" id="stats"></div>
+<div class="filters" id="filters"></div>
+<div class="cards" id="cards"></div>
+
+<script>
+const CAT_META = {
+  languages:  { label: 'Languages',        icon: '⟨/⟩' },
+  frameworks: { label: 'Frameworks',       icon: '⬡'   },
+  libraries:  { label: 'Libraries',        icon: '◫'   },
+  services:   { label: 'External Services',icon: '⬡'   },
+  plugins:    { label: 'Plugins',          icon: '⊕'   },
+  patterns:   { label: 'Design Patterns',  icon: '◈'   },
+};
+
+// ── DATA INJECTED BY SKILL ──────────────────────────────
+const DATA = __ARCH_SCAN_DATA__;
+// ───────────────────────────────────────────────────────
+
+let activeFilter = 'all';
+
+function render() {
+  document.getElementById('source-name').textContent = DATA.sourceFile || 'architecture.md';
+
+  // stats
+  const s = DATA.summary;
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><div class="stat-num" style="color:var(--cyan)">${s.totalFound}</div><div class="stat-label">TECHNOLOGIES</div></div>
+    <div class="stat"><div class="stat-num" style="color:${s.missingVersionCount > 0 ? 'var(--red)' : 'var(--green)'}">${s.missingVersionCount}</div><div class="stat-label">MISSING VERSIONS</div></div>
+    <div class="stat"><div class="stat-num" style="color:${s.abbreviationIssueCount > 0 ? 'var(--amber)' : 'var(--green)'}">${s.abbreviationIssueCount}</div><div class="stat-label">ABBR. ISSUES</div></div>
+  `;
+
+  // filters
+  const cats = [...new Set(DATA.technologies.map(t => t.category))];
+  const warnCount = DATA.technologies.filter(t => t.missingVersion || t.hasAbbreviationIssue).length;
+  const filterDefs = [
+    { key: 'all',      label: 'ALL',       icon: '◉', count: DATA.technologies.length },
+    { key: 'warnings', label: 'WARNINGS',  icon: '⚠', count: warnCount },
+    ...cats.map(c => ({ key: c, label: c.toUpperCase(), icon: CAT_META[c]?.icon || '·', count: DATA.technologies.filter(t => t.category === c).length }))
+  ];
+  document.getElementById('filters').innerHTML = filterDefs.map(f => `
+    <button class="pill pill-${f.key} ${activeFilter === f.key ? 'active' : ''}" onclick="setFilter('${f.key}')">
+      ${f.icon} ${f.label}
+      ${f.key !== 'all' ? `<span class="count-badge">${f.count}</span>` : ''}
+    </button>
+  `).join('');
+
+  // cards
+  const techs = DATA.technologies.filter(t => {
+    if (activeFilter === 'all') return true;
+    if (activeFilter === 'warnings') return t.missingVersion || t.hasAbbreviationIssue;
+    return t.category === activeFilter;
+  });
+
+  document.getElementById('cards').innerHTML = techs.length === 0
+    ? '<div class="empty">No items in this category.</div>'
+    : techs.map(t => {
+        const meta = CAT_META[t.category] || {};
+        return `
+          <div class="card cat-${t.category}">
+            <div class="card-header">
+              <div class="card-title">
+                <span class="cat-icon">${meta.icon || '·'}</span>
+                <span class="tech-name">${t.name}</span>
+                ${t.versionMentioned ? `<span class="version-tag">v${t.versionMentioned}</span>` : ''}
+              </div>
+              <div class="badges">
+                <span class="badge badge-cat">${meta.label || t.category}</span>
+                ${t.missingVersion ? '<span class="badge badge-noversion">NO VERSION</span>' : ''}
+                ${t.hasAbbreviationIssue ? '<span class="badge badge-abbr">ABBR. ISSUE</span>' : ''}
+                ${!t.missingVersion && !t.hasAbbreviationIssue ? '<span class="badge badge-ok">✓ OK</span>' : ''}
+              </div>
+            </div>
+            ${t.abbreviationsFound?.length ? `
+              <div class="abbr-row">
+                <span class="abbr-label">ABBREVIATIONS: </span>
+                ${t.abbreviationsFound.map(a => `<span class="abbr-tag">${a}</span>`).join('')}
+              </div>` : ''}
+            ${t.context ? `<div class="context">${t.context}</div>` : ''}
+          </div>`;
+      }).join('');
+}
+
+function setFilter(key) { activeFilter = key; render(); }
+
+render();
+</script>
+</body>
+</html>
