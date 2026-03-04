@@ -1,6 +1,6 @@
 ---
 name: arch-scan
-description: Analyze an architecture markdown file to extract all technology mentions — languages, frameworks, libraries, external services, plugins, and design patterns. Auto-invoke when the user asks to scan, analyze, or audit technologies in a .md or architecture document. Generates an interactive HTML report and opens it in the browser.
+description: Analyze an architecture markdown file to extract all technology mentions — languages, frameworks, libraries, databases, external services, plugins, and design patterns. Auto-invoke when the user asks to scan, analyze, or audit technologies in a .md or architecture document. Generates an interactive HTML report and opens it in the browser.
 ---
 
 Analyze the architecture markdown file provided as $ARGUMENTS (or ask which .md file to analyze if none specified).
@@ -15,6 +15,7 @@ Identify ALL technology mentions grouped into these categories:
 - **languages** – TypeScript, Python, Go, SQL, etc.
 - **frameworks** – NestJS, Django, Spring Boot, Next.js, etc.
 - **libraries** – Axios, Lodash, Pydantic, RxJS, etc.
+- **databases** – PostgreSQL, MongoDB, Redis, MySQL, DynamoDB, Elasticsearch, SQLite, Cassandra, etc.
 - **services** – AWS S3, Stripe, Twilio, Datadog, etc.
 - **plugins** – ESLint plugins, Webpack plugins, IDE extensions, etc.
 - **patterns** – CQRS, Event Sourcing, Saga, Repository Pattern, Hexagonal Architecture, etc.
