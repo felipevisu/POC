@@ -175,6 +175,25 @@ services:
     networks:
       - electromart-network
 
+  csv-connector-source:
+    build:
+      context: ./services/csv-connector-source
+      dockerfile: Dockerfile
+    container_name: electromart-csv-connector
+    environment:
+      KAFKA_BROKER: kafka:9092
+      KAFKA_TOPIC: csv
+      INBOX_DIR: /data/inbox
+      PROCESSED_DIR: /data/inbox/processed
+      POLL_INTERVAL: "5000"
+    volumes:
+      - csv_data:/data/inbox
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - electromart-network
+
 volumes:
   postgres_data:
   csv_data:
