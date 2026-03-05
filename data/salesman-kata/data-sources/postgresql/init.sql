@@ -80,41 +80,18 @@ INSERT INTO products (name, code, category, brand, base_price) VALUES
   ('Apple Watch Series 9', 'APPLEWATCHS9', 'WEARABLE', 'Apple', 3999.00),
   ('Galaxy Watch 6', 'GALAXYWATCH6', 'WEARABLE', 'Samsung', 2499.00);
 
--- Seed salesmen
+-- Seed salesmen (São Paulo only)
 INSERT INTO salesmen (name, email, phone, region) VALUES
   ('João Silva', 'joao.silva@electromart.com.br', '+5511987654321', 'São Paulo'),
   ('Maria Oliveira', 'maria.oliveira@electromart.com.br', '+5511976543210', 'São Paulo'),
-  ('Pedro Santos', 'pedro.santos@electromart.com.br', '+5521987654321', 'Rio de Janeiro'),
-  ('Ana Costa', 'ana.costa@electromart.com.br', '+5521976543210', 'Rio de Janeiro'),
-  ('Lucas Ferreira', 'lucas.ferreira@electromart.com.br', '+5531987654321', 'Minas Gerais'),
-  ('Juliana Souza', 'juliana.souza@electromart.com.br', '+5541987654321', 'Paraná'),
-  ('Rafael Almeida', 'rafael.almeida@electromart.com.br', '+5551987654321', 'Rio Grande do Sul'),
-  ('Camila Rodrigues', 'camila.rodrigues@electromart.com.br', '+5561987654321', 'Distrito Federal'),
-  ('Bruno Carvalho', 'bruno.carvalho@electromart.com.br', '+5571987654321', 'Bahia'),
-  ('Fernanda Lima', 'fernanda.lima@electromart.com.br', '+5581987654321', 'Pernambuco'),
-  ('Thiago Mendes', 'thiago.mendes@electromart.com.br', '+5585987654321', 'Ceará'),
-  ('Larissa Pereira', 'larissa.pereira@electromart.com.br', '+5591987654321', 'Pará'),
-  ('Gustavo Ribeiro', 'gustavo.ribeiro@electromart.com.br', '+5548987654321', 'Santa Catarina'),
-  ('Isabela Martins', 'isabela.martins@electromart.com.br', '+5562987654321', 'Goiás'),
-  ('Felipe Gomes', 'felipe.gomes@electromart.com.br', '+5592987654321', 'Amazonas');
+  ('Carlos Pereira', 'carlos.pereira@electromart.com.br', '+5511965432109', 'São Paulo'),
+  ('Beatriz Santos', 'beatriz.santos@electromart.com.br', '+5511954321098', 'São Paulo'),
+  ('Ricardo Alves', 'ricardo.alves@electromart.com.br', '+5511943210987', 'São Paulo');
 
--- Seed stores
+-- Seed stores (São Paulo only)
 INSERT INTO stores (name, city, country, address, store_type) VALUES
   ('Magazine Luiza Paulista', 'São Paulo', 'Brazil', 'Av. Paulista 1000, Bela Vista', 'RETAIL'),
   ('Casas Bahia Centro SP', 'São Paulo', 'Brazil', 'Rua 25 de Março 500', 'RETAIL'),
   ('Fast Shop Morumbi', 'São Paulo', 'Brazil', 'Shopping Morumbi, Piso 2', 'RETAIL'),
-  ('Magazine Luiza Copacabana', 'Rio de Janeiro', 'Brazil', 'Av. Nossa Senhora de Copacabana 800', 'RETAIL'),
-  ('Casas Bahia Madureira', 'Rio de Janeiro', 'Brazil', 'Estrada do Portela 222', 'RETAIL'),
-  ('Fast Shop Savassi', 'Belo Horizonte', 'Brazil', 'Rua Pernambuco 1000, Savassi', 'RETAIL'),
-  ('Magazine Luiza Centro BH', 'Belo Horizonte', 'Brazil', 'Av. Afonso Pena 1500', 'RETAIL'),
-  ('Casas Bahia Curitiba', 'Curitiba', 'Brazil', 'Rua XV de Novembro 700', 'RETAIL'),
-  ('Magazine Luiza Porto Alegre', 'Porto Alegre', 'Brazil', 'Rua dos Andradas 1200', 'RETAIL'),
-  ('Fast Shop Brasília', 'Brasília', 'Brazil', 'Shopping Conjunto Nacional', 'RETAIL'),
-  ('Magazine Luiza Salvador', 'Salvador', 'Brazil', 'Av. Tancredo Neves 3000', 'RETAIL'),
-  ('Casas Bahia Recife', 'Recife', 'Brazil', 'Av. Conde da Boa Vista 500', 'RETAIL'),
-  ('Magazine Luiza Fortaleza', 'Fortaleza', 'Brazil', 'Av. Bezerra de Menezes 800', 'RETAIL'),
-  ('Fast Shop Belém', 'Belém', 'Brazil', 'Shopping Pátio Belém', 'RETAIL'),
-  ('Magazine Luiza Manaus', 'Manaus', 'Brazil', 'Av. Eduardo Ribeiro 600', 'RETAIL'),
-  ('Casas Bahia Florianópolis', 'Florianópolis', 'Brazil', 'Rua Felipe Schmidt 300', 'RETAIL'),
-  ('Magazine Luiza Goiânia', 'Goiânia', 'Brazil', 'Av. Goiás 1500', 'RETAIL'),
-  ('ElectroMart Online', 'São Paulo', 'Brazil', 'Online', 'ONLINE');
+  ('Magazine Luiza Tatuapé', 'São Paulo', 'Brazil', 'Shopping Tatuapé, Loja 201', 'RETAIL'),
+  ('Casas Bahia Mooca', 'São Paulo', 'Brazil', 'Rua da Mooca 1200', 'RETAIL');

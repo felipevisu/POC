@@ -25,42 +25,19 @@ const mockData = {
   ],
 
   salesmen: [
-    { name: 'João Silva', email: 'joao.silva@electromart.com.br', region: 'São Paulo' },
-    { name: 'Maria Oliveira', email: 'maria.oliveira@electromart.com.br', region: 'São Paulo' },
     { name: 'Pedro Santos', email: 'pedro.santos@electromart.com.br', region: 'Rio de Janeiro' },
     { name: 'Ana Costa', email: 'ana.costa@electromart.com.br', region: 'Rio de Janeiro' },
-    { name: 'Lucas Ferreira', email: 'lucas.ferreira@electromart.com.br', region: 'Minas Gerais' },
-    { name: 'Juliana Souza', email: 'juliana.souza@electromart.com.br', region: 'Paraná' },
-    { name: 'Rafael Almeida', email: 'rafael.almeida@electromart.com.br', region: 'Rio Grande do Sul' },
-    { name: 'Camila Rodrigues', email: 'camila.rodrigues@electromart.com.br', region: 'Distrito Federal' },
-    { name: 'Bruno Carvalho', email: 'bruno.carvalho@electromart.com.br', region: 'Bahia' },
-    { name: 'Fernanda Lima', email: 'fernanda.lima@electromart.com.br', region: 'Pernambuco' },
-    { name: 'Thiago Mendes', email: 'thiago.mendes@electromart.com.br', region: 'Ceará' },
-    { name: 'Larissa Pereira', email: 'larissa.pereira@electromart.com.br', region: 'Pará' },
-    { name: 'Gustavo Ribeiro', email: 'gustavo.ribeiro@electromart.com.br', region: 'Santa Catarina' },
-    { name: 'Isabela Martins', email: 'isabela.martins@electromart.com.br', region: 'Goiás' },
-    { name: 'Felipe Gomes', email: 'felipe.gomes@electromart.com.br', region: 'Amazonas' }
+    { name: 'Rodrigo Almeida', email: 'rodrigo.almeida@electromart.com.br', region: 'Rio de Janeiro' },
+    { name: 'Juliana Pereira', email: 'juliana.pereira@electromart.com.br', region: 'Rio de Janeiro' },
+    { name: 'Marcelo Lima', email: 'marcelo.lima@electromart.com.br', region: 'Rio de Janeiro' }
   ],
 
   stores: [
-    { name: 'Magazine Luiza Paulista', city: 'São Paulo', country: 'Brazil', type: 'RETAIL' },
-    { name: 'Casas Bahia Centro SP', city: 'São Paulo', country: 'Brazil', type: 'RETAIL' },
-    { name: 'Fast Shop Morumbi', city: 'São Paulo', country: 'Brazil', type: 'RETAIL' },
     { name: 'Magazine Luiza Copacabana', city: 'Rio de Janeiro', country: 'Brazil', type: 'RETAIL' },
     { name: 'Casas Bahia Madureira', city: 'Rio de Janeiro', country: 'Brazil', type: 'RETAIL' },
-    { name: 'Fast Shop Savassi', city: 'Belo Horizonte', country: 'Brazil', type: 'RETAIL' },
-    { name: 'Magazine Luiza Centro BH', city: 'Belo Horizonte', country: 'Brazil', type: 'RETAIL' },
-    { name: 'Casas Bahia Curitiba', city: 'Curitiba', country: 'Brazil', type: 'RETAIL' },
-    { name: 'Magazine Luiza Porto Alegre', city: 'Porto Alegre', country: 'Brazil', type: 'RETAIL' },
-    { name: 'Fast Shop Brasília', city: 'Brasília', country: 'Brazil', type: 'RETAIL' },
-    { name: 'Magazine Luiza Salvador', city: 'Salvador', country: 'Brazil', type: 'RETAIL' },
-    { name: 'Casas Bahia Recife', city: 'Recife', country: 'Brazil', type: 'RETAIL' },
-    { name: 'Magazine Luiza Fortaleza', city: 'Fortaleza', country: 'Brazil', type: 'RETAIL' },
-    { name: 'Fast Shop Belém', city: 'Belém', country: 'Brazil', type: 'RETAIL' },
-    { name: 'Magazine Luiza Manaus', city: 'Manaus', country: 'Brazil', type: 'RETAIL' },
-    { name: 'Casas Bahia Florianópolis', city: 'Florianópolis', country: 'Brazil', type: 'RETAIL' },
-    { name: 'Magazine Luiza Goiânia', city: 'Goiânia', country: 'Brazil', type: 'RETAIL' },
-    { name: 'ElectroMart Online', city: 'São Paulo', country: 'Brazil', type: 'ONLINE' }
+    { name: 'Fast Shop Barra', city: 'Rio de Janeiro', country: 'Brazil', type: 'RETAIL' },
+    { name: 'Magazine Luiza Niterói', city: 'Niterói', country: 'Brazil', type: 'RETAIL' },
+    { name: 'Casas Bahia Duque de Caxias', city: 'Duque de Caxias', country: 'Brazil', type: 'RETAIL' }
   ]
 };
 
