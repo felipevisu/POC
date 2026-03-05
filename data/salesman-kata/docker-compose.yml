@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   postgres:
@@ -91,7 +91,11 @@ services:
     volumes:
       - kafka_data:/tmp/kraft-combined-logs
     healthcheck:
-      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092"]
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092",
+        ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -166,17 +170,66 @@ services:
     networks:
       - electromart-network
 
+  minio:
+    image: minio/minio:latest
+    container_name: electromart-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+      MINIO_NOTIFY_WEBHOOK_ENABLE_csv: "on"
+      MINIO_NOTIFY_WEBHOOK_ENDPOINT_csv: "http://csv-connector-source:8085/minio/events"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - electromart-network
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: electromart-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: |
+      /bin/sh -c '
+      sleep 5
+      mc alias set myminio http://minio:9000 minioadmin minioadmin123
+      mc mb --ignore-existing myminio/sales-csv
+      mc mb --ignore-existing myminio/sales-csv-processed
+      mc event add myminio/sales-csv arn:minio:sqs::csv:webhook --event put --suffix .csv
+      echo "MinIO bucket and webhook configured"
+      exit 0
+      '
+    environment:
+      MC_HOST_myminio: http://minioadmin:minioadmin123@minio:9000
+    networks:
+      - electromart-network
+
   csv-files:
     build:
       context: ./data-sources/csv-files
       dockerfile: Dockerfile
     container_name: electromart-csv-files
     environment:
-      OUTPUT_DIR: /data/inbox
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: "9000"
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin123
+      MINIO_BUCKET: sales-csv
+      MINIO_USE_SSL: "false"
       GENERATION_INTERVAL: 10000
       RECORDS_PER_FILE: 50
-    volumes:
-      - csv_data:/data/inbox
+    depends_on:
+      minio-init:
+        condition: service_completed_successfully
     networks:
       - electromart-network
 
@@ -188,14 +241,19 @@ services:
     environment:
       KAFKA_BROKER: kafka:9092
       KAFKA_TOPIC: csv
-      INBOX_DIR: /data/inbox
-      PROCESSED_DIR: /data/inbox/processed
-      POLL_INTERVAL: "5000"
-      JAVA_OPTS: "-Xms32M -Xmx64M"
-    volumes:
-      - csv_data:/data/inbox
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin123
+      MINIO_BUCKET: sales-csv
+      MINIO_PROCESSED_BUCKET: sales-csv-processed
+      WEBHOOK_PORT: "8085"
+      JAVA_OPTS: "-Xms64M -Xmx128M"
+    ports:
+      - "8085:8085"
     depends_on:
       kafka:
+        condition: service_healthy
+      minio:
         condition: service_healthy
     networks:
       - electromart-network
@@ -284,9 +342,9 @@ services:
     image: prom/prometheus:v2.49.1
     container_name: electromart-prometheus
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--storage.tsdb.retention.time=7d'
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=7d"
     ports:
       - "9090:9090"
     volumes:
@@ -299,9 +357,9 @@ services:
     image: danielqsj/kafka-exporter:latest
     container_name: electromart-kafka-exporter
     command:
-      - '--kafka.server=kafka:9092'
-      - '--topic.filter=.*'
-      - '--group.filter=.*'
+      - "--kafka.server=kafka:9092"
+      - "--topic.filter=.*"
+      - "--group.filter=.*"
     depends_on:
       kafka:
         condition: service_healthy
@@ -334,9 +392,9 @@ services:
     image: percona/mongodb_exporter:0.40
     container_name: electromart-mongodb-exporter
     command:
-      - '--mongodb.uri=mongodb://mongo:27017'
-      - '--collect-all'
-      - '--compatible-mode'
+      - "--mongodb.uri=mongodb://mongo:27017"
+      - "--collect-all"
+      - "--compatible-mode"
     depends_on:
       - mongo
     networks:
@@ -344,7 +402,7 @@ services:
 
 volumes:
   postgres_data:
-  csv_data:
+  minio_data:
   mongo_data:
   timescaledb_data:
   grafana_data:

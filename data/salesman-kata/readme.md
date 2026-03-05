@@ -111,13 +111,24 @@ sale_timestamp TIMESTAMP
 
 <img src="./data-sources/postgresql/Postgresql.drawio.png" alt="postgresql"/>
 
-#### CSV Files
+#### CSV Files (via MinIO S3)
 
 Origin: Acquired company's legacy system (2018)<br/>
 Data: Daily sales export<br/>
 Volume: 25-50 records per file<br/>
 Update freq: Every 10 seconds<br/>
-Location: /data/inbox/
+Storage: MinIO (S3-compatible object storage)<br/>
+Bucket: `sales-csv`
+
+**Architecture:**
+
+```
+[CSV Generator] ──▶ [MinIO S3 Bucket] ──webhook──▶ [CSV Connector] ──▶ [Kafka]
+```
+
+The CSV connector is event-driven: MinIO sends webhook notifications when new files are uploaded, eliminating polling and enabling true real-time streaming.
+
+**MinIO Console:** http://localhost:9001 (minioadmin / minioadmin123)
 
 ```csv
 sale_id,product_code,product_name,category,brand,salesman_name,salesman_email,region,store_name,city,store_type,quantity,unit_price,total_amount,status,sale_date

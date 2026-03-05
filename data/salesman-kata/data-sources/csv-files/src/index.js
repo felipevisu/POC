@@ -1,10 +1,22 @@
-const fs = require('fs');
-const path = require('path');
+const Minio = require('minio');
 const mockData = require('./data');
 
-const OUTPUT_DIR = process.env.OUTPUT_DIR || '/data/inbox';
+const MINIO_ENDPOINT = process.env.MINIO_ENDPOINT || 'minio';
+const MINIO_PORT = parseInt(process.env.MINIO_PORT) || 9000;
+const MINIO_ACCESS_KEY = process.env.MINIO_ACCESS_KEY || 'minioadmin';
+const MINIO_SECRET_KEY = process.env.MINIO_SECRET_KEY || 'minioadmin123';
+const MINIO_BUCKET = process.env.MINIO_BUCKET || 'sales-csv';
+const MINIO_USE_SSL = process.env.MINIO_USE_SSL === 'true';
 const GENERATION_INTERVAL = parseInt(process.env.GENERATION_INTERVAL) || 10000;
 const RECORDS_PER_FILE = parseInt(process.env.RECORDS_PER_FILE) || 50;
+
+const minioClient = new Minio.Client({
+  endPoint: MINIO_ENDPOINT,
+  port: MINIO_PORT,
+  useSSL: MINIO_USE_SSL,
+  accessKey: MINIO_ACCESS_KEY,
+  secretKey: MINIO_SECRET_KEY
+});
 
 function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -81,14 +93,32 @@ function getFileName() {
   return `sales_${timestamp}.csv`;
 }
 
-function ensureOutputDir() {
-  if (!fs.existsSync(OUTPUT_DIR)) {
-    fs.mkdirSync(OUTPUT_DIR, { recursive: true });
-    console.log(`Created output directory: ${OUTPUT_DIR}`);
+async function waitForMinio() {
+  console.log('Waiting for MinIO...');
+  while (true) {
+    try {
+      const exists = await minioClient.bucketExists(MINIO_BUCKET);
+      if (exists) {
+        console.log(`MinIO is ready. Bucket '${MINIO_BUCKET}' exists.`);
+        return;
+      }
+      console.log(`Bucket '${MINIO_BUCKET}' not found yet, waiting...`);
+    } catch (err) {
+      console.log(`MinIO not ready: ${err.message}. Retrying...`);
+    }
+    await new Promise(resolve => setTimeout(resolve, 3000));
   }
 }
 
-function generateAndSaveFile() {
+async function uploadToMinio(fileName, content) {
+  const buffer = Buffer.from(content, 'utf-8');
+  await minioClient.putObject(MINIO_BUCKET, fileName, buffer, buffer.length, {
+    'Content-Type': 'text/csv'
+  });
+  return { fileName, size: buffer.length };
+}
+
+async function generateAndUploadFile() {
   const records = [];
   const recordCount = randomInt(Math.floor(RECORDS_PER_FILE / 2), RECORDS_PER_FILE);
 
@@ -98,48 +128,50 @@ function generateAndSaveFile() {
 
   const csvContent = generateCSVContent(records);
   const fileName = getFileName();
-  const filePath = path.join(OUTPUT_DIR, fileName);
 
-  fs.writeFileSync(filePath, csvContent);
+  const result = await uploadToMinio(fileName, csvContent);
 
-  return { fileName, recordCount, filePath };
+  return { fileName: result.fileName, recordCount, size: result.size };
 }
 
 async function main() {
-  ensureOutputDir();
+  console.log('CSV File Generator - MinIO Edition');
+  console.log(`Config: endpoint=${MINIO_ENDPOINT}:${MINIO_PORT} | bucket=${MINIO_BUCKET}`);
 
-  console.log('Generating initial CSV file');
-  const initial = generateAndSaveFile();
-  console.log(`Created: ${initial.fileName} (${initial.recordCount} records)`);
-  console.log('Starting continuous CSV generation');
+  await waitForMinio();
+
+  console.log('Generating initial CSV file...');
+  const initial = await generateAndUploadFile();
+  console.log(`Uploaded: ${initial.fileName} (${initial.recordCount} records, ${initial.size} bytes)`);
+  console.log('Starting continuous CSV generation...\\n');
 
   let totalFiles = 1;
   let totalRecords = initial.recordCount;
 
-  setInterval(() => {
+  setInterval(async () => {
     try {
-      const result = generateAndSaveFile();
+      const result = await generateAndUploadFile();
       totalFiles++;
       totalRecords += result.recordCount;
 
       const timestamp = new Date().toISOString();
-      console.log(`[${timestamp}] Created: ${result.fileName}`);
-      console.log(`${result.recordCount} records | Total files: ${totalFiles} | Total records: ${totalRecords}`);
+      console.log(`[${timestamp}] Uploaded: s3://${MINIO_BUCKET}/${result.fileName}`);
+      console.log(`  ${result.recordCount} records | ${result.size} bytes | Total: ${totalFiles} files, ${totalRecords} records`);
 
     } catch (err) {
-      console.error('Error generating CSV:', err.message);
+      console.error('Error uploading CSV:', err.message);
     }
   }, GENERATION_INTERVAL);
 }
 
 process.on('SIGINT', () => {
-  console.log('\nShutting down');
+  console.log('\\nShutting down');
   process.exit(0);
 });
 
 process.on('SIGTERM', () => {
-  console.log('\nShutting down');
+  console.log('\\nShutting down');
   process.exit(0);
 });
 
-main();
+main().catch(console.error);

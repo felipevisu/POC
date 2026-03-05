@@ -1,10 +1,12 @@
 {
   "name": "csv-files",
   "version": "1.0.0",
-  "description": "CSV legacy sales file generator",
+  "description": "CSV legacy sales file generator - uploads to MinIO",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js"
   },
-  "dependencies": {}
+  "dependencies": {
+    "minio": "^8.0.0"
+  }
 }
