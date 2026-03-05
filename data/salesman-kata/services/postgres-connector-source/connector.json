@@ -1,0 +1,29 @@
+{
+  "name": "postgres-connector-source",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "postgres",
+    "database.port": "5432",
+    "database.user": "electromart",
+    "database.password": "electromart123",
+    "database.dbname": "electromart",
+    "topic.prefix": "electromart",
+    "table.include.list": "public.sales,public.products,public.salesmen,public.stores",
+    "plugin.name": "pgoutput",
+    "slot.name": "sales_slot",
+    "publication.name": "sales_publication",
+    "publication.autocreate.mode": "filtered",
+    "snapshot.mode": "initial",
+    "decimal.handling.mode": "double",
+    "time.precision.mode": "connect",
+    "tombstones.on.delete": "false",
+    "transforms": "unwrap",
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+    "transforms.unwrap.drop.tombstones": "true",
+    "transforms.unwrap.delete.handling.mode": "drop",
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable": "false",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable": "false"
+  }
+}
