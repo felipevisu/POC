@@ -76,11 +76,7 @@ A Message Broker is middleware that translates and routes messages between diffe
                    • Guarantees delivery
 ```
 
-## New Solution
-
-## Diagram
-
-<img src="./DataKata.drawio.png" alt="diagram" />
+## Solution
 
 ### Data Sources
 
