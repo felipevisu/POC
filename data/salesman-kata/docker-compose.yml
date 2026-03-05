@@ -194,6 +194,25 @@ services:
     networks:
       - electromart-network
 
+  soap-connector-source:
+    build:
+      context: ./services/soap-connector-source
+      dockerfile: Dockerfile
+    container_name: electromart-soap-connector
+    environment:
+      KAFKA_BROKER: kafka:9092
+      KAFKA_TOPIC: soap
+      SOAP_URL: http://soap-service:8080/sales
+      PAGE_SIZE: "100"
+      POLL_INTERVAL: "5000"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      soap-service:
+        condition: service_healthy
+    networks:
+      - electromart-network
+
 volumes:
   postgres_data:
   csv_data:
