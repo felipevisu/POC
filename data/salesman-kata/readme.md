@@ -6,16 +6,16 @@ We are building a software for a Eletronic Store. This store sales cell phones, 
 
 **Company characteristics:**
 
-* Multi warehouse
-* Multi sales person
-* Multi retailers
+- Multi warehouse
+- Multi sales person
+- Multi retailers
 
 ### Problem to solve
 
 Every Monday, the CEO asks:
 
-* "Which cities are generating the most revenue this month?"
-* "Who are our top-performing salespeople in each country?"
+- "Which cities are generating the most revenue this month?"
+- "Who are our top-performing salespeople in each country?"
 
 **Current solution:**
 
@@ -23,12 +23,12 @@ Monday 8:00 AM - CEO asks for the report
 
 Data Analyst Maria does:
 
-1. Export data from PostgreSQL → Excel        (2 hours)
-2. Download CSV files from shared folder      (30 min)
-3. Manually poll SOAP service for sales data  (3 hours)
-4. Merge everything in Excel                  (4 hours)
-5. Create pivot tables and charts             (2 hours)
-6. Send email to CEO                          (30 min) 
+1. Export data from PostgreSQL → Excel (2 hours)
+2. Download CSV files from shared folder (30 min)
+3. Manually poll SOAP service for sales data (3 hours)
+4. Merge everything in Excel (4 hours)
+5. Create pivot tables and charts (2 hours)
+6. Send email to CEO (30 min)
 
 Wednesday 6:00 PM - Report finally delivered
 
@@ -43,15 +43,17 @@ Ingestion is the process of collection and importing data from various sources i
                       │
 [File System]  ───────┼──▶  [ Your Pipeline ]  ──▶  [Processing]
                       │
-[SOAP/WS-*]    ───────┘ 
+[SOAP/WS-*]    ───────┘
 ```
 
-### 2)  What is Data Lineage?
+### 2) What is Data Lineage?
 
 Data Lineage tracks the origin, movement, and transformation of data throughout its lifecycle. It answers:
-* Where did this data come from? (origin)
-* What happened to it? (transformations)
-* Where did it go? (destination)
+
+- Where did this data come from? (origin)
+- What happened to it? (transformations)
+- Where did it go? (destination)
+
 ```
 [Raw Sales Data] ──▶ [Cleaned] ──▶ [Aggregated by City] ──▶ [Final DB]
       │                  │                  │                    │
@@ -201,20 +203,20 @@ Content-Type: text/xml
 
 ## Services needed
 
-| # | Service/Component | Purpose | Implemented |
-|---|-------------------|---------|-------------|
-| 1 | PostgreSQL | Source 1 - Sales transactions from São Paulo | ✅ Yes |
-| 2 | CSV Files (Local Volume) | Source 2 - Sales from Minas Gerais | ✅ Yes |
-| 3 | SOAP Service (MongoDB) | Source 3 - Legacy sales from Rio de Janeiro | ✅ Yes |
-| 4 | Message Broker (Kafka) | Event streaming backbone | ✅ Yes |
-| 5 | Kafka Connect (Debezium) | CDC connector for PostgreSQL | ✅ Yes |
-| 6 | CSV Connector | Reads CSV files and publishes to Kafka | ✅ Yes |
-| 7 | SOAP Connector | Polls SOAP service and publishes to Kafka | ✅ Yes |
-| 8 | Postgres Connector | Enriches PostgreSQL CDC events | ✅ Yes |
-| 9 | Sales Aggregator (Kafka Streams) | Aggregates all sources into unified topic | ✅ Yes |
-| 10 | TimescaleDB | Time-series database for aggregated results | ✅ Yes |
-| 11 | Grafana | Dashboard & visualization | ✅ Yes |
-| 12 | Kafka UI | Kafka monitoring and management | ✅ Yes |
+| #   | Service/Component                | Purpose                                      | Implemented |
+| --- | -------------------------------- | -------------------------------------------- | ----------- |
+| 1   | PostgreSQL                       | Source 1 - Sales transactions from São Paulo | ✅ Yes      |
+| 2   | CSV Files (Local Volume)         | Source 2 - Sales from Minas Gerais           | ✅ Yes      |
+| 3   | SOAP Service (MongoDB)           | Source 3 - Legacy sales from Rio de Janeiro  | ✅ Yes      |
+| 4   | Message Broker (Kafka)           | Event streaming backbone                     | ✅ Yes      |
+| 5   | Kafka Connect (Debezium)         | CDC connector for PostgreSQL                 | ✅ Yes      |
+| 6   | CSV Connector                    | Reads CSV files and publishes to Kafka       | ✅ Yes      |
+| 7   | SOAP Connector                   | Polls SOAP service and publishes to Kafka    | ✅ Yes      |
+| 8   | Postgres Connector               | Enriches PostgreSQL CDC events               | ✅ Yes      |
+| 9   | Sales Aggregator (Kafka Streams) | Aggregates all sources into unified topic    | ✅ Yes      |
+| 10  | TimescaleDB                      | Time-series database for aggregated results  | ✅ Yes      |
+| 11  | Grafana                          | Dashboard & visualization                    | ✅ Yes      |
+| 12  | Kafka UI                         | Kafka monitoring and management              | ✅ Yes      |
 
 ### Architecture Overview
 
@@ -262,23 +264,23 @@ Content-Type: text/xml
 
 ### Kafka Topics
 
-| Topic | Source | Description |
-|-------|--------|-------------|
-| `electromart.public.sales` | Debezium CDC | Raw CDC events from PostgreSQL |
-| `csv` | CSV Connector | Sales from CSV files |
-| `soap` | SOAP Connector | Sales from SOAP service |
-| `postgres` | Postgres Connector | Enriched PostgreSQL sales |
-| `sales` | Sales Aggregator | Unified sales from all sources |
+| Topic                      | Source             | Description                    |
+| -------------------------- | ------------------ | ------------------------------ |
+| `electromart.public.sales` | Debezium CDC       | Raw CDC events from PostgreSQL |
+| `csv`                      | CSV Connector      | Sales from CSV files           |
+| `soap`                     | SOAP Connector     | Sales from SOAP service        |
+| `postgres`                 | Postgres Connector | Enriched PostgreSQL sales      |
+| `sales`                    | Sales Aggregator   | Unified sales from all sources |
 
 ### Data Regions
 
 Each data source contains data from a different Brazilian state:
 
-| Source | Region | Cities |
-|--------|--------|--------|
-| PostgreSQL | São Paulo | São Paulo |
-| CSV Files | Minas Gerais | Belo Horizonte, Contagem, Betim, Uberlândia |
-| SOAP Service | Rio de Janeiro | Rio de Janeiro, Niterói, Duque de Caxias |
+| Source       | Region         | Cities                                      |
+| ------------ | -------------- | ------------------------------------------- |
+| PostgreSQL   | São Paulo      | São Paulo                                   |
+| CSV Files    | Minas Gerais   | Belo Horizonte, Contagem, Betim, Uberlândia |
+| SOAP Service | Rio de Janeiro | Rio de Janeiro, Niterói, Duque de Caxias    |
 
 ## How to Run
 
@@ -301,14 +303,14 @@ docker-compose down -v
 
 ### Access Points
 
-| Service | URL | Credentials |
-|---------|-----|-------------|
-| Kafka UI | http://localhost:8888 | - |
-| Grafana | http://localhost:3000 | admin / admin |
-| PostgreSQL | localhost:5432 | electromart / electromart123 |
-| TimescaleDB | localhost:5433 | sales / sales123 |
-| SOAP Service | http://localhost:8080/sales | - |
-| Kafka Connect | http://localhost:8083 | - |
+| Service       | URL                         | Credentials                  |
+| ------------- | --------------------------- | ---------------------------- |
+| Kafka UI      | http://localhost:8888       | -                            |
+| Grafana       | http://localhost:3000       | admin / admin                |
+| PostgreSQL    | localhost:5432              | electromart / electromart123 |
+| TimescaleDB   | localhost:5433              | sales / sales123             |
+| SOAP Service  | http://localhost:8080/sales | -                            |
+| Kafka Connect | http://localhost:8083       | -                            |
 
 ## Results
 
