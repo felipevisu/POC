@@ -213,10 +213,69 @@ services:
     networks:
       - electromart-network
 
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    container_name: electromart-timescaledb
+    environment:
+      POSTGRES_USER: sales
+      POSTGRES_PASSWORD: sales123
+      POSTGRES_DB: salesdb
+    ports:
+      - "5433:5432"
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+      - ./services/sales-aggregator/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sales -d salesdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - electromart-network
+
+  sales-aggregator:
+    build:
+      context: ./services/sales-aggregator
+      dockerfile: Dockerfile
+    container_name: electromart-sales-aggregator
+    environment:
+      KAFKA_BROKER: kafka:9092
+      TIMESCALEDB_URL: jdbc:postgresql://timescaledb:5432/salesdb
+      TIMESCALEDB_USER: sales
+      TIMESCALEDB_PASSWORD: sales123
+    depends_on:
+      kafka:
+        condition: service_healthy
+      timescaledb:
+        condition: service_healthy
+    networks:
+      - electromart-network
+
+  grafana:
+    image: grafana/grafana:10.3.1
+    container_name: electromart-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/sales-dashboard.json
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./services/grafana/provisioning:/etc/grafana/provisioning
+      - ./services/grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+    networks:
+      - electromart-network
+
 volumes:
   postgres_data:
   csv_data:
   mongo_data:
+  timescaledb_data:
+  grafana_data:
   kafka_data:
 
 networks:
