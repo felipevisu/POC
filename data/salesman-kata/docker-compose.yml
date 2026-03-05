@@ -275,6 +275,72 @@ services:
     depends_on:
       timescaledb:
         condition: service_healthy
+      prometheus:
+        condition: service_started
+    networks:
+      - electromart-network
+
+  # ==================== OBSERVABILITY STACK ====================
+
+  prometheus:
+    image: prom/prometheus:v2.49.1
+    container_name: electromart-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=7d'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./services/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - electromart-network
+
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:latest
+    container_name: electromart-kafka-exporter
+    command:
+      - '--kafka.server=kafka:9092'
+      - '--topic.filter=.*'
+      - '--group.filter=.*'
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - electromart-network
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: electromart-postgres-exporter
+    environment:
+      DATA_SOURCE_NAME: "postgresql://electromart:electromart123@postgres:5432/electromart?sslmode=disable"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - electromart-network
+
+  timescaledb-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: electromart-timescaledb-exporter
+    environment:
+      DATA_SOURCE_NAME: "postgresql://sales:sales123@timescaledb:5432/salesdb?sslmode=disable"
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+    networks:
+      - electromart-network
+
+  mongodb-exporter:
+    image: percona/mongodb_exporter:0.40
+    container_name: electromart-mongodb-exporter
+    command:
+      - '--mongodb.uri=mongodb://mongo:27017'
+      - '--collect-all'
+      - '--compatible-mode'
+    depends_on:
+      - mongo
     networks:
       - electromart-network
 
@@ -285,6 +351,7 @@ volumes:
   timescaledb_data:
   grafana_data:
   kafka_data:
+  prometheus_data:
 
 networks:
   electromart-network:
