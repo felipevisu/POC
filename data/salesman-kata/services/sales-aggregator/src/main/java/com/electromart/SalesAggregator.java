@@ -87,8 +87,6 @@ public class SalesAggregator {
         streams.start();
     }
 
-    // --- Schema normalization ---
-
     static String normalize(String json, String defaultSource) {
         try {
             ObjectNode node = (ObjectNode) mapper.readTree(json);
@@ -97,19 +95,16 @@ public class SalesAggregator {
                 node.put("source", defaultSource);
             }
 
-            // sale_id: postgres uses numeric IDs from Debezium
             JsonNode saleId = node.get("sale_id");
             if (saleId != null && saleId.isNumber()) {
                 node.put("sale_id", "PG-" + saleId.asLong());
             }
 
-            // Timestamp: csv uses "sale_date", others use "sale_timestamp"
             if (node.has("sale_date") && !node.has("sale_timestamp")) {
                 node.set("sale_timestamp", node.get("sale_date"));
                 node.remove("sale_date");
             }
 
-            // Debezium epoch millis → ISO-8601
             JsonNode ts = node.get("sale_timestamp");
             if (ts != null && ts.isNumber()) {
                 node.put("sale_timestamp", Instant.ofEpochMilli(ts.asLong()).toString());
@@ -119,7 +114,6 @@ public class SalesAggregator {
                 node.put("ingested_at", Instant.now().toString());
             }
 
-            // Drop postgres-internal fields
             node.remove("created_at");
             node.remove("updated_at");
 
@@ -128,8 +122,6 @@ public class SalesAggregator {
             return json;
         }
     }
-
-    // --- TimescaleDB sink ---
 
     private static synchronized void insertSale(String json) {
         try {
@@ -167,7 +159,6 @@ public class SalesAggregator {
         try {
             return Timestamp.from(Instant.parse(value));
         } catch (Exception e) {
-            // CSV format: "2024-01-15 10:32:15"
             LocalDateTime ldt = LocalDateTime.parse(value, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             return Timestamp.from(ldt.toInstant(ZoneOffset.UTC));
         }
@@ -186,8 +177,6 @@ public class SalesAggregator {
         } catch (Exception ignored) {}
         dbConnection = null;
     }
-
-    // --- Startup helpers ---
 
     private static void waitForTimescaleDB() {
         while (true) {

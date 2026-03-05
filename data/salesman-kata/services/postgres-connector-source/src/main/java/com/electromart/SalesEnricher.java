@@ -39,15 +39,12 @@ public class SalesEnricher {
 
         StreamsBuilder builder = new StreamsBuilder();
 
-        // Reference data as GlobalKTables (fully replicated, supports foreign-key lookup)
         GlobalKTable<String, String> products = builder.globalTable(PRODUCTS_TOPIC);
         GlobalKTable<String, String> salesmen = builder.globalTable(SALESMEN_TOPIC);
         GlobalKTable<String, String> stores = builder.globalTable(STORES_TOPIC);
 
-        // Sales CDC stream
         KStream<String, String> sales = builder.stream(SALES_TOPIC);
 
-        // Enrich: sales → join product → join salesman → join store → publish
         KStream<String, String> enriched = sales
             .filter((key, value) -> value != null)
             .join(products,
@@ -70,10 +67,6 @@ public class SalesEnricher {
         streams.start();
     }
 
-    /**
-     * Builds the GlobalKTable key to match Debezium's JSON key format.
-     * Debezium with JsonConverter (schemas.enable=false) produces keys like: {"id":1}
-     */
     private static String toKey(String pkField, String json, String fkField) {
         try {
             JsonNode node = mapper.readTree(json);
@@ -128,9 +121,6 @@ public class SalesEnricher {
         }
     }
 
-    /**
-     * Waits for Debezium to create all CDC topics before starting Kafka Streams.
-     */
     private static void waitForTopics(String broker) throws InterruptedException, ExecutionException {
         Set<String> required = Set.of(SALES_TOPIC, PRODUCTS_TOPIC, SALESMEN_TOPIC, STORES_TOPIC);
 

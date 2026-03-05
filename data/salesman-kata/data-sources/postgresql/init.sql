@@ -1,4 +1,3 @@
--- Products table
 CREATE TABLE IF NOT EXISTS products (
   id SERIAL PRIMARY KEY,
   name VARCHAR(150) NOT NULL,
@@ -10,7 +9,6 @@ CREATE TABLE IF NOT EXISTS products (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Salesmen table
 CREATE TABLE IF NOT EXISTS salesmen (
   id SERIAL PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
@@ -22,7 +20,6 @@ CREATE TABLE IF NOT EXISTS salesmen (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Stores table
 CREATE TABLE IF NOT EXISTS stores (
   id SERIAL PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
@@ -34,7 +31,6 @@ CREATE TABLE IF NOT EXISTS stores (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Sales table
 CREATE TABLE IF NOT EXISTS sales (
   sale_id BIGSERIAL PRIMARY KEY,
   product_id INTEGER NOT NULL REFERENCES products(id),
@@ -49,13 +45,11 @@ CREATE TABLE IF NOT EXISTS sales (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Indexes
 CREATE INDEX IF NOT EXISTS idx_sales_timestamp ON sales(sale_timestamp);
 CREATE INDEX IF NOT EXISTS idx_sales_status ON sales(status);
 CREATE INDEX IF NOT EXISTS idx_sales_salesman ON sales(salesman_id);
 CREATE INDEX IF NOT EXISTS idx_sales_store ON sales(store_id);
 
--- Seed products
 INSERT INTO products (name, code, category, brand, base_price) VALUES
   ('iPhone 15 Pro 256GB', 'IPHONE15PRO256', 'SMARTPHONE', 'Apple', 8999.00),
   ('iPhone 15 128GB', 'IPHONE15128', 'SMARTPHONE', 'Apple', 6499.00),
@@ -80,7 +74,6 @@ INSERT INTO products (name, code, category, brand, base_price) VALUES
   ('Apple Watch Series 9', 'APPLEWATCHS9', 'WEARABLE', 'Apple', 3999.00),
   ('Galaxy Watch 6', 'GALAXYWATCH6', 'WEARABLE', 'Samsung', 2499.00);
 
--- Seed salesmen (São Paulo only)
 INSERT INTO salesmen (name, email, phone, region) VALUES
   ('João Silva', 'joao.silva@electromart.com.br', '+5511987654321', 'São Paulo'),
   ('Maria Oliveira', 'maria.oliveira@electromart.com.br', '+5511976543210', 'São Paulo'),
@@ -88,7 +81,6 @@ INSERT INTO salesmen (name, email, phone, region) VALUES
   ('Beatriz Santos', 'beatriz.santos@electromart.com.br', '+5511954321098', 'São Paulo'),
   ('Ricardo Alves', 'ricardo.alves@electromart.com.br', '+5511943210987', 'São Paulo');
 
--- Seed stores (São Paulo only)
 INSERT INTO stores (name, city, country, address, store_type) VALUES
   ('Magazine Luiza Paulista', 'São Paulo', 'Brazil', 'Av. Paulista 1000, Bela Vista', 'RETAIL'),
   ('Casas Bahia Centro SP', 'São Paulo', 'Brazil', 'Rua 25 de Março 500', 'RETAIL'),

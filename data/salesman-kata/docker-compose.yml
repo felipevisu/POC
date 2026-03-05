@@ -280,8 +280,6 @@ services:
     networks:
       - electromart-network
 
-  # ==================== OBSERVABILITY STACK ====================
-
   prometheus:
     image: prom/prometheus:v2.49.1
     container_name: electromart-prometheus

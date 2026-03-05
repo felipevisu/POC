@@ -65,7 +65,6 @@ public class SoapConnector {
 
         int totalPublished = 0;
 
-        // Drain all available pages
         while (hasMore) {
             String requestXml = buildRequest(currentCursor, pageSize);
             String responseXml = postSoap(soapUrl, requestXml);

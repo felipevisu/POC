@@ -79,10 +79,10 @@ public class CsvConnector {
     private static void processFile(KafkaProducer<String, String> producer, String topic,
                                      Path file, Path processedDir) throws IOException {
         List<String> lines = Files.readAllLines(file);
-        if (lines.size() <= 1) return; // empty or header only
+        if (lines.size() <= 1) return;
 
         int count = 0;
-        for (int i = 1; i < lines.size(); i++) { // skip header
+        for (int i = 1; i < lines.size(); i++) {
             String line = lines.get(i).trim();
             if (line.isEmpty()) continue;
 
@@ -96,7 +96,6 @@ public class CsvConnector {
 
         producer.flush();
 
-        // Move to processed
         Path target = processedDir.resolve(file.getFileName());
         Files.move(file, target, StandardCopyOption.REPLACE_EXISTING);
 
