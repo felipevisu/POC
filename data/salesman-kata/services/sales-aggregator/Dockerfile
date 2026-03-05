@@ -11,4 +11,5 @@ FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=build /app/target/sales-aggregator-1.0.0.jar app.jar
 
-CMD ["java", "-jar", "app.jar"]
+ENV JAVA_OPTS="-Xms32M -Xmx64M"
+CMD java $JAVA_OPTS -jar app.jar

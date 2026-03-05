@@ -207,15 +207,82 @@ Content-Type: text/xml
 
 | # | Service/Component | Purpose | Implemented |
 |---|-------------------|---------|-------------|
-| 1 | Relational DB (PostgreSQL) | Source 1 - Sales transactions | Yes |
-| 2 | File Storage (MinIO/Local) | Source 2 - CSV/JSON files | Yes |
-| 3 | SOAP Service (Mock WS-*) | Source 3 - Legacy sales service | Yes |
-| 4 | Message Broker (Kafka) | Event streaming backbone | No |
-| 5 | Stream Processor (Flink/Kafka Streams) | Processing & aggregation | No |
-| 6 | Lineage Tool (OpenLineage + Marquez) | Track data flow | No |
-| 7 | Observability Stack (Prometheus + Grafana) | Metrics & monitoring | No |
-| 8 | Results Database (ClickHouse/TimescaleDB) | Store aggregated results | No |
-| 9 | REST API (Spring Boot/Go/Node) | Expose results | No |
+| 1 | PostgreSQL | Source 1 - Sales transactions from São Paulo | ✅ Yes |
+| 2 | CSV Files (Local Volume) | Source 2 - Sales from Minas Gerais | ✅ Yes |
+| 3 | SOAP Service (MongoDB) | Source 3 - Legacy sales from Rio de Janeiro | ✅ Yes |
+| 4 | Message Broker (Kafka) | Event streaming backbone | ✅ Yes |
+| 5 | Kafka Connect (Debezium) | CDC connector for PostgreSQL | ✅ Yes |
+| 6 | CSV Connector | Reads CSV files and publishes to Kafka | ✅ Yes |
+| 7 | SOAP Connector | Polls SOAP service and publishes to Kafka | ✅ Yes |
+| 8 | Postgres Connector | Enriches PostgreSQL CDC events | ✅ Yes |
+| 9 | Sales Aggregator (Kafka Streams) | Aggregates all sources into unified topic | ✅ Yes |
+| 10 | TimescaleDB | Time-series database for aggregated results | ✅ Yes |
+| 11 | Grafana | Dashboard & visualization | ✅ Yes |
+| 12 | Kafka UI | Kafka monitoring and management | ✅ Yes |
+
+### Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              DATA SOURCES                                   │
+├─────────────────┬─────────────────────┬─────────────────────────────────────┤
+│   PostgreSQL    │     CSV Files       │         SOAP Service                │
+│   (São Paulo)   │   (Minas Gerais)    │       (Rio de Janeiro)              │
+│                 │                     │         + MongoDB                   │
+└────────┬────────┴──────────┬──────────┴──────────────┬──────────────────────┘
+         │                   │                         │
+         ▼                   ▼                         ▼
+┌─────────────────┐ ┌─────────────────┐ ┌─────────────────────────────────────┐
+│ Kafka Connect   │ │ CSV Connector   │ │       SOAP Connector                │
+│ (Debezium CDC)  │ │                 │ │                                     │
+└────────┬────────┘ └────────┬────────┘ └──────────────┬──────────────────────┘
+         │                   │                         │
+         ▼                   ▼                         ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           APACHE KAFKA                                      │
+│  Topics: electromart.public.sales | csv | soap | postgres | sales           │
+└─────────────────────────────────────────────────────────────────────────────┘
+         │                   │                         │
+         └───────────────────┼─────────────────────────┘
+                             ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      SALES AGGREGATOR (Kafka Streams)                       │
+│         Consumes: csv, soap, postgres → Produces: unified "sales" topic     │
+└─────────────────────────────────────────────────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          TIMESCALEDB                                        │
+│              Time-series database for aggregated sales data                 │
+│                    Tables: sales (hypertable)                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            GRAFANA                                          │
+│                   Real-time dashboards and analytics                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Kafka Topics
+
+| Topic | Source | Description |
+|-------|--------|-------------|
+| `electromart.public.sales` | Debezium CDC | Raw CDC events from PostgreSQL |
+| `csv` | CSV Connector | Sales from CSV files |
+| `soap` | SOAP Connector | Sales from SOAP service |
+| `postgres` | Postgres Connector | Enriched PostgreSQL sales |
+| `sales` | Sales Aggregator | Unified sales from all sources |
+
+### Data Regions
+
+Each data source contains data from a different Brazilian state:
+
+| Source | Region | Cities |
+|--------|--------|--------|
+| PostgreSQL | São Paulo | São Paulo |
+| CSV Files | Minas Gerais | Belo Horizonte, Contagem, Betim, Uberlândia |
+| SOAP Service | Rio de Janeiro | Rio de Janeiro, Niterói, Duque de Caxias |
 
 ## How to Run
 
@@ -226,6 +293,31 @@ docker-compose up -d
 # Check running containers
 docker-compose ps
 
+# View logs
+docker-compose logs -f
+
 # Stop all services
 docker-compose down
+
+# Stop and remove all data (clean start)
+docker-compose down -v
 ```
+
+### Access Points
+
+| Service | URL | Credentials |
+|---------|-----|-------------|
+| Kafka UI | http://localhost:8888 | - |
+| Grafana | http://localhost:3000 | admin / admin |
+| PostgreSQL | localhost:5432 | electromart / electromart123 |
+| TimescaleDB | localhost:5433 | sales / sales123 |
+| SOAP Service | http://localhost:8080/sales | - |
+| Kafka Connect | http://localhost:8083 | - |
+
+## Results
+
+**Messages on Kafka UI**
+<img src="/screenshots/kafka-ui-sales.png" alt="messages"/>
+
+**Results on Grafana**
+<img src="/screenshots/graphana-results.png" alt="results"/>

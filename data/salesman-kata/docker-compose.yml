@@ -25,6 +25,7 @@ services:
   mongo:
     image: mongo:7-jammy
     container_name: electromart-mongo
+    command: ["mongod", "--wiredTigerCacheSizeGB", "0.25"]
     ports:
       - "27017:27017"
     volumes:
@@ -84,6 +85,7 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       CLUSTER_ID: electromart-kafka-cluster-01
+      KAFKA_HEAP_OPTS: "-Xms128M -Xmx256M"
     ports:
       - "19092:19092"
     volumes:
@@ -104,6 +106,7 @@ services:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
       KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME: debezium
       KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS: http://kafka-connect:8083
+      JAVA_OPTS: "-Xms64M -Xmx128M"
     ports:
       - "8888:8080"
     depends_on:
@@ -122,6 +125,7 @@ services:
       OFFSET_STORAGE_TOPIC: _connect-offsets
       STATUS_STORAGE_TOPIC: _connect-status
       CONNECT_SCHEDULED_REBALANCE_MAX_DELAY_MS: "0"
+      HEAP_OPTS: "-Xms256M -Xmx512M"
     ports:
       - "8083:8083"
     healthcheck:
@@ -155,6 +159,7 @@ services:
     container_name: electromart-postgres-connector
     environment:
       KAFKA_BROKER: kafka:9092
+      JAVA_OPTS: "-Xms32M -Xmx64M"
     depends_on:
       kafka-connect:
         condition: service_healthy
@@ -186,6 +191,7 @@ services:
       INBOX_DIR: /data/inbox
       PROCESSED_DIR: /data/inbox/processed
       POLL_INTERVAL: "5000"
+      JAVA_OPTS: "-Xms32M -Xmx64M"
     volumes:
       - csv_data:/data/inbox
     depends_on:
@@ -205,6 +211,7 @@ services:
       SOAP_URL: http://soap-service:8080/sales
       PAGE_SIZE: "100"
       POLL_INTERVAL: "5000"
+      JAVA_OPTS: "-Xms32M -Xmx64M"
     depends_on:
       kafka:
         condition: service_healthy
@@ -243,6 +250,7 @@ services:
       TIMESCALEDB_URL: jdbc:postgresql://timescaledb:5432/salesdb
       TIMESCALEDB_USER: sales
       TIMESCALEDB_PASSWORD: sales123
+      JAVA_OPTS: "-Xms32M -Xmx64M"
     depends_on:
       kafka:
         condition: service_healthy
