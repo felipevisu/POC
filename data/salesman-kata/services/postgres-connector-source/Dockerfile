@@ -1,9 +1,12 @@
-FROM alpine:3.19
+FROM maven:3.9-eclipse-temurin-17 AS build
+WORKDIR /app
+COPY pom.xml .
+RUN mvn dependency:go-offline
+COPY src/ ./src/
+RUN mvn package -DskipTests
 
-RUN apk add --no-cache curl jq
-
-COPY connector.json /config/connector.json
-COPY register.sh /register.sh
-RUN chmod +x /register.sh
-
-CMD ["/register.sh"]
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+COPY --from=build /app/target/postgres-connector-1.0.0.jar app.jar
+ENV JAVA_OPTS="-Xms16M -Xmx32M"
+CMD java $JAVA_OPTS -jar app.jar

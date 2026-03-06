@@ -150,6 +150,14 @@ services:
       context: ./services/postgres-connector-source
       dockerfile: Dockerfile
     container_name: electromart-postgres-connector-source
+    environment:
+      KAFKA_CONNECT_URL: http://kafka-connect:8083
+      CONNECTOR_NAME: postgres-connector
+      DB_HOST: postgres
+      DB_USER: electromart
+      DB_PASSWORD: electromart123
+      DB_NAME: electromart
+      JAVA_OPTS: "-Xms16M -Xmx32M"
     depends_on:
       kafka-connect:
         condition: service_healthy
