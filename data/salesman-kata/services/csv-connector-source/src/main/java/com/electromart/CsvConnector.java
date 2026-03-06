@@ -28,6 +28,9 @@ public class CsvConnector {
     private static final AtomicLong filesProcessed = new AtomicLong(0);
     private static final AtomicLong recordsProcessed = new AtomicLong(0);
 
+    private static final String LINEAGE_TOPIC = "lineage";
+    private static final String COMPONENT_NAME = "csv-connector";
+
     private static final String[] HEADERS = {
         "sale_id", "product_code", "product_name", "category", "brand",
         "salesman_name", "salesman_email", "region", "store_name", "city",
@@ -41,6 +44,7 @@ public class CsvConnector {
     private static String kafkaTopic;
     private static String sourceBucket;
     private static String processedBucket;
+    private static boolean lineageEnabled;
 
     public static void main(String[] args) throws Exception {
         String broker = System.getenv().getOrDefault("KAFKA_BROKER", "kafka:9092");
@@ -51,6 +55,7 @@ public class CsvConnector {
         sourceBucket = System.getenv().getOrDefault("MINIO_BUCKET", "sales-csv");
         processedBucket = System.getenv().getOrDefault("MINIO_PROCESSED_BUCKET", "sales-csv-processed");
         int webhookPort = Integer.parseInt(System.getenv().getOrDefault("WEBHOOK_PORT", "8085"));
+        lineageEnabled = Boolean.parseBoolean(System.getenv().getOrDefault("LINEAGE_ENABLED", "true"));
 
         System.out.println("╔═══════════════════════════════════════════════════════════╗");
         System.out.println("║     CSV Connector Source - MinIO Event-Driven Edition     ║");
@@ -68,6 +73,10 @@ public class CsvConnector {
         waitForMinio();
         waitForKafka(broker);
         ensureTopic(broker, kafkaTopic);
+        if (lineageEnabled) {
+            ensureTopic(broker, LINEAGE_TOPIC);
+            System.out.println("Lineage tracking: ENABLED");
+        }
 
         // Initialize Kafka producer
         Properties props = new Properties();
@@ -202,6 +211,7 @@ public class CsvConnector {
     }
 
     private static void processFile(String bucket, String key) {
+        long startTime = System.currentTimeMillis();
         try {
             GetObjectResponse response = minioClient.getObject(
                 GetObjectArgs.builder()
@@ -224,11 +234,21 @@ public class CsvConnector {
                 String line = lines.get(i).trim();
                 if (line.isEmpty()) continue;
 
-                String json = csvLineToJson(line);
+                String traceId = generateTraceId();
+                String saleId = extractField(line, 0);
+                long recordStart = System.currentTimeMillis();
+
+                String json = csvLineToJson(line, traceId);
                 if (json == null) continue;
 
-                String recordKey = extractField(line, 0);
-                producer.send(new ProducerRecord<>(kafkaTopic, recordKey, json));
+                producer.send(new ProducerRecord<>(kafkaTopic, saleId, json));
+                
+                if (lineageEnabled) {
+                    emitLineage(traceId, saleId, "ingestion", "received", 
+                        "minio:" + bucket, null, 0, key);
+                    emitLineage(traceId, saleId, "ingestion", "published", 
+                        null, kafkaTopic, System.currentTimeMillis() - recordStart, null);
+                }
                 count++;
             }
 
@@ -239,8 +259,9 @@ public class CsvConnector {
             filesProcessed.incrementAndGet();
             recordsProcessed.addAndGet(count);
 
-            System.out.printf("[%s] ✓ %s → topic \"%s\" | %d records%n",
-                Instant.now(), key, kafkaTopic, count);
+            long latency = System.currentTimeMillis() - startTime;
+            System.out.printf("[%s] ✓ %s → topic \"%s\" | %d records | %dms%n",
+                Instant.now(), key, kafkaTopic, count, latency);
 
         } catch (Exception e) {
             System.err.println("Error processing file " + key + ": " + e.getMessage());
@@ -271,12 +292,13 @@ public class CsvConnector {
         }
     }
 
-    private static String csvLineToJson(String line) {
+    private static String csvLineToJson(String line, String traceId) {
         try {
             String[] values = line.split(",", -1);
             if (values.length < HEADERS.length) return null;
 
             ObjectNode node = mapper.createObjectNode();
+            node.put("trace_id", traceId);
             node.put("source", "csv");
 
             for (int i = 0; i < HEADERS.length; i++) {
@@ -298,6 +320,32 @@ public class CsvConnector {
             return mapper.writeValueAsString(node);
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    private static String generateTraceId() {
+        return UUID.randomUUID().toString().substring(0, 8);
+    }
+
+    private static void emitLineage(String traceId, String saleId, String stage, 
+                                     String eventType, String sourceTopic, 
+                                     String targetTopic, long latencyMs, String metadata) {
+        try {
+            ObjectNode event = mapper.createObjectNode();
+            event.put("trace_id", traceId);
+            event.put("sale_id", saleId);
+            event.put("stage", stage);
+            event.put("component", COMPONENT_NAME);
+            event.put("event_type", eventType);
+            event.put("timestamp", Instant.now().toString());
+            if (sourceTopic != null) event.put("source_topic", sourceTopic);
+            if (targetTopic != null) event.put("target_topic", targetTopic);
+            if (latencyMs > 0) event.put("latency_ms", latencyMs);
+            if (metadata != null) event.put("metadata", metadata);
+
+            producer.send(new ProducerRecord<>(LINEAGE_TOPIC, traceId, mapper.writeValueAsString(event)));
+        } catch (Exception e) {
+            // Ignore lineage errors
         }
     }
 

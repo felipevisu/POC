@@ -129,7 +129,7 @@ services:
       OFFSET_STORAGE_TOPIC: _connect-offsets
       STATUS_STORAGE_TOPIC: _connect-status
       CONNECT_SCHEDULED_REBALANCE_MAX_DELAY_MS: "0"
-      HEAP_OPTS: "-Xms256M -Xmx512M"
+      HEAP_OPTS: "-Xms512M -Xmx1G"
     ports:
       - "8083:8083"
     healthcheck:
@@ -163,6 +163,7 @@ services:
     container_name: electromart-postgres-connector
     environment:
       KAFKA_BROKER: kafka:9092
+      LINEAGE_ENABLED: "true"
       JAVA_OPTS: "-Xms32M -Xmx64M"
     depends_on:
       kafka-connect:
@@ -247,6 +248,7 @@ services:
       MINIO_BUCKET: sales-csv
       MINIO_PROCESSED_BUCKET: sales-csv-processed
       WEBHOOK_PORT: "8085"
+      LINEAGE_ENABLED: "true"
       JAVA_OPTS: "-Xms64M -Xmx128M"
     ports:
       - "8085:8085"
@@ -269,6 +271,7 @@ services:
       SOAP_URL: http://soap-service:8080/sales
       PAGE_SIZE: "100"
       POLL_INTERVAL: "5000"
+      LINEAGE_ENABLED: "true"
       JAVA_OPTS: "-Xms32M -Xmx64M"
     depends_on:
       kafka:
@@ -303,6 +306,26 @@ services:
       context: ./services/sales-aggregator
       dockerfile: Dockerfile
     container_name: electromart-sales-aggregator
+    environment:
+      KAFKA_BROKER: kafka:9092
+      TIMESCALEDB_URL: jdbc:postgresql://timescaledb:5432/salesdb
+      TIMESCALEDB_USER: sales
+      TIMESCALEDB_PASSWORD: sales123
+      LINEAGE_ENABLED: "true"
+      JAVA_OPTS: "-Xms32M -Xmx64M"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      timescaledb:
+        condition: service_healthy
+    networks:
+      - electromart-network
+
+  lineage-consumer:
+    build:
+      context: ./services/lineage-consumer
+      dockerfile: Dockerfile
+    container_name: electromart-lineage-consumer
     environment:
       KAFKA_BROKER: kafka:9092
       TIMESCALEDB_URL: jdbc:postgresql://timescaledb:5432/salesdb

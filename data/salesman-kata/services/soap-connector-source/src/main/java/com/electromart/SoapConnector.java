@@ -16,11 +16,15 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.*;
 
 public class SoapConnector {
 
     private static final ObjectMapper mapper = new ObjectMapper();
+    private static final String LINEAGE_TOPIC = "lineage";
+    private static final String COMPONENT_NAME = "soap-connector";
+    private static boolean lineageEnabled;
 
     public static void main(String[] args) throws Exception {
         String broker = System.getenv().getOrDefault("KAFKA_BROKER", "kafka:9092");
@@ -28,12 +32,17 @@ public class SoapConnector {
         String soapUrl = System.getenv().getOrDefault("SOAP_URL", "http://soap-service:8080/sales");
         int pageSize = Integer.parseInt(System.getenv().getOrDefault("PAGE_SIZE", "100"));
         long pollInterval = Long.parseLong(System.getenv().getOrDefault("POLL_INTERVAL", "5000"));
+        lineageEnabled = Boolean.parseBoolean(System.getenv().getOrDefault("LINEAGE_ENABLED", "true"));
 
         System.out.println("Starting SOAP Connector...");
         System.out.printf("Config: broker=%s | topic=%s | soap=%s%n", broker, topic, soapUrl);
 
         waitForKafka(broker);
         ensureTopic(broker, topic);
+        if (lineageEnabled) {
+            ensureTopic(broker, LINEAGE_TOPIC);
+            System.out.println("Lineage tracking: ENABLED");
+        }
 
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, broker);
@@ -78,9 +87,18 @@ public class SoapConnector {
 
             for (int i = 0; i < records.getLength(); i++) {
                 Element record = (Element) records.item(i);
-                String json = recordToJson(record);
+                String traceId = UUID.randomUUID().toString().substring(0, 8);
+                String json = recordToJson(record, traceId);
                 String saleId = getTagValue(record, "sale:saleId");
+                long recordStart = System.currentTimeMillis();
                 producer.send(new ProducerRecord<>(topic, saleId, json));
+                
+                if (lineageEnabled) {
+                    emitLineage(producer, traceId, saleId, "ingestion", "received", 
+                        "soap-service", null, 0, soapUrl);
+                    emitLineage(producer, traceId, saleId, "ingestion", "published", 
+                        null, topic, System.currentTimeMillis() - recordStart, null);
+                }
                 totalPublished++;
             }
 
@@ -167,8 +185,9 @@ public class SoapConnector {
         Map.entry("sale:saleTimestamp", "sale_timestamp")
     );
 
-    private static String recordToJson(Element record) throws Exception {
+    private static String recordToJson(Element record, String traceId) throws Exception {
         ObjectNode node = mapper.createObjectNode();
+        node.put("trace_id", traceId);
         node.put("source", "soap");
 
         for (var entry : FIELD_MAP.entrySet()) {
@@ -185,8 +204,28 @@ public class SoapConnector {
             }
         }
 
-        node.put("ingested_at", java.time.Instant.now().toString());
+        node.put("ingested_at", Instant.now().toString());
         return mapper.writeValueAsString(node);
+    }
+
+    private static void emitLineage(KafkaProducer<String, String> producer, String traceId, 
+                                     String saleId, String stage, String eventType, 
+                                     String sourceTopic, String targetTopic, long latencyMs, 
+                                     String metadata) {
+        try {
+            ObjectNode event = mapper.createObjectNode();
+            event.put("trace_id", traceId);
+            event.put("sale_id", saleId);
+            event.put("stage", stage);
+            event.put("component", COMPONENT_NAME);
+            event.put("event_type", eventType);
+            event.put("timestamp", Instant.now().toString());
+            if (sourceTopic != null) event.put("source_topic", sourceTopic);
+            if (targetTopic != null) event.put("target_topic", targetTopic);
+            if (latencyMs > 0) event.put("latency_ms", latencyMs);
+            if (metadata != null) event.put("metadata", metadata);
+            producer.send(new ProducerRecord<>(LINEAGE_TOPIC, traceId, mapper.writeValueAsString(event)));
+        } catch (Exception ignored) {}
     }
 
     private static void waitForKafka(String broker) throws Exception {
@@ -221,13 +260,14 @@ public class SoapConnector {
         }
     }
 
-    private static void ensureTopic(String broker, String topic) throws Exception {
+    private static void ensureTopic(String broker, String topic) {
         try (AdminClient admin = AdminClient.create(Map.of("bootstrap.servers", broker))) {
-            Set<String> existing = admin.listTopics().names().get();
-            if (!existing.contains(topic)) {
+            if (!admin.listTopics().names().get().contains(topic)) {
                 admin.createTopics(List.of(new NewTopic(topic, 3, (short) 1))).all().get();
                 System.out.println("Created topic \"" + topic + "\"");
             }
+        } catch (Exception e) {
+            System.out.println("Topic " + topic + " ready");
         }
     }
 }

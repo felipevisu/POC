@@ -4,7 +4,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
@@ -15,13 +20,13 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 public class SalesAggregator {
 
     private static final ObjectMapper mapper = new ObjectMapper();
+    private static final String LINEAGE_TOPIC = "lineage";
+    private static final String COMPONENT_NAME = "sales-aggregator";
 
     private static final String POSTGRES_TOPIC = "postgres";
     private static final String CSV_TOPIC = "csv";
@@ -33,11 +38,14 @@ public class SalesAggregator {
     private static String dbUser;
     private static String dbPassword;
 
+    private static KafkaProducer<String, String> lineageProducer;
+    private static boolean lineageEnabled;
+
     private static final String INSERT_SQL = """
         INSERT INTO sales (sale_id, source, product_code, product_name, category, brand,
             salesman_name, salesman_email, region, store_name, city, store_type,
-            quantity, unit_price, total_amount, status, sale_timestamp)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            quantity, unit_price, total_amount, status, sale_timestamp, trace_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT (sale_id, sale_timestamp) DO NOTHING
         """;
 
@@ -46,6 +54,7 @@ public class SalesAggregator {
         dbUrl = env("TIMESCALEDB_URL", "jdbc:postgresql://timescaledb:5432/salesdb");
         dbUser = env("TIMESCALEDB_USER", "sales");
         dbPassword = env("TIMESCALEDB_PASSWORD", "sales123");
+        lineageEnabled = Boolean.parseBoolean(env("LINEAGE_ENABLED", "true"));
 
         Properties props = new Properties();
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, "sales-aggregator");
@@ -55,6 +64,16 @@ public class SalesAggregator {
 
         waitForTopics(broker);
         waitForTimescaleDB();
+
+        if (lineageEnabled) {
+            ensureTopic(broker, LINEAGE_TOPIC);
+            Properties producerProps = new Properties();
+            producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, broker);
+            producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+            producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+            lineageProducer = new KafkaProducer<>(producerProps);
+            System.out.println("Lineage tracking: ENABLED");
+        }
 
         StreamsBuilder builder = new StreamsBuilder();
 
@@ -78,6 +97,7 @@ public class SalesAggregator {
         KafkaStreams streams = new KafkaStreams(builder.build(), props);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             streams.close();
+            if (lineageProducer != null) lineageProducer.close();
             closeDb();
         }));
 
@@ -126,11 +146,14 @@ public class SalesAggregator {
     private static synchronized void insertSale(String json) {
         try {
             JsonNode node = mapper.readTree(json);
+            String traceId = node.path("trace_id").asText();
+            String saleId = node.get("sale_id").asText();
+            String source = node.path("source").asText("unknown");
 
             Connection conn = getConnection();
             try (PreparedStatement ps = conn.prepareStatement(INSERT_SQL)) {
-                ps.setString(1, node.get("sale_id").asText());
-                ps.setString(2, node.path("source").asText("unknown"));
+                ps.setString(1, saleId);
+                ps.setString(2, source);
                 ps.setString(3, node.path("product_code").asText());
                 ps.setString(4, node.path("product_name").asText());
                 ps.setString(5, node.path("category").asText());
@@ -146,13 +169,33 @@ public class SalesAggregator {
                 ps.setDouble(15, node.path("total_amount").asDouble(0));
                 ps.setString(16, node.path("status").asText());
                 ps.setTimestamp(17, parseTimestamp(node.path("sale_timestamp").asText()));
+                ps.setString(18, traceId);
 
-                ps.executeUpdate();
+                int inserted = ps.executeUpdate();
+                if (inserted > 0) {
+                    emitLineage(traceId, saleId, source, "storage", "inserted");
+                }
             }
         } catch (Exception e) {
             System.err.println("Insert error: " + e.getMessage());
             closeDb();
         }
+    }
+
+    private static void emitLineage(String traceId, String saleId, String source, String stage, String eventType) {
+        if (!lineageEnabled || lineageProducer == null || traceId == null || traceId.isEmpty()) return;
+        try {
+            ObjectNode event = mapper.createObjectNode();
+            event.put("trace_id", traceId);
+            event.put("sale_id", saleId);
+            event.put("stage", stage);
+            event.put("component", COMPONENT_NAME);
+            event.put("event_type", eventType);
+            event.put("timestamp", Instant.now().toString());
+            event.put("source_topic", source.equals("postgres") ? POSTGRES_TOPIC : source.equals("csv") ? CSV_TOPIC : SOAP_TOPIC);
+            event.put("target_topic", OUTPUT_TOPIC);
+            lineageProducer.send(new ProducerRecord<>(LINEAGE_TOPIC, traceId, mapper.writeValueAsString(event)));
+        } catch (Exception ignored) {}
     }
 
     private static Timestamp parseTimestamp(String value) {
@@ -213,5 +256,16 @@ public class SalesAggregator {
 
     private static void sleep(long ms) {
         try { Thread.sleep(ms); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+    }
+
+    private static void ensureTopic(String broker, String topic) {
+        try (AdminClient admin = AdminClient.create(Map.of("bootstrap.servers", broker))) {
+            if (!admin.listTopics().names().get().contains(topic)) {
+                admin.createTopics(List.of(new NewTopic(topic, 1, (short) 1))).all().get();
+                System.out.println("Created topic: " + topic);
+            }
+        } catch (Exception e) {
+            System.out.println("Topic " + topic + " may already exist: " + e.getMessage());
+        }
     }
 }
