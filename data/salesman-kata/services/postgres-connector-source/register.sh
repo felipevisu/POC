@@ -11,9 +11,9 @@ echo "Kafka Connect is ready"
 
 EXISTING=$(curl -s "$CONNECT_URL/connectors")
 
-if echo "$EXISTING" | grep -q "postgres-connector-source"; then
+if echo "$EXISTING" | grep -q "postgres-enricher"; then
   echo "Connector already registered, updating..."
-  curl -s -X PUT "$CONNECT_URL/connectors/postgres-connector-source/config" \
+  curl -s -X PUT "$CONNECT_URL/connectors/postgres-enricher/config" \
     -H "Content-Type: application/json" \
     -d "$(jq '.config' /config/connector.json)" | jq '.' 2>/dev/null || cat
 else
@@ -25,6 +25,6 @@ fi
 
 echo ""
 echo "Connector status:"
-curl -s "$CONNECT_URL/connectors/postgres-connector-source/status" | jq '.' 2>/dev/null || cat
+curl -s "$CONNECT_URL/connectors/postgres-enricher/status" | jq '.' 2>/dev/null || cat
 echo ""
 echo "Done."

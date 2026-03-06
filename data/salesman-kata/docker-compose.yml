@@ -145,22 +145,22 @@ services:
     networks:
       - electromart-network
 
-  postgres-connector-init:
+  postgres-connector-source:
     build:
       context: ./services/postgres-connector-source
-      dockerfile: Dockerfile.init
-    container_name: electromart-postgres-connector-init
+      dockerfile: Dockerfile
+    container_name: electromart-postgres-connector-source
     depends_on:
       kafka-connect:
         condition: service_healthy
     networks:
       - electromart-network
 
-  postgres-connector-source:
+  postgres-enricher:
     build:
-      context: ./services/postgres-connector-source
+      context: ./services/postgres-enricher
       dockerfile: Dockerfile
-    container_name: electromart-postgres-connector
+    container_name: electromart-postgres-enricher
     environment:
       KAFKA_BROKER: kafka:9092
       LINEAGE_ENABLED: "true"
