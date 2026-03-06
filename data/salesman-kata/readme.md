@@ -330,3 +330,6 @@ docker-compose down -v
 
 **Results on Grafana**
 <img src="/screenshots/graphana-results.png" alt="results"/>
+
+**Observability on Grafana**
+<img src="/screenshots/graphana-observability.png" alt="observability"/>
