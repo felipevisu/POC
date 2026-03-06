@@ -24,7 +24,7 @@ public class SalesEnricher {
 
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final String LINEAGE_TOPIC = "lineage";
-    private static final String COMPONENT_NAME = "sales-enricher";
+    private static final String COMPONENT_NAME = "postgres-enricher";
 
     private static final String SALES_TOPIC = "electromart.public.sales";
     private static final String PRODUCTS_TOPIC = "electromart.public.products";
@@ -40,7 +40,7 @@ public class SalesEnricher {
         lineageEnabled = Boolean.parseBoolean(System.getenv().getOrDefault("LINEAGE_ENABLED", "true"));
 
         Properties props = new Properties();
-        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "sales-enricher");
+        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "postgres-enricher");
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, broker);
         props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.StringSerde.class);
         props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.StringSerde.class);
@@ -68,6 +68,7 @@ public class SalesEnricher {
         KStream<String, String> enriched = sales
             .filter((key, value) -> value != null)
             .mapValues(SalesEnricher::addTraceId)
+            .peek((key, value) -> emitReceivedLineage(value))
             .join(products,
                 (key, sale) -> toKey("id", sale, "product_id"),
                 SalesEnricher::withProduct)
@@ -77,7 +78,7 @@ public class SalesEnricher {
             .join(stores,
                 (key, sale) -> toKey("id", sale, "store_id"),
                 SalesEnricher::withStore)
-            .peek((key, value) -> emitEnrichmentLineage(value));
+            .peek((key, value) -> emitPublishedLineage(value));
 
         enriched.peek((key, value) -> System.out.println("→ postgres | " + key));
         enriched.to(OUTPUT_TOPIC);
@@ -105,7 +106,27 @@ public class SalesEnricher {
         }
     }
 
-    private static void emitEnrichmentLineage(String json) {
+    private static void emitReceivedLineage(String json) {
+        if (!lineageEnabled || lineageProducer == null) return;
+        try {
+            JsonNode node = mapper.readTree(json);
+            String traceId = node.path("trace_id").asText();
+            String saleId = node.path("sale_id").asText();
+            if (traceId.isEmpty()) return;
+
+            ObjectNode event = mapper.createObjectNode();
+            event.put("trace_id", traceId);
+            event.put("sale_id", saleId);
+            event.put("stage", "enrichment");
+            event.put("component", COMPONENT_NAME);
+            event.put("event_type", "received");
+            event.put("timestamp", Instant.now().toString());
+            event.put("source_topic", SALES_TOPIC);
+            lineageProducer.send(new ProducerRecord<>(LINEAGE_TOPIC, traceId, mapper.writeValueAsString(event)));
+        } catch (Exception ignored) {}
+    }
+
+    private static void emitPublishedLineage(String json) {
         if (!lineageEnabled || lineageProducer == null) return;
         try {
             JsonNode node = mapper.readTree(json);

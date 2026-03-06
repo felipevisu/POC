@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.electromart</groupId>
-    <artifactId>sales-enricher</artifactId>
+    <artifactId>postgres-enricher</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
