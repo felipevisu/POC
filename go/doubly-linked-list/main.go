@@ -29,6 +29,32 @@ func (list *List) addNode(data interface{}){
 	pointer.next = node
 }
 
+func (list *List) deleteNode(data interface{}){
+	pointer := list.head
+
+	if pointer.data == data {
+		list.head = pointer.next
+		list.head.prev = nil
+		return
+	}
+
+	for pointer != nil && pointer.data != data {
+		pointer = pointer.next
+	}
+
+	if pointer == nil {
+		fmt.Println("Node not found")
+		return
+	}
+
+	if pointer.next == nil {
+    	pointer.prev.next = nil
+	} else {
+		pointer.next.prev = pointer.prev
+		pointer.prev.next = pointer.next
+	}
+}
+
 func main(){
 	fmt.Println("Hello world");
 }
