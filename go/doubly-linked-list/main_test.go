@@ -1,6 +1,9 @@
 package doublylinkedlist
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func TestAddEnd(t *testing.T) {
 	list := &List{}
@@ -163,6 +166,37 @@ func TestDeleteOnlyNode(t *testing.T) {
 		t.Error("Expected head to be nil after deleting only node")
 	}
 }
+
+func TestAddInPos(t *testing.T) {
+	list := &List{}
+	list.addEnd(10)
+	list.addEnd(20)
+	list.addEnd(30)
+	list.addEnd(50)
+	list.addEnd(60)
+
+	list.addInPos(40, 3)
+
+	all := list.returnAll()
+	expected := []interface{}{10, 20, 30, 40, 50, 60}
+	if !reflect.DeepEqual(all, expected) {
+		t.Error("Object placed in wrong position", all)
+	}
+}
+
+func TestReturnAll(t *testing.T) {
+	list := &List{}
+	list.addEnd(10)
+	list.addEnd(20)
+	list.addEnd(30)
+
+	all := list.returnAll()
+	expected := []interface{}{10, 20, 30}
+	if !reflect.DeepEqual(all, expected) {
+		t.Error("Lists are different")
+	}
+}
+
 
 func TestDeleteNonExistentNode(t *testing.T) {
 	list := &List{}

@@ -1,6 +1,8 @@
 package doublylinkedlist
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Node struct {
 	data interface{}
@@ -40,6 +42,41 @@ func (list *List) addStart(data interface{}) {
 	temp := list.head
 	list.head = node
 	node.next = temp
+}
+
+func (list *List) addInPos(data interface{}, pos int) {
+	node := &Node{data: data}
+
+	if pos == 0 {
+		list.addStart(data)
+		return
+	}
+
+	if pos == -1 {
+		list.addEnd(data)
+		return
+	}
+
+	i := 0
+	temp := list.head
+	for i < pos - 1{
+		i = i + 1
+		temp = temp.next
+	}
+	temp.next.prev = node
+	node.next = temp.next
+	node.prev = temp
+	temp.next = node
+}
+
+func (list *List) returnAll() []interface{} {
+	array := []interface{}{}
+	temp := list.head
+	for temp != nil {
+		array = append(array, temp.data)
+		temp = temp.next
+	}
+	return array
 }
 
 func (list *List) deleteNode(data interface{}) {
