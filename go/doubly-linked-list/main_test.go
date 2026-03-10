@@ -2,9 +2,9 @@ package doublylinkedlist
 
 import "testing"
 
-func TestAddNode(t *testing.T) {
+func TestAddEnd(t *testing.T) {
 	list := &List{}
-	list.addNode(10)
+	list.addEnd(10)
 
 	if list.head == nil {
 		t.Error("Expected head to be initialized")
@@ -19,10 +19,29 @@ func TestAddNode(t *testing.T) {
 	}
 }
 
+func TestAddStart(t *testing.T) {
+	list := &List{}
+	list.addStart(10)
+	list.addStart(20)
+	list.addStart(30)
+
+	if list.head.data != 30 {
+		t.Error("First item should be 30")
+	}
+
+	if list.head.next.data != 20 {
+		t.Error("First item should be 20")
+	}
+
+	if list.head.next.next.data != 10 {
+		t.Error("First item should be 10")
+	}
+}
+
 func TestAddMultipleNodes(t *testing.T) {
 	list := &List{}
-	list.addNode(10)
-	list.addNode(20)
+	list.addEnd(10)
+	list.addEnd(20)
 
 	first := list.head
 	second := list.head.next
@@ -46,9 +65,9 @@ func TestAddMultipleNodes(t *testing.T) {
 
 func TestDeleteNode(t *testing.T) {
 	list := &List{}
-	list.addNode(10)
-	list.addNode(20)
-	list.addNode(30)
+	list.addEnd(10)
+	list.addEnd(20)
+	list.addEnd(30)
 
 	list.deleteNode(list.head.next.data)
 
@@ -63,9 +82,9 @@ func TestDeleteNode(t *testing.T) {
 
 func TestDeleteHeadNode(t *testing.T) {
 	list := &List{}
-	list.addNode(10)
-	list.addNode(20)
-	list.addNode(30)
+	list.addEnd(10)
+	list.addEnd(20)
+	list.addEnd(30)
 
 	list.deleteNode(10)
 
@@ -88,9 +107,9 @@ func TestDeleteHeadNode(t *testing.T) {
 
 func TestDeleteTailNode(t *testing.T) {
 	list := &List{}
-	list.addNode(10)
-	list.addNode(20)
-	list.addNode(30)
+	list.addEnd(10)
+	list.addEnd(20)
+	list.addEnd(30)
 
 	list.deleteNode(30)
 
@@ -109,9 +128,9 @@ func TestDeleteTailNode(t *testing.T) {
 
 func TestDeleteMiddleNode(t *testing.T) {
 	list := &List{}
-	list.addNode(10)
-	list.addNode(20)
-	list.addNode(30)
+	list.addEnd(10)
+	list.addEnd(20)
+	list.addEnd(30)
 
 	list.deleteNode(20)
 
@@ -130,7 +149,7 @@ func TestDeleteMiddleNode(t *testing.T) {
 
 func TestDeleteOnlyNode(t *testing.T) {
 	list := &List{}
-	list.addNode(10)
+	list.addEnd(10)
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -147,8 +166,8 @@ func TestDeleteOnlyNode(t *testing.T) {
 
 func TestDeleteNonExistentNode(t *testing.T) {
 	list := &List{}
-	list.addNode(10)
-	list.addNode(20)
+	list.addEnd(10)
+	list.addEnd(20)
 
 	list.deleteNode(99)
 
@@ -158,5 +177,26 @@ func TestDeleteNonExistentNode(t *testing.T) {
 
 	if list.head.next.data != 20 {
 		t.Errorf("Expected second node data to remain 20, got %v", list.head.next.data)
+	}
+}
+
+func TestListLengthOfEmptyList(t *testing.T) {
+	list := &List{}
+	length := list.lenght()
+
+	if (length != 0) {
+		t.Errorf("List length should be 0")
+	}
+}
+
+func TestListLength(t *testing.T) {
+	list := &List{}
+	list.addEnd(10)
+	list.addEnd(20)
+
+	length := list.lenght()
+
+	if (length != 2) {
+		t.Errorf("List length should be 2")
 	}
 }

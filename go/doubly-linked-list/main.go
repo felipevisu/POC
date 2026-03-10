@@ -12,7 +12,7 @@ type List struct {
 	head *Node
 }
 
-func (list *List) addNode(data interface{}){
+func (list *List) addEnd(data interface{}) {
 	node := &Node{data: data}
 
 	if list.head == nil {
@@ -29,7 +29,20 @@ func (list *List) addNode(data interface{}){
 	pointer.next = node
 }
 
-func (list *List) deleteNode(data interface{}){
+func (list *List) addStart(data interface{}) {
+	node := &Node{data: data}
+
+	if list.head == nil {
+		list.head = node
+		return
+	}
+
+	temp := list.head
+	list.head = node
+	node.next = temp
+}
+
+func (list *List) deleteNode(data interface{}) {
 	pointer := list.head
 
 	if pointer.data == data {
@@ -55,6 +68,20 @@ func (list *List) deleteNode(data interface{}){
 	}
 }
 
-func main(){
+func (list *List) lenght() int {
+	if list.head == nil {
+		return 0
+	} else {
+		count := 0
+		pointer := list.head
+		for pointer != nil {
+			count += 1
+			pointer = pointer.next
+		}
+		return count
+	}
+}
+
+func main() {
 	fmt.Println("Hello world");
 }
