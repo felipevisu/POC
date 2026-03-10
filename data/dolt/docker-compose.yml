@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  dolt:
+    image: dolthub/dolt-sql-server:latest
+    container_name: dolt-sql-server
+    environment:
+      - DOLT_ROOT_PASSWORD=secret2
+      - DOLT_ROOT_HOST=%
+    ports:
+      - "3307:3306"
+    restart: unless-stopped
