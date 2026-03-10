@@ -24,6 +24,17 @@ CALL dolt_checkout('main');
 CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(100));
 INSERT INTO users VALUES (1, 'Alice'), (2, 'Bob');
 
+-- Query
+SELECT * FROM users;
+/*
++----+-------+
+| id | name  |
++----+-------+
+|  1 | Alice |
+|  2 | Bob   |
++----+-------+
+*/
+
 -- Commit changes
 SELECT * FROM dolt_status;
 CALL dolt_add('-A');
