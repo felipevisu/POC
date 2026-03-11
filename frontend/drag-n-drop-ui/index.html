@@ -9,6 +9,7 @@
   <body>
     <div id="app">
       <div id="elements">
+        <p class="hint">Shift + Click two nodes to connect them</p>
         <div
           class="element"
           draggable="true"
@@ -34,7 +35,9 @@
           Condition
         </div>
       </div>
-      <div id="canvas"></div>
+      <div id="canvas">
+        <svg id="connections"></svg>
+      </div>
     </div>
 
     <script src="index.js"></script>
