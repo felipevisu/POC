@@ -34,6 +34,17 @@ services:
     networks:
       - pipeline-network
 
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    container_name: jaeger
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+    networks:
+      - pipeline-network
+
   kafka-init:
     image: apache/kafka:3.7.1
     container_name: kafka-init
@@ -74,6 +85,9 @@ services:
       TOPIC_NAME: raw_orders
       GENERATION_INTERVAL: 5000
       JAVA_OPTS: "-Xms32M -Xmx64M"
+      OTEL_SERVICE_NAME: order-generator
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
     depends_on:
       kafka-init:
         condition: service_completed_successfully
@@ -90,6 +104,9 @@ services:
       INPUT_TOPIC: raw_orders
       OUTPUT_TOPIC: parsed_orders
       JAVA_OPTS: "-Xms32M -Xmx64M"
+      OTEL_SERVICE_NAME: order-parser
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
     depends_on:
       kafka-init:
         condition: service_completed_successfully
@@ -127,6 +144,9 @@ services:
       DB_USER: postgres
       DB_PASSWORD: postgres
       JAVA_OPTS: "-Xms32M -Xmx64M"
+      OTEL_SERVICE_NAME: order-persistence
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
     depends_on:
       kafka-init:
         condition: service_completed_successfully
