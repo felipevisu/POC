@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+  <body>
+    <input id="input" placeholder="Type something..." />
+    <button onclick="run()">Hash</button>
+
+    <p id="output"></p>
+
+    <script type="module">
+      import init, { hash_string } from "./pkg/wasm_hash.js";
+
+      async function run() {
+        await init();
+
+        const input = document.getElementById("input").value;
+        const hash = hash_string(input);
+
+        document.getElementById("output").innerText = hash;
+      }
+
+      window.run = run;
+    </script>
+  </body>
+</html>
