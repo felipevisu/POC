@@ -1,0 +1,23 @@
+{
+  "name": "zod-schema-validator",
+  "type": "module",
+  "scripts": {
+    "seed": "tsx scripts/seed.ts",
+    "generate": "tsx scripts/generate.ts",
+    "dev": "npm run seed && npm run generate && tsx src/server.ts",
+    "build": "npm run generate && tsc",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "swagger-ui-express": "^5.0.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "json-schema-to-zod": "^2.4.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

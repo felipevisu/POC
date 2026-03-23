@@ -1,0 +1,52 @@
+services:
+  apicurio-registry:
+    image: apicurio/apicurio-registry:latest
+    container_name: apicurio-registry
+    ports:
+      - "8080:8080"
+    environment:
+      REGISTRY_STORAGE: mem
+    networks:
+      - apicurio-net
+
+  apicurio-registry-ui:
+    image: apicurio/apicurio-registry-ui:latest
+    container_name: apicurio-registry-ui
+    depends_on:
+      - apicurio-registry
+    ports:
+      - "8888:8080"
+    environment:
+      REGISTRY_API_URL: http://apicurio-registry:8080/apis/registry/v3
+    networks:
+      - apicurio-net
+
+  schema-seed:
+    build: ./validator
+    container_name: schema-seed
+    depends_on:
+      - apicurio-registry
+    environment:
+      REGISTRY_URL: http://apicurio-registry:8080
+    command: ["npx", "tsx", "scripts/seed.ts"]
+    networks:
+      - apicurio-net
+
+  schema-validator:
+    build: ./validator
+    container_name: schema-validator
+    depends_on:
+      schema-seed:
+        condition: service_completed_successfully
+    ports:
+      - "3000:3000"
+    environment:
+      REGISTRY_URL: http://apicurio-registry:8080
+      PORT: 3000
+    command: ["sh", "-c", "npx tsx scripts/generate.ts && npx tsx src/server.ts"]
+    networks:
+      - apicurio-net
+
+networks:
+  apicurio-net:
+    driver: bridge

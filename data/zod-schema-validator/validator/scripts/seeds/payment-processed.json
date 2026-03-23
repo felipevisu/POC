@@ -1,0 +1,37 @@
+{
+  "$id": "payment.processed.v1",
+  "type": "object",
+  "required": ["paymentId", "orderId", "amount", "currency", "method", "status", "processedAt"],
+  "properties": {
+    "paymentId": {
+      "type": "string"
+    },
+    "orderId": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number",
+      "minimum": 0.01
+    },
+    "currency": {
+      "type": "string",
+      "enum": ["BRL", "USD", "EUR"]
+    },
+    "method": {
+      "type": "string",
+      "enum": ["credit_card", "debit_card", "pix", "boleto"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["approved", "declined", "pending"]
+    },
+    "cardLast4": {
+      "type": "string",
+      "pattern": "^[0-9]{4}$"
+    },
+    "processedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
