@@ -1,0 +1,141 @@
+type Query {
+  allStores: [StoreType]
+  store(id: ID!): StoreType
+  allSalesmen: [SalesmanType]
+  salesman(id: ID!): SalesmanType
+  allProducts: [ProductType]
+  product(id: ID!): ProductType
+  allSales: [SaleType]
+  sale(id: ID!): SaleType
+}
+
+type StoreType {
+  id: ID!
+  name: String!
+  address: String!
+  phone: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  salesmen: [SalesmanType!]!
+  sales: [SaleType!]!
+}
+
+"""
+The `DateTime` scalar type represents a DateTime
+value as specified by
+[iso8601](https://en.wikipedia.org/wiki/ISO_8601).
+"""
+scalar DateTime
+
+type SalesmanType {
+  id: ID!
+  name: String!
+  email: String!
+  phone: String!
+  store: StoreType!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  sales: [SaleType!]!
+}
+
+type SaleType {
+  id: ID!
+  store: StoreType!
+  salesman: SalesmanType!
+  products: [ProductType!]!
+  total: Decimal!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  items: [SaleItemType]
+}
+
+type ProductType {
+  id: ID!
+  name: String!
+  description: String!
+  price: Decimal!
+  stock: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  sales: [SaleType!]!
+  saleitemSet: [SaleItemType!]!
+}
+
+"""The `Decimal` scalar type represents a python Decimal."""
+scalar Decimal
+
+type SaleItemType {
+  id: ID!
+  sale: SaleType!
+  product: ProductType!
+  quantity: Int!
+  unitPrice: Decimal!
+}
+
+type Mutation {
+  createStore(address: String!, name: String!, phone: String): CreateStore
+  updateStore(address: String, id: ID!, name: String, phone: String): UpdateStore
+  deleteStore(id: ID!): DeleteStore
+  createSalesman(email: String!, name: String!, phone: String, storeId: ID!): CreateSalesman
+  updateSalesman(email: String, id: ID!, name: String, phone: String, storeId: ID): UpdateSalesman
+  deleteSalesman(id: ID!): DeleteSalesman
+  createProduct(description: String, name: String!, price: Float!, stock: Int): CreateProduct
+  updateProduct(description: String, id: ID!, name: String, price: Float, stock: Int): UpdateProduct
+  deleteProduct(id: ID!): DeleteProduct
+  createSale(items: [SaleItemInput]!, salesmanId: ID!, storeId: ID!): CreateSale
+  updateSale(id: ID!, items: [SaleItemInput], salesmanId: ID, storeId: ID): UpdateSale
+  deleteSale(id: ID!): DeleteSale
+}
+
+type CreateStore {
+  store: StoreType
+}
+
+type UpdateStore {
+  store: StoreType
+}
+
+type DeleteStore {
+  ok: Boolean
+}
+
+type CreateSalesman {
+  salesman: SalesmanType
+}
+
+type UpdateSalesman {
+  salesman: SalesmanType
+}
+
+type DeleteSalesman {
+  ok: Boolean
+}
+
+type CreateProduct {
+  product: ProductType
+}
+
+type UpdateProduct {
+  product: ProductType
+}
+
+type DeleteProduct {
+  ok: Boolean
+}
+
+type CreateSale {
+  sale: SaleType
+}
+
+input SaleItemInput {
+  productId: ID!
+  quantity: Int!
+}
+
+type UpdateSale {
+  sale: SaleType
+}
+
+type DeleteSale {
+  ok: Boolean
+}
