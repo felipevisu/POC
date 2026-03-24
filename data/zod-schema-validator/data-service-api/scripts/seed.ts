@@ -14,6 +14,7 @@ interface SeedArtifact {
   groupId: string;
   artifactId: string;
   name: string;
+  labels: Record<string, string>;
   versions: SeedVersion[];
 }
 
@@ -22,6 +23,11 @@ const SEED_ARTIFACTS: SeedArtifact[] = [
     groupId: "sales",
     artifactId: "order-created",
     name: "Order Created",
+    labels: {
+      "pipeline.actions": "kafka,database",
+      "pipeline.kafka.topic": "sales.order-created",
+      "pipeline.database.table": "orders",
+    },
     versions: [
       { version: "1", file: "order-created.json" },
       { version: "2", file: "order-created-v2.json" },
@@ -31,12 +37,21 @@ const SEED_ARTIFACTS: SeedArtifact[] = [
     groupId: "customers",
     artifactId: "customer-registered",
     name: "Customer Registered",
+    labels: {
+      "pipeline.actions": "kafka,database",
+      "pipeline.kafka.topic": "customers.registered",
+      "pipeline.database.table": "customers",
+    },
     versions: [{ version: "1", file: "customer-registered.json" }],
   },
   {
     groupId: "payments",
     artifactId: "payment-processed",
     name: "Payment Processed",
+    labels: {
+      "pipeline.actions": "kafka",
+      "pipeline.kafka.topic": "payments.processed",
+    },
     versions: [{ version: "1", file: "payment-processed.json" }],
   },
 ];
@@ -89,6 +104,7 @@ async function registerArtifact(artifact: SeedArtifact) {
         artifactId: artifact.artifactId,
         artifactType: "JSON",
         name: artifact.name,
+        labels: artifact.labels,
         firstVersion: {
           version: first.version,
           content: { content, contentType: "application/json" },

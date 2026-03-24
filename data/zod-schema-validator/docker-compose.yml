@@ -16,13 +16,13 @@ services:
       - apicurio-registry
     ports:
       - "8888:8080"
-    environment:
-      REGISTRY_API_URL: http://apicurio-registry:8080/apis/registry/v3
+    volumes:
+      - ./apicurio-ui-config.js:/opt/app-root/src/config.js:ro
     networks:
       - apicurio-net
 
   schema-seed:
-    build: ./validator
+    build: ./data-service-api
     container_name: schema-seed
     depends_on:
       - apicurio-registry
@@ -32,9 +32,9 @@ services:
     networks:
       - apicurio-net
 
-  schema-validator:
-    build: ./validator
-    container_name: schema-validator
+  data-service-api:
+    build: ./data-service-api
+    container_name: data-service-api
     depends_on:
       schema-seed:
         condition: service_completed_successfully

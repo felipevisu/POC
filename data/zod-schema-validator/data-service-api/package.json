@@ -1,5 +1,5 @@
 {
-  "name": "zod-schema-validator",
+  "name": "data-service-api",
   "type": "module",
   "scripts": {
     "seed": "tsx scripts/seed.ts",

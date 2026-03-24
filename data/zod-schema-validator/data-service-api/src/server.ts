@@ -2,6 +2,7 @@ import express from "express";
 import swaggerUi from "swagger-ui-express";
 import { createRequire } from "node:module";
 import { schemas } from "./generated/schemas.js";
+import { executePipeline } from "./pipeline.js";
 
 const require = createRequire(import.meta.url);
 const openApiSpec = require("./generated/openapi.json");
@@ -17,18 +18,19 @@ app.get("/openapi.json", (_req, res) => {
 
 app.get("/", (_req, res) => {
   res.json({
-    service: "zod-schema-validator",
+    service: "data-service-api",
     docs: "/docs",
     openapi: "/openapi.json",
     endpoints: schemas.map((s) => ({
       method: "POST",
       path: `/${s.groupId}/${s.artifactId}/v${s.version}`,
+      pipeline: s.pipeline,
     })),
   });
 });
 
-schemas.forEach(({ groupId, artifactId, version, schema }) => {
-  app.post(`/${groupId}/${artifactId}/v${version}`, (req, res) => {
+schemas.forEach(({ groupId, artifactId, version, schema, pipeline }) => {
+  app.post(`/${groupId}/${artifactId}/v${version}`, async (req, res) => {
     const result = schema.safeParse(req.body);
 
     if (!result.success) {
@@ -39,7 +41,13 @@ schemas.forEach(({ groupId, artifactId, version, schema }) => {
       return;
     }
 
-    res.json({ valid: true, data: result.data });
+    const pipelineResults = await executePipeline(pipeline, result.data);
+
+    res.json({
+      valid: true,
+      data: result.data,
+      pipeline: pipelineResults,
+    });
   });
 });
 
