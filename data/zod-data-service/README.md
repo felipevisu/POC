@@ -4,10 +4,10 @@ A Node.js + Express service that reads JSON Schemas from an [Apicurio Schema Reg
 
 ## How it works
 
-1. **Create schemas and versions:** Data team add new schemas or versions at the schema registry using the Apicurio UI, they should also add metadata containing information about what to do with the data, persist on database or publish in a kafka topic;
+1. **Create schemas and versions:** The data team adds new schemas or versions to the schema registry using the Apicurio UI. They must also add metadata containing information about what to do with the data: persist it in the database or publish it to a Kafka topic;
 2. **Schemas endpoint:** Apicurio provides an endpoint where services can fetch all schemas and versions;
-3. **Generate:** The data service API fetches all schemas and versions from Apicurio and for each one, it uses the library `json-schema-to-zod` to generate Zod schema validators;
-4. **API:** Express creates a `POST /{groupId}/{artifactId}/v{version}` endpoint, for each Zod schema validator created in the previous step, this endpoint validates payloads with Zod, if it fails data never joins any pipeline;
+3. **Generate:** The data service API retrieves all schemas and versions of Apicurio and, for each one, uses the `json-schema-to-zod` library to generate Zod schema validators;
+4. **API:** Express exposes a `POST /{groupId}/{artifactId}/v{version}` endpoint for each Zod schema validator generated in the previous step, this endpoint validates payloads with Zod, if it fails data never joins any pipeline;
 5. **Move data to the pipeline**: Execute the data pipeline accordingly to the schema metadata defined on the first step.
 
 ## Quick start
