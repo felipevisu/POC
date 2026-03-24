@@ -44,7 +44,9 @@ async function waitForRegistry(retries = 10, delayMs = 2000) {
 }
 
 function parsePipelineLabels(labels: Record<string, string>): PipelineConfig {
-  const actionNames = (labels["pipeline.actions"] || "").split(",").filter(Boolean);
+  const actionNames = (labels["pipeline.actions"] || "")
+    .split(",")
+    .filter(Boolean);
 
   const actions = actionNames.map((type) => {
     const prefix = `pipeline.${type}.`;
@@ -112,13 +114,17 @@ function generateZodCode(entries: SchemaEntry[]): string {
   const schemaItems = entries
     .map(
       (e) =>
-        `  {\n    groupId: ${JSON.stringify(e.groupId)},\n    artifactId: ${JSON.stringify(e.artifactId)},\n    version: ${JSON.stringify(e.version)},\n    pipeline: ${JSON.stringify(e.pipeline)},\n    schema: ${e.zodExpression},\n  }`,
+        `{
+          \n groupId: ${JSON.stringify(e.groupId)},
+          \n artifactId: ${JSON.stringify(e.artifactId)},
+          \n version: ${JSON.stringify(e.version)},
+          \n pipeline: ${JSON.stringify(e.pipeline)},
+          \n schema: ${e.zodExpression},\n  
+        }`,
     )
     .join(",\n");
 
-  return `// Auto-generated from Apicurio Schema Registry — do not edit manually
-// Run \`npm run generate\` to regenerate
-import { z } from "zod";
+  return `import { z } from "zod";
 
 export interface PipelineAction {
   type: string;
@@ -143,7 +149,10 @@ function buildValidationResponse(valid: boolean) {
         schema: {
           type: "object",
           properties: valid
-            ? { valid: { type: "boolean", example: true }, data: { type: "object" } }
+            ? {
+                valid: { type: "boolean", example: true },
+                data: { type: "object" },
+              }
             : {
                 valid: { type: "boolean", example: false },
                 errors: {
@@ -174,7 +183,11 @@ function generateOpenApiSpec(entries: SchemaEntry[]): object {
       post: {
         tags: [e.groupId],
         summary: `Validate ${e.artifactId} v${e.version}`,
-        operationId: `validate_${e.groupId}_${e.artifactId}_v${e.version}`.replace(/-/g, "_"),
+        operationId:
+          `validate_${e.groupId}_${e.artifactId}_v${e.version}`.replace(
+            /-/g,
+            "_",
+          ),
         requestBody: {
           required: true,
           content: { "application/json": { schema: requestSchema } },

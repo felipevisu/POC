@@ -4,15 +4,16 @@ A Node.js + Express service that reads JSON Schemas from an [Apicurio Schema Reg
 
 ## How it works
 
-1. **Generate** — fetches all schema versions and artifact labels from the registry, generates Zod validators and pipeline routing config as TypeScript code
-2. **Serve** — Express creates a `POST /{groupId}/{artifactId}/v{version}` endpoint for each schema version, validates payloads with Zod, and routes data through the configured pipeline
-
-Callers choose which schema version to validate against via the URL. This lets producers migrate to newer schema versions at their own pace.
+1. **Create schemas and versions:** Data team add new schemas or versions at the schema registry using the Apicurio UI, they should also add metadata containing information about what to do with the data, persist on database or publish in a kafka topic;
+2. **Schemas endpoint:** Apicurio provides an endpoint where services can fetch all schemas and versions;
+3. **Generate:** The data service API fetches all schemas and versions from Apicurio and for each one, it uses the library `json-schema-to-zod` to generate Zod schema validators;
+4. **API:** Express creates a `POST /{groupId}/{artifactId}/v{version}` endpoint, for each Zod schema validator created in the previous step, this endpoint validates payloads with Zod, if it fails data never joins any pipeline;
+5. **Move data to the pipeline**: Execute the data pipeline accordingly to the schema metadata defined on the first step.
 
 ## Quick start
 
 ```bash
-docker compose up --build
+docker-compose up --build
 ```
 
 | Service           | URL                   | Description              |
