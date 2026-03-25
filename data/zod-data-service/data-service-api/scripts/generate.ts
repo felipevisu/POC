@@ -182,9 +182,9 @@ function generateOpenApiSpec(entries: SchemaEntry[]): object {
     paths[`/${e.groupId}/${e.artifactId}/v${e.version}`] = {
       post: {
         tags: [e.groupId],
-        summary: `Validate ${e.artifactId} v${e.version}`,
+        summary: `Send ${e.artifactId} v${e.version}`,
         operationId:
-          `validate_${e.groupId}_${e.artifactId}_v${e.version}`.replace(
+          `send_${e.groupId}_${e.artifactId}_v${e.version}`.replace(
             /-/g,
             "_",
           ),
