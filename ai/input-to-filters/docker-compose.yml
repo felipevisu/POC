@@ -1,0 +1,26 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: webmotors
+      POSTGRES_PASSWORD: webmotors
+      POSTGRES_DB: webmotors
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U webmotors -d webmotors"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - webmotors
+
+volumes:
+  postgres_data:
+
+networks:
+  webmotors:
