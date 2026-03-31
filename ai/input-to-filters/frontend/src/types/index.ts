@@ -6,16 +6,22 @@ export interface SelectFilterOption {
 export interface SelectFilter {
   type: "select";
   options: SelectFilterOption[];
+  label: string;
+  order: number | null;
 }
 
 export interface RangeFilter {
   type: "range";
   min: number;
   max: number;
+  label: string;
+  order: number | null;
 }
 
 export interface SearchFilter {
   type: "search";
+  label: string;
+  order: number | null;
 }
 
 export type FilterDefinition = SelectFilter | RangeFilter | SearchFilter;

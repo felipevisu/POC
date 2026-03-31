@@ -94,6 +94,83 @@ ALL_FILTERS = {
     **{col: "search" for col in SEARCH_FILTERS},
 }
 
+FILTER_LABELS = {
+    "make": "Make",
+    "model": "Model",
+    "body_type": "Body Type",
+    "engine_type": "Engine Type",
+    "transmission": "Transmission",
+    "drive_wheels": "Drive Wheels",
+    "fuel_grade": "Fuel Grade",
+    "car_class": "Car Class",
+    "country_of_origin": "Country",
+    "number_of_seats": "Seats",
+    "cylinder_layout": "Cylinder Layout",
+    "boost_type": "Boost Type",
+    "engine_placement": "Engine Placement",
+    "injection_type": "Injection Type",
+    "front_brakes": "Front Brakes",
+    "rear_brakes": "Rear Brakes",
+    "emission_standards": "Emission Standards",
+    "safety_assessment": "Safety Rating",
+    "rating_name": "Rating Name",
+    "presence_of_intercooler": "Intercooler",
+    "year_from": "Year From",
+    "year_to": "Year To",
+    "engine_hp": "Horsepower",
+    "capacity_cm3": "Engine (cc)",
+    "number_of_cylinders": "Cylinders",
+    "acceleration_0_100_km_h_s": "0-100 km/h (s)",
+    "max_speed_km_per_h": "Top Speed (km/h)",
+    "mixed_fuel_consumption_per_100_km_l": "Fuel (L/100km)",
+    "curb_weight_kg": "Weight (kg)",
+    "length_mm": "Length (mm)",
+    "width_mm": "Width (mm)",
+    "height_mm": "Height (mm)",
+    "wheelbase_mm": "Wheelbase (mm)",
+    "number_of_doors": "Doors",
+    "fuel_tank_capacity_l": "Tank (L)",
+    "co2_emissions_g_per_km": "CO2 (g/km)",
+    "max_power_kw": "Power (kW)",
+    "number_of_gears": "Gears",
+    "turning_circle_m": "Turning Circle (m)",
+    "ground_clearance_mm": "Ground Clearance (mm)",
+    "compression_ratio": "Compression Ratio",
+    "trim": "Trim",
+    "generation": "Generation",
+    "series": "Series",
+    "wheel_size_r14": "Wheel Size",
+    "front_suspension": "Front Suspension",
+    "back_suspension": "Rear Suspension",
+    "maximum_torque_n_m": "Torque (Nm)",
+    "range_km": "Range (km)",
+}
+
+FILTER_ORDER = [
+    "make",
+    "model",
+    "body_type",
+    "year_from",
+    "year_to",
+    "engine_type",
+    "engine_hp",
+    "transmission",
+    "drive_wheels",
+    "capacity_cm3",
+    "acceleration_0_100_km_h_s",
+    "max_speed_km_per_h",
+    "mixed_fuel_consumption_per_100_km_l",
+    "car_class",
+    "country_of_origin",
+    "number_of_seats",
+    "number_of_doors",
+    "curb_weight_kg",
+    "fuel_tank_capacity_l",
+    "co2_emissions_g_per_km",
+]
+
+FILTER_ORDER_SET = set(FILTER_ORDER)
+
 ALLOWED_SORT_COLUMNS = set(ALL_FILTERS.keys()) | {"id_trim"}
 
 
@@ -109,10 +186,16 @@ def get_filters():
     filters = {}
 
     for col, ftype in ALL_FILTERS.items():
+        label = FILTER_LABELS.get(col, col.replace("_", " ").title())
+        if col in FILTER_ORDER_SET:
+            order = FILTER_ORDER.index(col)
+        else:
+            order = None
+
         if ftype == "range":
             cur.execute(f"SELECT MIN({col}) AS min, MAX({col}) AS max FROM vehicles")
             row = cur.fetchone()
-            filters[col] = {"type": "range", "min": row["min"], "max": row["max"]}
+            filters[col] = {"type": "range", "min": row["min"], "max": row["max"], "label": label, "order": order}
 
         elif ftype == "select":
             cur.execute(
@@ -121,10 +204,10 @@ def get_filters():
                 f"GROUP BY {col} ORDER BY count DESC"
             )
             options = [dict(r) for r in cur.fetchall()]
-            filters[col] = {"type": "select", "options": options}
+            filters[col] = {"type": "select", "options": options, "label": label, "order": order}
 
         elif ftype == "search":
-            filters[col] = {"type": "search"}
+            filters[col] = {"type": "search", "label": label, "order": order}
 
     cur.close()
     conn.close()

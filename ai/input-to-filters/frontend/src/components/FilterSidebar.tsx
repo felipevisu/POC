@@ -8,81 +8,6 @@ import {
   RangeFilterValue,
 } from "@/types";
 
-const FILTER_LABELS: Record<string, string> = {
-  make: "Make",
-  model: "Model",
-  body_type: "Body Type",
-  engine_type: "Engine Type",
-  transmission: "Transmission",
-  drive_wheels: "Drive Wheels",
-  fuel_grade: "Fuel Grade",
-  car_class: "Car Class",
-  country_of_origin: "Country",
-  number_of_seats: "Seats",
-  cylinder_layout: "Cylinder Layout",
-  boost_type: "Boost Type",
-  engine_placement: "Engine Placement",
-  injection_type: "Injection Type",
-  front_brakes: "Front Brakes",
-  rear_brakes: "Rear Brakes",
-  emission_standards: "Emission Standards",
-  safety_assessment: "Safety Rating",
-  rating_name: "Rating Name",
-  presence_of_intercooler: "Intercooler",
-  year_from: "Year From",
-  year_to: "Year To",
-  engine_hp: "Horsepower",
-  capacity_cm3: "Engine (cc)",
-  number_of_cylinders: "Cylinders",
-  acceleration_0_100_km_h_s: "0-100 km/h (s)",
-  max_speed_km_per_h: "Top Speed (km/h)",
-  mixed_fuel_consumption_per_100_km_l: "Fuel (L/100km)",
-  curb_weight_kg: "Weight (kg)",
-  length_mm: "Length (mm)",
-  width_mm: "Width (mm)",
-  height_mm: "Height (mm)",
-  wheelbase_mm: "Wheelbase (mm)",
-  number_of_doors: "Doors",
-  fuel_tank_capacity_l: "Tank (L)",
-  co2_emissions_g_per_km: "CO2 (g/km)",
-  max_power_kw: "Power (kW)",
-  number_of_gears: "Gears",
-  turning_circle_m: "Turning Circle (m)",
-  ground_clearance_mm: "Ground Clearance (mm)",
-  compression_ratio: "Compression Ratio",
-  trim: "Trim",
-  generation: "Generation",
-  series: "Series",
-  wheel_size_r14: "Wheel Size",
-  front_suspension: "Front Suspension",
-  back_suspension: "Rear Suspension",
-  maximum_torque_n_m: "Torque (Nm)",
-  range_km: "Range (km)",
-};
-
-const FILTER_ORDER = [
-  "make",
-  "model",
-  "body_type",
-  "year_from",
-  "year_to",
-  "engine_type",
-  "engine_hp",
-  "transmission",
-  "drive_wheels",
-  "capacity_cm3",
-  "acceleration_0_100_km_h_s",
-  "max_speed_km_per_h",
-  "mixed_fuel_consumption_per_100_km_l",
-  "car_class",
-  "country_of_origin",
-  "number_of_seats",
-  "number_of_doors",
-  "curb_weight_kg",
-  "fuel_tank_capacity_l",
-  "co2_emissions_g_per_km",
-];
-
 function SelectFilterInput({
   name,
   filter,
@@ -267,12 +192,14 @@ export default function FilterSidebar({
 }: FilterSidebarProps) {
   const [showAll, setShowAll] = useState(false);
 
-  const filterKeys = FILTER_ORDER.filter((k) => k in filters);
+  const ordered = Object.keys(filters)
+    .filter((k) => filters[k].order !== null)
+    .sort((a, b) => filters[a].order! - filters[b].order!);
   const remainingKeys = Object.keys(filters)
-    .filter((k) => !FILTER_ORDER.includes(k))
+    .filter((k) => filters[k].order === null)
     .sort();
-  const allKeys = [...filterKeys, ...remainingKeys];
-  const visibleKeys = showAll ? allKeys : filterKeys;
+  const allKeys = [...ordered, ...remainingKeys];
+  const visibleKeys = showAll ? allKeys : ordered;
 
   const handleSelectChange = (name: string, val: string[]) => {
     const next = { ...values };
@@ -330,7 +257,7 @@ export default function FilterSidebar({
       <div className="flex-1 overflow-y-auto p-4 space-y-5">
         {visibleKeys.map((key) => {
           const filter = filters[key];
-          const label = FILTER_LABELS[key] || key.replace(/_/g, " ");
+          const label = filters[key].label;
 
           return (
             <div key={key}>
