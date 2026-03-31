@@ -1,3 +1,5 @@
+import os
+
 import psycopg2
 from flask import Flask, jsonify, request
 from psycopg2.extras import RealDictCursor
@@ -5,11 +7,11 @@ from psycopg2.extras import RealDictCursor
 app = Flask(__name__)
 
 DB_CONFIG = {
-    "host": "localhost",
-    "port": 5432,
-    "dbname": "webmotors",
-    "user": "webmotors",
-    "password": "webmotors",
+    "host": os.environ.get("DB_HOST", "localhost"),
+    "port": int(os.environ.get("DB_PORT", "5432")),
+    "dbname": os.environ.get("DB_NAME", "webmotors"),
+    "user": os.environ.get("DB_USER", "webmotors"),
+    "password": os.environ.get("DB_PASSWORD", "webmotors"),
 }
 
 RANGE_FILTERS = {
@@ -200,4 +202,4 @@ def search_vehicles():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8000)
+    app.run(host="0.0.0.0", debug=True, port=5001)

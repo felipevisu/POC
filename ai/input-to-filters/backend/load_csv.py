@@ -20,7 +20,6 @@ COLUMN_RENAMES = {
     "CO2_emissions_g/km": "co2_emissions_g_per_km",
 }
 
-# Columns that use European decimal comma (e.g. "1226,2" → "1226.2")
 DECIMAL_COMMA_COLUMNS = {
     "load_height_mm",
     "length_mm",
@@ -147,6 +146,41 @@ def load_csv():
 
     conn.commit()
     print(f"Loaded {cur.rowcount} rows into vehicles.")
+
+    cur.execute(
+        """
+        DELETE FROM vehicles
+        WHERE (
+            (CASE WHEN make IS NULL THEN 1 ELSE 0 END) +
+            (CASE WHEN model IS NULL THEN 1 ELSE 0 END) +
+            (CASE WHEN body_type IS NULL THEN 1 ELSE 0 END) +
+            (CASE WHEN engine_type IS NULL THEN 1 ELSE 0 END) +
+            (CASE WHEN engine_hp IS NULL THEN 1 ELSE 0 END) +
+            (CASE WHEN capacity_cm3 IS NULL THEN 1 ELSE 0 END) +
+            (CASE WHEN transmission IS NULL THEN 1 ELSE 0 END) +
+            (CASE WHEN drive_wheels IS NULL THEN 1 ELSE 0 END) +
+            (CASE WHEN curb_weight_kg IS NULL THEN 1 ELSE 0 END) +
+            (CASE WHEN length_mm IS NULL THEN 1 ELSE 0 END) +
+            (CASE WHEN width_mm IS NULL THEN 1 ELSE 0 END) +
+            (CASE WHEN height_mm IS NULL THEN 1 ELSE 0 END) +
+            (CASE WHEN number_of_doors IS NULL THEN 1 ELSE 0 END) +
+            (CASE WHEN max_speed_km_per_h IS NULL THEN 1 ELSE 0 END) +
+            (CASE WHEN fuel_tank_capacity_l IS NULL THEN 1 ELSE 0 END) +
+            (CASE WHEN country_of_origin IS NULL THEN 1 ELSE 0 END) +
+            (CASE WHEN number_of_cylinders IS NULL THEN 1 ELSE 0 END) +
+            (CASE WHEN year_from IS NULL THEN 1 ELSE 0 END) +
+            (CASE WHEN year_to IS NULL THEN 1 ELSE 0 END) +
+            (CASE WHEN generation IS NULL THEN 1 ELSE 0 END)
+        ) >= 10
+    """
+    )
+    conn.commit()
+    print(f"Removed {cur.rowcount} sparse rows.")
+
+    cur.execute("SELECT COUNT(*) FROM vehicles")
+    remaining = cur.fetchone()[0]
+    print(f"Remaining: {remaining} rows.")
+
     cur.close()
     conn.close()
 
