@@ -1,0 +1,696 @@
+openapi: 3.0.3
+info:
+  title: Vehicle Search API
+  description: Search and filter a database of 70,000+ vehicle trims by any combination of specifications.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8000
+
+paths:
+  /vehicles/search:
+    post:
+      summary: Search vehicles with filters
+      description: |
+        Returns a paginated list of vehicles matching all supplied filters.
+        Filters are combined with AND logic — every condition must be satisfied.
+        Omitted filters are ignored (no restriction on that field).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchRequest"
+            examples:
+              basic:
+                summary: Toyota SUVs from 2015+
+                value:
+                  filters:
+                    make: ["Toyota"]
+                    body_type: ["SUV", "Crossover"]
+                    year_from: { min: 2015 }
+                  page: 1
+                  page_size: 20
+              performance:
+                summary: Sports cars with 300+ HP under 5s 0-100
+                value:
+                  filters:
+                    engine_hp: { min: 300 }
+                    acceleration_0_100_km_h_s: { max: 5.0 }
+                    body_type: ["Coupe", "Roadster"]
+                  sort_by: engine_hp
+                  sort_order: desc
+              economy:
+                summary: Fuel-efficient sedans
+                value:
+                  filters:
+                    body_type: ["Sedan"]
+                    mixed_fuel_consumption_per_100_km_l: { max: 6.0 }
+                    engine_type: ["Gasoline"]
+                  page_size: 10
+              text_search:
+                summary: Search by trim name
+                value:
+                  filters:
+                    make: ["BMW"]
+                    trim: "3.0 AT"
+              empty:
+                summary: No filters (returns all vehicles)
+                value:
+                  page: 1
+                  page_size: 20
+      responses:
+        "200":
+          description: Paginated list of matching vehicles
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResponse"
+
+  /filters:
+    get:
+      summary: Get available filter options
+      description: |
+        Returns metadata for every filter field: selectable options with counts
+        for select filters, min/max boundaries for range filters, and type
+        indicators for search filters. Use this to populate UI dropdowns and
+        slider ranges.
+      responses:
+        "200":
+          description: Filter metadata keyed by column name
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FiltersResponse"
+
+components:
+  schemas:
+    # ── Request ────────────────────────────────────────────────────────
+    SearchRequest:
+      type: object
+      properties:
+        filters:
+          $ref: "#/components/schemas/Filters"
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+          description: Page number (1-indexed).
+        page_size:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+          description: Number of results per page.
+        sort_by:
+          type: string
+          default: id_trim
+          description: Column name to sort by. Must be a valid filter column or `id_trim`.
+        sort_order:
+          type: string
+          enum: [asc, desc]
+          default: asc
+          description: Sort direction.
+
+    Filters:
+      type: object
+      description: |
+        All filters are optional. Only supplied filters are applied (AND logic).
+        Three filter types exist based on the field:
+        - **Range**: `{ "min": number, "max": number }` — either or both bounds.
+        - **Select**: `["value1", "value2"]` — matches any of the provided values.
+        - **Search**: `"text"` — case-insensitive partial match (ILIKE %text%).
+      properties:
+        # ── Range filters: Identification & Year ──────────────────────
+        year_from:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "First production year of the trim. Range: 1904–2020."
+        year_to:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Last production year of the trim. Range: 0–2020."
+
+        # ── Range filters: Exterior Dimensions ────────────────────────
+        length_mm:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Overall vehicle length in mm. City car ~3500; full-size SUV ~5000. Range: 1826–6720."
+        width_mm:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Overall vehicle width in mm (excl. mirrors). Range: 1194–4705."
+        height_mm:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Overall vehicle height in mm. Sedan ~1400; SUV ~1700+. Range: 1005–3600."
+        wheelbase_mm:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Distance between front and rear axles in mm. Longer = more cabin space. Range: 1200–4821."
+        ground_clearance_mm:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Lowest point to ground in mm. Higher = better off-road. Range: 67–460."
+        load_height_mm:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Cargo floor height from ground in mm. Relevant for vans. Range: 155–3915."
+
+        # ── Range filters: Track Width ────────────────────────────────
+        front_track_mm:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Front axle track width in mm. Range: 1015–1901."
+        rear_track_mm:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Rear axle track width in mm. Range: 1070–1975."
+
+        # ── Range filters: Weight ─────────────────────────────────────
+        curb_weight_kg:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Vehicle weight empty with fluids, no passengers, in kg. Compact ~1200; large SUV ~2500. Range: 399–3850."
+        payload_kg:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Max passenger + cargo weight in kg. Range: 145–3334."
+        full_weight_kg:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Gross vehicle weight (curb + max payload) in kg. Range: 690–5352."
+
+        # ── Range filters: Cargo & Trunk ──────────────────────────────
+        max_trunk_capacity_l:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Max trunk volume in liters (seats folded). Range: 11–5400."
+        minimum_trunk_capacity_l:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Trunk volume with all seats up, in liters. Range: 11–4440."
+        cargo_volume_m3:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Cargo volume in cubic meters. Mainly vans. Range: 0.33–8665."
+
+        # ── Range filters: Engine ─────────────────────────────────────
+        engine_hp:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Engine horsepower. City car ~70; sports car 300+. Range: 5–1914."
+        capacity_cm3:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Engine displacement in cm3 (2.0L = 2000). Range: 217–8382."
+        number_of_cylinders:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Number of engine cylinders. Common: 3, 4, 6, 8. Range: 1–16."
+        valves_per_cylinder:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Intake/exhaust valves per cylinder. Modern engines use 4. Range: 1–6."
+        compression_ratio:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Cylinder compression ratio. Diesel 15–23; gasoline 9–13. Range: 6.6–23.0."
+        cylinder_bore_mm:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Cylinder bore diameter in mm. Range: 9–110."
+        stroke_cycle_mm:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Piston stroke length in mm. Short = high-rev; long = more torque. Range: 53–197."
+        max_power_kw:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Max engine power in kW (1 kW = 1.36 HP). Range: 10–588."
+
+        # ── Range filters: Transmission ───────────────────────────────
+        number_of_gears:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Number of forward gears. Automatics 6–10; manuals 5–6. Range: 1–10."
+        turning_circle_m:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Smallest turn diameter in meters. Lower = more maneuverable. Range: 5.1–71.0."
+
+        # ── Range filters: Performance ────────────────────────────────
+        acceleration_0_100_km_h_s:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "0–100 km/h time in seconds. Sports car ~4s; family sedan ~10s. Range: 1.97–50.0."
+        max_speed_km_per_h:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Top speed in km/h. Many limited to 250. Range: 50–420."
+
+        # ── Range filters: Fuel Consumption ───────────────────────────
+        mixed_fuel_consumption_per_100_km_l:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Combined fuel consumption in L/100km. Hybrid ~4; large SUV ~12. Range: 0.6–36.5."
+        city_fuel_per_100km_l:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "City fuel consumption in L/100km. Range: 2.1–43.1."
+        highway_fuel_per_100km_l:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Highway fuel consumption in L/100km. Range: 2.1–28.0."
+        fuel_tank_capacity_l:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Fuel tank volume in liters. Range: 8.8–189.3."
+        co2_emissions_g_per_km:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "CO2 emissions in g/km. Below 120 is efficient. Range: 13–547."
+
+        # ── Range filters: Body ───────────────────────────────────────
+        number_of_doors:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Number of doors (1–5)."
+
+        # ── Range filters: Electric / Hybrid ──────────────────────────
+        battery_capacity_kw_per_h:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Battery capacity in kWh. Range: 1.3–31.3."
+        electric_range_km:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Electric-only range in km. Range: 30–106."
+        charging_time_h:
+          $ref: "#/components/schemas/RangeFilter"
+          description: "Full charge time in hours (standard charger). Range: 2.3–7.75."
+
+        # ── Select filters: Vehicle Identity ──────────────────────────
+        make:
+          $ref: "#/components/schemas/SelectFilter"
+          description: "Manufacturer / brand. 255 available (e.g. Toyota, BMW, Ford)."
+        model:
+          $ref: "#/components/schemas/SelectFilter"
+          description: "Vehicle model. 2706 available (e.g. Corolla, 3 Series, Golf)."
+        body_type:
+          $ref: "#/components/schemas/SelectFilter"
+          description: "Body style: Sedan, Hatchback, Wagon, Crossover, Minivan, Coupe, Pickup, Cabriolet, SUV, Van, Roadster, Targa, Limousine, Liftback, Fastback."
+        number_of_seats:
+          $ref: "#/components/schemas/SelectFilter"
+          description: "Seating capacity. Values: 2, 3, 4, 5, 6, 7, 8, 9 (text, may contain ranges)."
+
+        # ── Select filters: Engine Configuration ──────────────────────
+        engine_type:
+          $ref: "#/components/schemas/SelectFilter"
+          description: "Fuel/power source: Gasoline, Diesel, Hybrid, Electric, Gas."
+        injection_type:
+          $ref: "#/components/schemas/SelectFilter"
+          description: "Fuel delivery: Multi-point fuel injection, carburetor, direct injection, Common Rail, Monoinjection."
+        cylinder_layout:
+          $ref: "#/components/schemas/SelectFilter"
+          description: "Cylinder arrangement: Inline, V-type, Opposed, W-type, Rotary-piston."
+        boost_type:
+          $ref: "#/components/schemas/SelectFilter"
+          description: "Forced induction: Turbo, none, Biturbo, compressor, Twin-scroll, Triple turbo."
+        engine_placement:
+          $ref: "#/components/schemas/SelectFilter"
+          description: "Engine position: front cross-section, front longitudinal, central, rear."
+        presence_of_intercooler:
+          $ref: "#/components/schemas/SelectFilter"
+          description: "Intercooler presence. Only value: Present (or null if absent)."
+
+        # ── Select filters: Drivetrain ────────────────────────────────
+        drive_wheels:
+          $ref: "#/components/schemas/SelectFilter"
+          description: "Driven wheels: Front wheel drive, Rear wheel drive, All wheel drive (AWD), Four wheel drive (4WD), Constant all wheel drive."
+        transmission:
+          $ref: "#/components/schemas/SelectFilter"
+          description: "Gearbox type: Manual, Automatic, robot, CVT, Electronic with 2 clutch, Electronic with 1 clutch."
+
+        # ── Select filters: Brakes ────────────────────────────────────
+        front_brakes:
+          $ref: "#/components/schemas/SelectFilter"
+          description: "Front brake type: ventilated disc, Disc, drum, Disc composite, Disk ceramic."
+        rear_brakes:
+          $ref: "#/components/schemas/SelectFilter"
+          description: "Rear brake type: Disc, drum, ventilated disc, Disc composite, Disk ceramic."
+
+        # ── Select filters: Regulatory & Classification ───────────────
+        emission_standards:
+          $ref: "#/components/schemas/SelectFilter"
+          description: "Emissions standard: EURO II through EURO VI, Euro 4 through Euro 6."
+        fuel_grade:
+          $ref: "#/components/schemas/SelectFilter"
+          description: "Fuel octane or type: 80, 92, 95, 98, diesel."
+        car_class:
+          $ref: "#/components/schemas/SelectFilter"
+          description: "European size class: B (small), C (medium), D (large), E (executive), F (luxury), J (SUV), M (MPV), S (sports)."
+        country_of_origin:
+          $ref: "#/components/schemas/SelectFilter"
+          description: "Manufacturer's country: Japan, Germany, USA, Great Britain, South Korea, France, Italy, Czech."
+        safety_assessment:
+          $ref: "#/components/schemas/SelectFilter"
+          description: "Crash test star rating (e.g. 5, 4, 3)."
+        rating_name:
+          $ref: "#/components/schemas/SelectFilter"
+          description: "Rating organization: EuroNCAP, ARCAP."
+
+        # ── Search filters ────────────────────────────────────────────
+        generation:
+          type: string
+          description: "Free-text search on production generation (e.g. '1 generation', 'redesign'). 1743 distinct values."
+          example: "redesign"
+        series:
+          type: string
+          description: "Free-text search on sub-series/variant (e.g. 'Sedan', 'Hatchback 5-doors'). 1297 distinct values."
+          example: "Hatchback"
+        trim:
+          type: string
+          description: "Free-text search on trim level, usually engine + transmission (e.g. '2.0 AT'). 10353 distinct values."
+          example: "2.0 AT"
+        wheel_size_r14:
+          type: string
+          description: "Free-text search on tire size spec (e.g. '205/55/R16', 'R17'). 635 distinct values."
+          example: "R17"
+        front_suspension:
+          type: string
+          description: "Free-text search on front suspension type (e.g. 'McPherson', 'Wishbone'). 273 distinct values."
+          example: "McPherson"
+        back_suspension:
+          type: string
+          description: "Free-text search on rear suspension type (e.g. 'Multi wishbone'). 387 distinct values."
+          example: "Multi wishbone"
+        maximum_torque_n_m:
+          type: string
+          description: "Free-text search on max torque in Nm. 748 distinct values."
+          example: "400"
+        range_km:
+          type: string
+          description: "Free-text search on driving range, often as 'city|highway' format. 4311 distinct values."
+          example: "1,000"
+
+    # ── Shared filter schemas ─────────────────────────────────────────
+    RangeFilter:
+      type: object
+      description: Numeric range. Provide `min`, `max`, or both.
+      properties:
+        min:
+          type: number
+          description: Minimum value (inclusive).
+        max:
+          type: number
+          description: Maximum value (inclusive).
+      example:
+        min: 150
+        max: 400
+
+    SelectFilter:
+      type: array
+      items:
+        type: string
+      description: One or more exact values to match (OR within the list).
+      example: ["Toyota", "Honda"]
+
+    # ── Response ──────────────────────────────────────────────────────
+    SearchResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Total number of matching vehicles across all pages.
+          example: 50
+        page:
+          type: integer
+          description: Current page number.
+          example: 1
+        page_size:
+          type: integer
+          description: Number of results per page.
+          example: 20
+        total_pages:
+          type: integer
+          description: Total number of pages.
+          example: 3
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Vehicle"
+          description: Array of vehicle records for the current page.
+
+    Vehicle:
+      type: object
+      description: A single vehicle trim record with all columns from the database.
+      properties:
+        id_trim:
+          type: integer
+          description: Unique identifier for this trim.
+        make:
+          type: string
+          example: "Toyota"
+        model:
+          type: string
+          example: "Corolla"
+        generation:
+          type: string
+          example: "12 generation"
+        year_from:
+          type: integer
+          example: 2019
+        year_to:
+          type: integer
+          example: 2023
+        series:
+          type: string
+          example: "Sedan"
+        trim:
+          type: string
+          example: "2.0 AT"
+        body_type:
+          type: string
+          nullable: true
+          example: "Sedan"
+        load_height_mm:
+          type: number
+          nullable: true
+        number_of_seats:
+          type: string
+          nullable: true
+          example: "5"
+        length_mm:
+          type: number
+          nullable: true
+          example: 4630.0
+        width_mm:
+          type: number
+          nullable: true
+          example: 1780.0
+        height_mm:
+          type: number
+          nullable: true
+          example: 1435.0
+        wheelbase_mm:
+          type: number
+          nullable: true
+          example: 2700.0
+        front_track_mm:
+          type: number
+          nullable: true
+        rear_track_mm:
+          type: number
+          nullable: true
+        curb_weight_kg:
+          type: number
+          nullable: true
+          example: 1370.0
+        wheel_size_r14:
+          type: string
+          nullable: true
+        ground_clearance_mm:
+          type: number
+          nullable: true
+        trailer_load_with_brakes_kg:
+          type: string
+          nullable: true
+        payload_kg:
+          type: integer
+          nullable: true
+        back_track_width_mm:
+          type: integer
+          nullable: true
+        front_track_width_mm:
+          type: integer
+          nullable: true
+        clearance_mm:
+          type: string
+          nullable: true
+        full_weight_kg:
+          type: integer
+          nullable: true
+        front_rear_axle_load_kg:
+          type: string
+          nullable: true
+        max_trunk_capacity_l:
+          type: number
+          nullable: true
+        cargo_compartment_length_width_height_mm:
+          type: string
+          nullable: true
+        cargo_volume_m3:
+          type: number
+          nullable: true
+        minimum_trunk_capacity_l:
+          type: integer
+          nullable: true
+        maximum_torque_n_m:
+          type: string
+          nullable: true
+        injection_type:
+          type: string
+          nullable: true
+        overhead_camshaft:
+          type: string
+          nullable: true
+        cylinder_layout:
+          type: string
+          nullable: true
+        number_of_cylinders:
+          type: integer
+          nullable: true
+        compression_ratio:
+          type: number
+          nullable: true
+        engine_type:
+          type: string
+          nullable: true
+          example: "Gasoline"
+        valves_per_cylinder:
+          type: integer
+          nullable: true
+        boost_type:
+          type: string
+          nullable: true
+        cylinder_bore_mm:
+          type: number
+          nullable: true
+        stroke_cycle_mm:
+          type: number
+          nullable: true
+        engine_placement:
+          type: string
+          nullable: true
+        cylinder_bore_and_stroke_cycle_mm:
+          type: string
+          nullable: true
+        turnover_of_maximum_torque_rpm:
+          type: string
+          nullable: true
+        max_power_kw:
+          type: number
+          nullable: true
+        presence_of_intercooler:
+          type: string
+          nullable: true
+        capacity_cm3:
+          type: number
+          nullable: true
+          example: 1987.0
+        engine_hp:
+          type: integer
+          nullable: true
+          example: 169
+        engine_hp_rpm:
+          type: string
+          nullable: true
+        drive_wheels:
+          type: string
+          nullable: true
+          example: "Front wheel drive"
+        bore_stroke_ratio:
+          type: number
+          nullable: true
+        number_of_gears:
+          type: integer
+          nullable: true
+          example: 6
+        turning_circle_m:
+          type: number
+          nullable: true
+        transmission:
+          type: string
+          nullable: true
+          example: "Automatic"
+        mixed_fuel_consumption_per_100_km_l:
+          type: number
+          nullable: true
+        range_km:
+          type: string
+          nullable: true
+        emission_standards:
+          type: string
+          nullable: true
+        fuel_tank_capacity_l:
+          type: number
+          nullable: true
+        acceleration_0_100_km_h_s:
+          type: number
+          nullable: true
+        max_speed_km_per_h:
+          type: number
+          nullable: true
+        city_fuel_per_100km_l:
+          type: number
+          nullable: true
+        co2_emissions_g_per_km:
+          type: integer
+          nullable: true
+        fuel_grade:
+          type: string
+          nullable: true
+        highway_fuel_per_100km_l:
+          type: number
+          nullable: true
+        back_suspension:
+          type: string
+          nullable: true
+        rear_brakes:
+          type: string
+          nullable: true
+        front_brakes:
+          type: string
+          nullable: true
+        front_suspension:
+          type: string
+          nullable: true
+        steering_type:
+          type: string
+          nullable: true
+        car_class:
+          type: string
+          nullable: true
+        country_of_origin:
+          type: string
+          nullable: true
+        number_of_doors:
+          type: integer
+          nullable: true
+        safety_assessment:
+          type: string
+          nullable: true
+        rating_name:
+          type: string
+          nullable: true
+        battery_capacity_kw_per_h:
+          type: number
+          nullable: true
+        electric_range_km:
+          type: number
+          nullable: true
+        charging_time_h:
+          type: number
+          nullable: true
+
+    FiltersResponse:
+      type: object
+      description: Map of column name to filter metadata.
+      additionalProperties:
+        oneOf:
+          - type: object
+            description: Range filter metadata.
+            properties:
+              type:
+                type: string
+                enum: [range]
+              min:
+                type: number
+              max:
+                type: number
+          - type: object
+            description: Select filter metadata.
+            properties:
+              type:
+                type: string
+                enum: [select]
+              options:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: string
+                    count:
+                      type: integer
+          - type: object
+            description: Search filter metadata.
+            properties:
+              type:
+                type: string
+                enum: [search]
