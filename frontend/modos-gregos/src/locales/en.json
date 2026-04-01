@@ -97,5 +97,9 @@
   "stringOrdinal_ordinal_other": "th",
   "legendText": "Root = gold &nbsp;|&nbsp; Scale notes = red",
   "scaleInfoPrefix": "in",
-  "scaleInfoPlaceholder": "Select a note and a mode to see the scale"
+  "scaleInfoPlaceholder": "Select a note and a mode to see the scale",
+  "metaDescription": "Interactive guitar and bass fretboard visualizer for scales and modes. 21+ scales including Greek modes, pentatonics, blues and more. Multiple tunings, trilingual UI.",
+  "scaleInfoHeading": "Scale Information",
+  "fretboardHeading": "Instrument Fretboard",
+  "positionsHeading": "Scale Positions"
 }

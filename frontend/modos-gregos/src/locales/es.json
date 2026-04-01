@@ -94,5 +94,9 @@
   "stringOrdinal_ordinal_other": "ª",
   "legendText": "Fundamental = dorado &nbsp;|&nbsp; Notas de la escala = rojo",
   "scaleInfoPrefix": "en",
-  "scaleInfoPlaceholder": "Seleccione una nota y un modo para ver la escala"
+  "scaleInfoPlaceholder": "Seleccione una nota y un modo para ver la escala",
+  "metaDescription": "Visualizador interactivo de escalas y modos en el mástil de guitarra y bajo. 21+ escalas incluyendo modos griegos, pentatónicas, blues y más. Múltiples afinaciones, interfaz trilingüe.",
+  "scaleInfoHeading": "Información de la Escala",
+  "fretboardHeading": "Mástil del Instrumento",
+  "positionsHeading": "Posiciones de la Escala"
 }

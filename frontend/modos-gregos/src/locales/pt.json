@@ -94,5 +94,9 @@
   "stringOrdinal_ordinal_other": "ª",
   "legendText": "Fundamental = dourado &nbsp;|&nbsp; Notas da escala = vermelho",
   "scaleInfoPrefix": "em",
-  "scaleInfoPlaceholder": "Selecione uma nota e um modo para ver a escala"
+  "scaleInfoPlaceholder": "Selecione uma nota e um modo para ver a escala",
+  "metaDescription": "Visualizador interativo de escalas e modos no braço da guitarra e baixo. 21+ escalas incluindo modos gregos, pentatônicas, blues e mais. Múltiplas afinações e interface em português, inglês e espanhol.",
+  "scaleInfoHeading": "Informações da Escala",
+  "fretboardHeading": "Braço do Instrumento",
+  "positionsHeading": "Posições da Escala"
 }

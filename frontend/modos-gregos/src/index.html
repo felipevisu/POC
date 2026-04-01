@@ -4,126 +4,191 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Braço da Guitarra - Escalas e Modos</title>
+
+    <!-- SEO Meta -->
+    <meta name="description" content="Visualizador interativo de escalas e modos no braço da guitarra e baixo. 21+ escalas incluindo modos gregos, pentatônicas, blues e mais. Múltiplas afinações e interface em português, inglês e espanhol." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://fretmap.net/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Braço da Guitarra — Escalas e Modos" />
+    <meta property="og:description" content="Visualizador interativo de escalas e modos no braço da guitarra e baixo. 21+ escalas, múltiplas afinações, trilíngue." />
+    <meta property="og:url" content="https://fretmap.net/" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:locale:alternate" content="es_ES" />
+    <meta property="og:site_name" content="Fretboard Visualizer" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Braço da Guitarra — Escalas e Modos" />
+    <meta name="twitter:description" content="Visualizador interativo de escalas e modos no braço da guitarra e baixo. 21+ escalas, múltiplas afinações, trilíngue." />
+
+    <!-- Hreflang alternates -->
+    <link rel="alternate" hreflang="pt" href="https://fretmap.net/?lang=pt" />
+    <link rel="alternate" hreflang="en" href="https://fretmap.net/?lang=en" />
+    <link rel="alternate" hreflang="es" href="https://fretmap.net/?lang=es" />
+    <link rel="alternate" hreflang="x-default" href="https://fretmap.net/" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Fretboard Visualizer — Escalas e Modos",
+      "description": "Interactive guitar and bass fretboard visualizer for scales and modes. Supports 21+ scales including Greek modes, pentatonics, blues, and more.",
+      "url": "https://fretmap.net/",
+      "applicationCategory": "MusicApplication",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": ["pt-BR", "en", "es"],
+      "keywords": "guitar fretboard, scales, modes, guitar scales, bass scales, music theory, modos gregos, escalas guitarra, pentatonic, blues scale"
+    }
+    </script>
+
     <link rel="stylesheet" href="index.css" />
   </head>
   <body>
     <div class="container">
-      <div class="header-bar">
+      <header class="header-bar">
         <h1 data-i18n="title">Braço da Guitarra — Escalas e Modos</h1>
-        <div class="lang-switcher">
-          <button class="lang-btn" data-lang="en">EN</button>
-          <button class="lang-btn" data-lang="pt">PT</button>
-          <button class="lang-btn" data-lang="es">ES</button>
-        </div>
-      </div>
+        <nav class="lang-switcher" aria-label="Language selector">
+          <button class="lang-btn" data-lang="en" aria-label="English">EN</button>
+          <button class="lang-btn" data-lang="pt" aria-label="Português">PT</button>
+          <button class="lang-btn" data-lang="es" aria-label="Español">ES</button>
+        </nav>
+      </header>
 
-      <div class="controls">
-        <div class="control-group">
-          <label for="noteSelect" data-i18n="labelRoot">Nota Fundamental:</label>
-          <select id="noteSelect">
-            <option value="C">C (Dó)</option>
-            <option value="C#">C# (Dó#)</option>
-            <option value="Db">Db (Réb)</option>
-            <option value="D">D (Ré)</option>
-            <option value="D#">D# (Ré#)</option>
-            <option value="Eb">Eb (Mib)</option>
-            <option value="E">E (Mi)</option>
-            <option value="F">F (Fá)</option>
-            <option value="F#">F# (Fá#)</option>
-            <option value="Gb">Gb (Solb)</option>
-            <option value="G">G (Sol)</option>
-            <option value="G#">G# (Sol#)</option>
-            <option value="Ab">Ab (Láb)</option>
-            <option value="A">A (Lá)</option>
-            <option value="A#">A# (Lá#)</option>
-            <option value="Bb">Bb (Sib)</option>
-            <option value="B">B (Si)</option>
-          </select>
-        </div>
+      <main>
+        <section class="controls" aria-label="Scale controls">
+          <div class="control-group">
+            <label for="noteSelect" data-i18n="labelRoot">Nota Fundamental:</label>
+            <select id="noteSelect" aria-label="Root note">
+              <option value="C">C (Dó)</option>
+              <option value="C#">C# (Dó#)</option>
+              <option value="Db">Db (Réb)</option>
+              <option value="D">D (Ré)</option>
+              <option value="D#">D# (Ré#)</option>
+              <option value="Eb">Eb (Mib)</option>
+              <option value="E">E (Mi)</option>
+              <option value="F">F (Fá)</option>
+              <option value="F#">F# (Fá#)</option>
+              <option value="Gb">Gb (Solb)</option>
+              <option value="G">G (Sol)</option>
+              <option value="G#">G# (Sol#)</option>
+              <option value="Ab">Ab (Láb)</option>
+              <option value="A">A (Lá)</option>
+              <option value="A#">A# (Lá#)</option>
+              <option value="Bb">Bb (Sib)</option>
+              <option value="B">B (Si)</option>
+            </select>
+          </div>
 
-        <div class="control-group">
-          <label for="modeSelect" data-i18n="labelMode">Escala / Modo:</label>
-          <select id="modeSelect">
-            <optgroup label="Modos Gregos" data-i18n="groupModes">
-              <option value="jonio">Jônio (Maior)</option>
-              <option value="dorico">Dórico</option>
-              <option value="frigio">Frígio</option>
-              <option value="lidio">Lídio</option>
-              <option value="mixolidio">Mixolídio</option>
-              <option value="eolio">Eólio (Menor)</option>
-              <option value="locrio">Lócrio</option>
-            </optgroup>
-            <optgroup label="Pentatônicas e Blues" data-i18n="groupPentaBlues">
-              <option value="penta_maior">Pentatônica Maior</option>
-              <option value="penta_menor">Pentatônica Menor</option>
-              <option value="blues_menor">Blues Menor</option>
-              <option value="blues_maior">Blues Maior</option>
-            </optgroup>
-            <optgroup label="Escalas Menores" data-i18n="groupMinor">
-              <option value="harmonic_minor">Menor Harmônica</option>
-              <option value="melodic_minor">Menor Melódica</option>
-              <option value="hungarian_minor">Menor Húngara</option>
-            </optgroup>
-            <optgroup label="Modos Derivados" data-i18n="groupDerived">
-              <option value="phrygian_dom">Frígio Dominante</option>
-              <option value="lydian_s2">Lídio #2</option>
-              <option value="lydian_dom">Lídio Dominante</option>
-              <option value="altered">Alterada</option>
-            </optgroup>
-            <optgroup label="Escalas Simétricas" data-i18n="groupSymmetric">
-              <option value="whole_tone">Tons Inteiros</option>
-              <option value="dim_hw">Diminuta (S-T)</option>
-              <option value="dim_wh">Diminuta (T-S)</option>
-            </optgroup>
-          </select>
-        </div>
+          <div class="control-group">
+            <label for="modeSelect" data-i18n="labelMode">Escala / Modo:</label>
+            <select id="modeSelect" aria-label="Scale or mode">
+              <optgroup label="Modos Gregos" data-i18n="groupModes">
+                <option value="jonio">Jônio (Maior)</option>
+                <option value="dorico">Dórico</option>
+                <option value="frigio">Frígio</option>
+                <option value="lidio">Lídio</option>
+                <option value="mixolidio">Mixolídio</option>
+                <option value="eolio">Eólio (Menor)</option>
+                <option value="locrio">Lócrio</option>
+              </optgroup>
+              <optgroup label="Pentatônicas e Blues" data-i18n="groupPentaBlues">
+                <option value="penta_maior">Pentatônica Maior</option>
+                <option value="penta_menor">Pentatônica Menor</option>
+                <option value="blues_menor">Blues Menor</option>
+                <option value="blues_maior">Blues Maior</option>
+              </optgroup>
+              <optgroup label="Escalas Menores" data-i18n="groupMinor">
+                <option value="harmonic_minor">Menor Harmônica</option>
+                <option value="melodic_minor">Menor Melódica</option>
+                <option value="hungarian_minor">Menor Húngara</option>
+              </optgroup>
+              <optgroup label="Modos Derivados" data-i18n="groupDerived">
+                <option value="phrygian_dom">Frígio Dominante</option>
+                <option value="lydian_s2">Lídio #2</option>
+                <option value="lydian_dom">Lídio Dominante</option>
+                <option value="altered">Alterada</option>
+              </optgroup>
+              <optgroup label="Escalas Simétricas" data-i18n="groupSymmetric">
+                <option value="whole_tone">Tons Inteiros</option>
+                <option value="dim_hw">Diminuta (S-T)</option>
+                <option value="dim_wh">Diminuta (T-S)</option>
+              </optgroup>
+            </select>
+          </div>
 
-        <div class="control-group">
-          <label for="fretCount" data-i18n="labelFrets">Trastes:</label>
-          <input type="number" id="fretCount" min="12" max="24" value="16" />
-        </div>
+          <div class="control-group">
+            <label for="fretCount" data-i18n="labelFrets">Trastes:</label>
+            <input type="number" id="fretCount" min="12" max="24" value="16" aria-label="Number of frets" />
+          </div>
 
-        <div class="control-group">
-          <label for="tuningPreset" data-i18n="labelTuning">Afinação:</label>
-          <select id="tuningPreset">
-            <optgroup label="Guitarra (6 cordas)" data-i18n="tuningGroupGuitar6">
-              <option value="standard">Padrão (E-A-D-G-B-E)</option>
-              <option value="drop_d">Drop D (D-A-D-G-B-E)</option>
-              <option value="dadgad">DADGAD (D-A-D-G-A-D)</option>
-              <option value="open_g">Open G (D-G-D-G-B-D)</option>
-            </optgroup>
-            <optgroup label="Guitarra (7 cordas)" data-i18n="tuningGroupGuitar7">
-              <option value="standard_7">Padrão 7 (B-E-A-D-G-B-E)</option>
-              <option value="drop_a_7">Drop A (A-E-A-D-G-B-E)</option>
-            </optgroup>
-            <optgroup label="Baixo (4 cordas)" data-i18n="tuningGroupBass4">
-              <option value="bass_standard">Padrão (E-A-D-G)</option>
-              <option value="bass_drop_d">Drop D (D-A-D-G)</option>
-            </optgroup>
-            <optgroup label="Baixo (5 cordas)" data-i18n="tuningGroupBass5">
-              <option value="bass_5_standard">Padrão (B-E-A-D-G)</option>
-            </optgroup>
-            <optgroup label="Ukulele" data-i18n="tuningGroupUkulele">
-              <option value="ukulele_standard">Padrão (G-C-E-A)</option>
-              <option value="ukulele_baritone">Barítono (D-G-B-E)</option>
-            </optgroup>
-            <option value="custom">Personalizado</option>
-          </select>
-        </div>
+          <div class="control-group">
+            <label for="tuningPreset" data-i18n="labelTuning">Afinação:</label>
+            <select id="tuningPreset" aria-label="Tuning preset">
+              <optgroup label="Guitarra (6 cordas)" data-i18n="tuningGroupGuitar6">
+                <option value="standard">Padrão (E-A-D-G-B-E)</option>
+                <option value="drop_d">Drop D (D-A-D-G-B-E)</option>
+                <option value="dadgad">DADGAD (D-A-D-G-A-D)</option>
+                <option value="open_g">Open G (D-G-D-G-B-D)</option>
+              </optgroup>
+              <optgroup label="Guitarra (7 cordas)" data-i18n="tuningGroupGuitar7">
+                <option value="standard_7">Padrão 7 (B-E-A-D-G-B-E)</option>
+                <option value="drop_a_7">Drop A (A-E-A-D-G-B-E)</option>
+              </optgroup>
+              <optgroup label="Baixo (4 cordas)" data-i18n="tuningGroupBass4">
+                <option value="bass_standard">Padrão (E-A-D-G)</option>
+                <option value="bass_drop_d">Drop D (D-A-D-G)</option>
+              </optgroup>
+              <optgroup label="Baixo (5 cordas)" data-i18n="tuningGroupBass5">
+                <option value="bass_5_standard">Padrão (B-E-A-D-G)</option>
+              </optgroup>
+              <optgroup label="Ukulele" data-i18n="tuningGroupUkulele">
+                <option value="ukulele_standard">Padrão (G-C-E-A)</option>
+                <option value="ukulele_baritone">Barítono (D-G-B-E)</option>
+              </optgroup>
+              <option value="custom">Personalizado</option>
+            </select>
+          </div>
 
-        <div class="tuning-strings" id="tuningStrings"></div>
-      </div>
+          <div class="tuning-strings" id="tuningStrings" role="group" aria-label="Individual string tuning"></div>
+        </section>
 
-      <div class="scale-info" id="scaleInfo">
-        <div>Selecione uma nota e um modo para ver a escala</div>
-      </div>
+        <section class="scale-info" id="scaleInfo" aria-live="polite">
+          <h2 class="sr-only" data-i18n="scaleInfoHeading">Informações da Escala</h2>
+          <div>Selecione uma nota e um modo para ver a escala</div>
+        </section>
 
-      <div class="fretboard">
-        <table class="fretboard-table" id="fretboardTable"></table>
-      </div>
+        <section class="fretboard" aria-label="Fretboard visualization">
+          <h2 class="sr-only" data-i18n="fretboardHeading">Braço do Instrumento</h2>
+          <table class="fretboard-table" id="fretboardTable" role="grid" aria-label="Fretboard"></table>
+        </section>
 
-      <div id="scalePositions" class="scale-positions"></div>
+        <section id="scalePositions" class="scale-positions" aria-label="Scale positions">
+          <h2 class="sr-only" data-i18n="positionsHeading">Posições da Escala</h2>
+        </section>
+      </main>
     </div>
+
+    <noscript>
+      <div style="text-align:center;padding:2rem;font-family:sans-serif;">
+        <h1>Fretboard Visualizer — Escalas e Modos</h1>
+        <p>Este aplicativo requer JavaScript para funcionar. Por favor, ative o JavaScript no seu navegador.</p>
+        <p>This application requires JavaScript to run. Please enable JavaScript in your browser.</p>
+        <p>Esta aplicación requiere JavaScript para funcionar. Por favor, active JavaScript en su navegador.</p>
+      </div>
+    </noscript>
 
     <script type="module" src="index.js"></script>
   </body>

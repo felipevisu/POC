@@ -88,6 +88,16 @@ function setLanguage(lang) {
   document.documentElement.lang = lang === "pt" ? "pt-BR" : lang;
   document.title = t("title");
 
+  // Update SEO meta tags
+  const desc = t("metaDescription");
+  document.querySelector('meta[name="description"]').setAttribute("content", desc);
+  document.querySelector('meta[property="og:title"]').setAttribute("content", t("title"));
+  document.querySelector('meta[property="og:description"]').setAttribute("content", desc);
+  document.querySelector('meta[name="twitter:title"]').setAttribute("content", t("title"));
+  document.querySelector('meta[name="twitter:description"]').setAttribute("content", desc);
+  const localeMap = { pt: "pt_BR", en: "en_US", es: "es_ES" };
+  document.querySelector('meta[property="og:locale"]').setAttribute("content", localeMap[lang] || "pt_BR");
+
   // Update static data-i18n elements (skip optgroups — handled separately)
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     if (el.tagName === "OPTGROUP") return;
