@@ -37,9 +37,12 @@ services:
     container_name: frontend
     ports:
       - "3000:3000"
+    volumes:
+      - ./ai-generated:/ai-generated
     environment:
       BACKEND_URL: http://backend:5001
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      AI_DIR: /ai-generated
     depends_on:
       - backend
     networks:
