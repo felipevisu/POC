@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Segment Tree — step by step</title>
+  <link rel="stylesheet" href="index.css" />
+</head>
+<body>
+  <header>
+    <h1>Segment Tree — step by step</h1>
+    <p>Range-sum segment tree with animated build, query and point-update.</p>
+  </header>
+
+  <section class="panel">
+    <div class="field">
+      <label>Array</label>
+      <input id="arr-input" type="text" value="1, 3, 5, 7, 9, 11, 13, 15" />
+      <button id="build-btn">Build</button>
+    </div>
+    <div class="field">
+      <label>Query</label>
+      <span>l</span><input id="ql" type="number" value="1" min="0" />
+      <span>r</span><input id="qr" type="number" value="5" min="0" />
+      <button id="query-btn">Query sum</button>
+    </div>
+    <div class="field">
+      <label>Update</label>
+      <span>i</span><input id="ui" type="number" value="3" min="0" />
+      <span>=</span><input id="uv" type="number" value="42" />
+      <button id="update-btn">Update</button>
+    </div>
+    <div class="field">
+      <label>Playback</label>
+      <button id="step-btn">Step &#9656;</button>
+      <button id="play-btn">Play &#9654;</button>
+      <button id="end-btn">End &#9193;</button>
+      <span>speed</span>
+      <input id="speed" type="range" min="80" max="1500" value="600" />
+    </div>
+  </section>
+
+  <section class="legend">
+    <span class="tag visit">visited</span>
+    <span class="tag active">computed</span>
+    <span class="tag full">full overlap</span>
+    <span class="tag partial">partial overlap</span>
+    <span class="tag none">no overlap</span>
+    <span class="tag update">update</span>
+  </section>
+
+  <section class="array-view" id="array-view"></section>
+
+  <section class="tree-view">
+    <svg id="tree-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+  </section>
+
+  <section class="log-wrap">
+    <div class="log-title">Trace</div>
+    <div class="log" id="log"></div>
+  </section>
+
+  <script src="index.js"></script>
+</body>
+</html>
