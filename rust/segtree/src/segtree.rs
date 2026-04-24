@@ -1,6 +1,5 @@
 //! Point-update, range-sum segment tree keyed by integer in `[low, high]`.
 
-#[derive(Debug, Clone)]
 pub struct SegmentTree {
     low: i64,
     high: i64,
@@ -18,14 +17,6 @@ impl SegmentTree {
             n,
             tree: vec![0.0; 4 * n],
         }
-    }
-
-    pub fn low(&self) -> i64 {
-        self.low
-    }
-
-    pub fn high(&self) -> i64 {
-        self.high
     }
 
     pub fn update(&mut self, key: i64, delta: f64) {

@@ -3,12 +3,11 @@ use std::collections::HashMap;
 use crate::models::{Decision, Grade, LoanRequest, RangeLimit};
 use crate::segtree::SegmentTree;
 
-pub const SCORE_MIN: i64 = 300;
-pub const SCORE_MAX: i64 = 850;
-pub const TERM_MIN: i64 = 1;
-pub const TERM_MAX: i64 = 84;
+const SCORE_MIN: i64 = 300;
+const SCORE_MAX: i64 = 850;
+const TERM_MIN: i64 = 1;
+const TERM_MAX: i64 = 84;
 
-#[derive(Debug, Clone)]
 pub struct Strategy {
     pub score_limits: Vec<RangeLimit>,
     pub term_limits: Vec<RangeLimit>,
@@ -54,10 +53,6 @@ impl DecisionEngine {
 
     pub fn total_exposure(&self) -> f64 {
         self.total_exposure
-    }
-
-    pub fn grade_exposure(&self, grade: Grade) -> f64 {
-        *self.grade_map.get(&grade).unwrap_or(&0.0)
     }
 
     pub fn grade_map(&self) -> &HashMap<Grade, f64> {

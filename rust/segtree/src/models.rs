@@ -1,6 +1,4 @@
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Grade {
     A,
     B,
@@ -21,7 +19,7 @@ impl Grade {
     }
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Clone, Copy)]
 pub struct LoanRequest {
     pub amount: f64,
     pub score: i64,
@@ -35,7 +33,7 @@ impl LoanRequest {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Status {
     Approved,
     Rejected,
@@ -50,7 +48,6 @@ impl Status {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Decision {
     pub status: Status,
     pub reason: Option<String>,
@@ -78,7 +75,6 @@ impl Decision {
     }
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct RangeLimit {
     pub low: i64,
     pub high: i64,
