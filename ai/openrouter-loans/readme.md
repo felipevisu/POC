@@ -52,7 +52,7 @@ docker compose up -d --build
 Then open http://localhost:8080.
 
 | Service  | URL                       |
-|----------|---------------------------|
+| -------- | ------------------------- |
 | Frontend | http://localhost:8080     |
 | Backend  | http://localhost:3001     |
 | Postgres | postgres://localhost:5432 |
@@ -76,7 +76,7 @@ The `run_query` tool rejects anything that isn't a `SELECT`, so the agent can't 
 
 ## Example
 
-Question: *"What is the average loan amount per grade?"*
+Question: _"What is the average loan amount per grade?"_
 
 ![Loans Q&A example](./screenshots/image.png)
 

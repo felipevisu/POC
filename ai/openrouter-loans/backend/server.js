@@ -10,47 +10,6 @@ const { Pool } = pg;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-
-const listTables = tool({
-  name: "list_tables",
-  description: "List all tables in the public schema.",
-  inputSchema: z.object({}),
-  execute: async () => {
-    const { rows } = await pool.query(
-      "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
-    );
-    return rows;
-  },
-});
-
-const describeTable = tool({
-  name: "describe_table",
-  description: "Get the column schema of a table.",
-  inputSchema: z.object({ table: z.string() }),
-  execute: async ({ table }) => {
-    const { rows } = await pool.query(
-      `SELECT column_name, data_type, is_nullable
-       FROM information_schema.columns
-       WHERE table_schema = 'public' AND table_name = $1
-       ORDER BY ordinal_position`,
-      [table]
-    );
-    return rows;
-  },
-});
-
-const runQuery = tool({
-  name: "run_query",
-  description:
-    "Run a read-only SQL SELECT query and return the rows. Reject anything that isn't SELECT.",
-  inputSchema: z.object({ sql: z.string() }),
-  execute: async ({ sql }) => {
-    if (!/^\s*select\b/i.test(sql)) throw new Error("Only SELECT allowed.");
-    const { rows } = await pool.query(sql);
-    return rows;
-  },
-});
-
 const client = new OpenRouter({ apiKey: process.env.API_KEY });
 
 const app = express();
@@ -63,7 +22,55 @@ app.post("/api/ask", async (req, res) => {
     return res.status(400).json({ error: "Missing 'question' in body." });
   }
 
+  const toolCalls = [];
   let chartSpec = null;
+  const trace = (name, input) => toolCalls.push({ name, input });
+
+  const listTables = tool({
+    name: "list_tables",
+    description: "List all tables in the public schema.",
+    inputSchema: z.object({}),
+    execute: async (input) => {
+      trace("list_tables", input ?? {});
+      const { rows } = await pool.query(
+        "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
+      );
+      return rows;
+    },
+  });
+
+  const describeTable = tool({
+    name: "describe_table",
+    description: "Get the column schema of a table.",
+    inputSchema: z.object({ table: z.string() }),
+    execute: async (input) => {
+      trace("describe_table", input);
+      const { rows } = await pool.query(
+        `SELECT column_name, data_type, is_nullable
+         FROM information_schema.columns
+         WHERE table_schema = 'public' AND table_name = $1
+         ORDER BY ordinal_position`,
+        [input.table]
+      );
+      return rows;
+    },
+  });
+
+  const runQuery = tool({
+    name: "run_query",
+    description:
+      "Run a read-only SQL SELECT query and return the rows. Reject anything that isn't SELECT.",
+    inputSchema: z.object({ sql: z.string() }),
+    execute: async (input) => {
+      trace("run_query", input);
+      if (!/^\s*select\b/i.test(input.sql)) {
+        throw new Error("Only SELECT allowed.");
+      }
+      const { rows } = await pool.query(input.sql);
+      return rows;
+    },
+  });
+
   const renderChart = tool({
     name: "render_chart",
     description:
@@ -82,6 +89,7 @@ app.post("/api/ask", async (req, res) => {
       ),
     }),
     execute: async (spec) => {
+      trace("render_chart", { type: spec.type, title: spec.title });
       chartSpec = spec;
       return { ok: true };
     },
@@ -98,11 +106,6 @@ app.post("/api/ask", async (req, res) => {
       tools: [listTables, describeTable, runQuery, renderChart],
       stopWhen: stepCountIs(20),
     });
-
-    const toolCalls = [];
-    for await (const call of result.getToolCallsStream()) {
-      toolCalls.push({ name: call.name, input: call.input });
-    }
 
     const answer = await result.getText();
     res.json({ answer, toolCalls, chart: chartSpec });
