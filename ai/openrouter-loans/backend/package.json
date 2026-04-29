@@ -1,0 +1,15 @@
+{
+  "name": "openrouter-loans-backend",
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node --env-file=.env server.js"
+  },
+  "dependencies": {
+    "@openrouter/agent": "^0.4.0",
+    "@openrouter/sdk": "^0.12.22",
+    "express": "^4.21.0",
+    "pg": "^8.13.0",
+    "zod": "^4.3.6"
+  }
+}

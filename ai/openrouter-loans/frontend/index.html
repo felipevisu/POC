@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Loans Q&amp;A</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #0f1115;
+        --panel: #171a21;
+        --border: #262b36;
+        --text: #e6e8ef;
+        --muted: #8b93a7;
+        --accent: #6aa9ff;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        padding: 32px 16px;
+      }
+      main {
+        width: 100%;
+        max-width: 760px;
+      }
+      h1 {
+        margin: 0 0 4px 0;
+        font-size: 22px;
+        font-weight: 600;
+      }
+      .sub {
+        color: var(--muted);
+        font-size: 13px;
+        margin-bottom: 20px;
+      }
+      form {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+      input[type="text"] {
+        flex: 1;
+        padding: 12px 14px;
+        font-size: 14px;
+        background: var(--panel);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        outline: none;
+      }
+      input[type="text"]:focus { border-color: var(--accent); }
+      button {
+        padding: 12px 18px;
+        font-size: 14px;
+        background: var(--accent);
+        color: #06121f;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      button:disabled { opacity: 0.5; cursor: not-allowed; }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 12px;
+      }
+      .label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+      .tool-call {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        color: var(--muted);
+        padding: 6px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .tool-call:last-child { border-bottom: none; }
+      .tool-call .name { color: var(--accent); }
+      .answer {
+        white-space: pre-wrap;
+        line-height: 1.55;
+        font-size: 14px;
+      }
+      .examples {
+        margin-top: 24px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .examples ul { margin: 8px 0 0 18px; padding: 0; }
+      .examples li { margin: 4px 0; cursor: pointer; }
+      .examples li:hover { color: var(--text); }
+      .error { color: #ff6a6a; }
+      .chart-wrap {
+        position: relative;
+        height: 320px;
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  </head>
+  <body>
+    <main>
+      <h1>Loans Q&amp;A</h1>
+      <div class="sub">Ask a question about the loans database.</div>
+
+      <form id="ask-form">
+        <input
+          id="question"
+          type="text"
+          placeholder="e.g. What is the average loan amount per grade?"
+          autocomplete="off"
+          required
+        />
+        <button id="submit" type="submit">Ask</button>
+      </form>
+
+      <div id="output"></div>
+
+      <div class="examples">
+        <div>Try:</div>
+        <ul id="examples">
+          <li>What is the average loan amount per grade?</li>
+          <li>Which category has the highest total exposure?</li>
+          <li>List all loans with FICO below 600.</li>
+          <li>How many loans were originated each year?</li>
+        </ul>
+      </div>
+    </main>
+
+    <script>
+      const form = document.getElementById("ask-form");
+      const input = document.getElementById("question");
+      const button = document.getElementById("submit");
+      const output = document.getElementById("output");
+
+      let currentChart = null;
+      const PALETTE = [
+        "#6aa9ff", "#7ee7c7", "#ffb86b", "#ff8fa3",
+        "#c69bff", "#ffe27a", "#9be7ff", "#a5e887",
+      ];
+
+      document.getElementById("examples").addEventListener("click", (e) => {
+        if (e.target.tagName === "LI") {
+          input.value = e.target.textContent;
+          input.focus();
+        }
+      });
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const question = input.value.trim();
+        if (!question) return;
+
+        button.disabled = true;
+        if (currentChart) { currentChart.destroy(); currentChart = null; }
+        output.innerHTML = `<div class="panel"><div class="label">Thinking…</div></div>`;
+
+        try {
+          const res = await fetch("/api/ask", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Request failed");
+
+          const toolsHtml = data.toolCalls?.length
+            ? `<div class="panel">
+                 <div class="label">Tool calls</div>
+                 ${data.toolCalls
+                   .map(
+                     (c) =>
+                       `<div class="tool-call"><span class="name">${escapeHtml(
+                         c.name
+                       )}</span> ${escapeHtml(JSON.stringify(c.input))}</div>`
+                   )
+                   .join("")}
+               </div>`
+            : "";
+
+          const chartHtml = data.chart
+            ? `<div class="panel">
+                 <div class="label">${escapeHtml(data.chart.title || "Chart")}</div>
+                 <div class="chart-wrap"><canvas id="chart"></canvas></div>
+               </div>`
+            : "";
+
+          output.innerHTML = `
+            ${toolsHtml}
+            <div class="panel">
+              <div class="label">Answer</div>
+              <div class="answer">${escapeHtml(data.answer || "")}</div>
+            </div>
+            ${chartHtml}
+          `;
+
+          if (data.chart) renderChart(data.chart);
+        } catch (err) {
+          output.innerHTML = `<div class="panel error">Error: ${escapeHtml(
+            err.message
+          )}</div>`;
+        } finally {
+          button.disabled = false;
+        }
+      });
+
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function renderChart(spec) {
+        const canvas = document.getElementById("chart");
+        if (!canvas) return;
+
+        const isCircular = spec.type === "pie" || spec.type === "doughnut";
+        const datasets = spec.datasets.map((ds, i) => {
+          const base = PALETTE[i % PALETTE.length];
+          return {
+            label: ds.label,
+            data: ds.data,
+            backgroundColor: isCircular
+              ? ds.data.map((_, j) => PALETTE[j % PALETTE.length])
+              : base,
+            borderColor: base,
+            borderWidth: isCircular ? 0 : 2,
+            tension: 0.3,
+          };
+        });
+
+        currentChart = new Chart(canvas, {
+          type: spec.type,
+          data: { labels: spec.labels, datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: isCircular || datasets.length > 1,
+                labels: { color: "#e6e8ef" },
+              },
+            },
+            scales: isCircular
+              ? {}
+              : {
+                  x: {
+                    ticks: { color: "#8b93a7" },
+                    grid: { color: "#262b36" },
+                    title: spec.xLabel
+                      ? { display: true, text: spec.xLabel, color: "#8b93a7" }
+                      : undefined,
+                  },
+                  y: {
+                    ticks: { color: "#8b93a7" },
+                    grid: { color: "#262b36" },
+                    title: spec.yLabel
+                      ? { display: true, text: spec.yLabel, color: "#8b93a7" }
+                      : undefined,
+                  },
+                },
+          },
+        });
+      }
+    </script>
+  </body>
+</html>
