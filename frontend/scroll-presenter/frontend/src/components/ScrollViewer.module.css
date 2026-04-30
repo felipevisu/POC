@@ -1,0 +1,26 @@
+.banner {
+  position: fixed;
+  top: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  padding: 0.4rem 1rem;
+  background: rgba(15, 15, 17, 0.85);
+  backdrop-filter: blur(8px);
+  border-radius: 2rem;
+  border: 1px solid #334155;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.icon {
+  color: #f97316;
+}
+
+.label {
+  color: #f97316;
+}

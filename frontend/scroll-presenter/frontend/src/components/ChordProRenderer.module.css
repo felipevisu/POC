@@ -1,0 +1,111 @@
+.fallback {
+  color: #e2e8f0;
+  line-height: 1.8;
+}
+
+.song {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+/* Default accent — overridden by section-type modifiers below */
+.block {
+  --accent: #94a3b8;
+}
+
+.verse,
+.indeterminate {
+  --accent: #94a3b8;
+}
+
+.chorus {
+  --accent: #38bdf8;
+}
+
+.bridge {
+  --accent: #f472b6;
+}
+
+.intro,
+.outro {
+  --accent: #818cf8;
+}
+
+.label {
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.labelDash {
+  display: inline-block;
+  width: 16px;
+  height: 1px;
+  background: var(--accent);
+  opacity: 0.5;
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.block.chorus .lines {
+  border-left: 2px solid #38bdf844;
+  padding-left: 1rem;
+}
+
+.plainLine {
+  display: block;
+  font-size: 1.05rem;
+  line-height: 2;
+  color: #e2e8f0;
+}
+
+.chordLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  line-height: 1;
+}
+
+.pair {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-right: 0.05em;
+}
+
+.pairFlush {
+  margin-right: 0;
+}
+
+.chord {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  font-family: monospace;
+  min-width: 1ch;
+  user-select: none;
+}
+
+.chordEmpty {
+  color: transparent;
+  min-width: 0;
+}
+
+.lyric {
+  font-size: 1.05rem;
+  color: #e2e8f0;
+  line-height: 1.8;
+  white-space: pre;
+}

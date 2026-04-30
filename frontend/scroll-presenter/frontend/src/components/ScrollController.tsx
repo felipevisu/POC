@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import type { WsMessage } from "../hooks/useWebSocket";
+import styles from "./ScrollController.module.css";
 
 interface ScrollControllerProps {
   sendMessage: (msg: WsMessage) => void;
@@ -169,35 +170,9 @@ function ControllerToolbar({
   const pxPerSec = Math.round(speedToPxPerFrame(speedLevel) * 60);
 
   return (
-    <nav
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        display: "flex",
-        alignItems: "center",
-        gap: "0.75rem",
-        padding: "0.6rem 1.25rem",
-        background: "rgba(15,15,17,0.92)",
-        backdropFilter: "blur(10px)",
-        borderBottom: "1px solid #1e293b",
-        flexWrap: "wrap",
-      }}
-    >
+    <nav className={styles.toolbar}>
       {/* Role badge */}
-      <span
-        style={{
-          fontSize: "0.72rem",
-          color: "#38bdf8",
-          fontWeight: 700,
-          letterSpacing: "0.08em",
-          flexShrink: 0,
-        }}
-      >
-        🎮 CONTROLLER
-      </span>
+      <span className={styles.badge}>🎮 CONTROLLER</span>
 
       <Divider />
 
@@ -205,24 +180,9 @@ function ControllerToolbar({
       <button
         onClick={onTogglePlay}
         title={isPlaying ? "Pause auto-scroll" : "Start auto-scroll"}
-        style={{
-          width: 36,
-          height: 36,
-          borderRadius: "50%",
-          border: "none",
-          background: isPlaying
-            ? "linear-gradient(135deg,#f97316,#fb923c)"
-            : "linear-gradient(135deg,#818cf8,#38bdf8)",
-          color: "#0f172a",
-          fontSize: "1rem",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-          boxShadow: isPlaying ? "0 0 12px #f9731644" : "0 0 12px #818cf844",
-          transition: "all 0.2s",
-        }}
+        className={`${styles.playButton} ${
+          isPlaying ? styles.playButtonPlaying : styles.playButtonPaused
+        }`}
       >
         {isPlaying ? "⏸" : "▶"}
       </button>
@@ -231,20 +191,7 @@ function ControllerToolbar({
       <button
         onClick={onReset}
         title="Reset to top"
-        style={{
-          width: 32,
-          height: 32,
-          borderRadius: "0.375rem",
-          border: "1px solid #334155",
-          background: "#1e293b",
-          color: "#64748b",
-          fontSize: "0.85rem",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-        }}
+        className={styles.resetButton}
       >
         ⏮
       </button>
@@ -252,17 +199,8 @@ function ControllerToolbar({
       <Divider />
 
       {/* Speed control */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "0.5rem",
-          flexShrink: 0,
-        }}
-      >
-        <span style={{ fontSize: "0.72rem", color: "#64748b", flexShrink: 0 }}>
-          🐢
-        </span>
+      <div className={styles.speedGroup}>
+        <span className={styles.speedIcon}>🐢</span>
         <input
           type="range"
           min={1}
@@ -270,35 +208,15 @@ function ControllerToolbar({
           step={1}
           value={speedLevel}
           onChange={(e) => onSpeedChange(Number(e.target.value))}
-          style={{ width: 100, accentColor: "#818cf8", cursor: "pointer" }}
+          className={styles.speedSlider}
         />
-        <span style={{ fontSize: "0.72rem", color: "#64748b", flexShrink: 0 }}>
-          🐇
-        </span>
-        <span
-          style={{
-            fontSize: "0.7rem",
-            color: "#94a3b8",
-            minWidth: 52,
-            flexShrink: 0,
-          }}
-        >
-          {pxPerSec} px/s
-        </span>
+        <span className={styles.speedIcon}>🐇</span>
+        <span className={styles.speedValue}>{pxPerSec} px/s</span>
       </div>
     </nav>
   );
 }
 
 function Divider() {
-  return (
-    <div
-      style={{
-        width: 1,
-        height: 20,
-        background: "#1e293b",
-        flexShrink: 0,
-      }}
-    />
-  );
+  return <div className={styles.divider} />;
 }

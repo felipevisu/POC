@@ -17,7 +17,7 @@ browser (controller) ──scroll──► WS /ws/{sessionId} ──broadcast─
 
 ```bash
 cd backend
-python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
@@ -43,16 +43,16 @@ Frontend is available at `http://localhost:3000`.
 
 ## Key design decisions
 
-| Concern | Solution |
-|---|---|
-| Normalized scroll | `progress = scrollY / (scrollHeight - innerHeight)` — device-independent |
-| Throttling | 50 ms throttle with rAF buffer on the controller side |
-| Viewer jitter | Single persistent `requestAnimationFrame` lerp loop (factor 0.12/frame) |
-| Viewer scroll lock | CSS `overflow: hidden` on `<html>` + `<body>` (belt-and-suspenders event listeners) |
-| Concurrent connect races | Per-session `asyncio.Lock` serialises all mutations |
-| Controller promotion | On disconnect: remove client → promote `clients[0]` → send `{type:"role"}` |
-| StrictMode double-mount | Stable `clientId` from `sessionStorage`; server replaces stale connections from same ID |
-| Dead socket cleanup | Failed sends during broadcast trigger deferred pruning under lock |
+| Concern                  | Solution                                                                                |
+| ------------------------ | --------------------------------------------------------------------------------------- |
+| Normalized scroll        | `progress = scrollY / (scrollHeight - innerHeight)` — device-independent                |
+| Throttling               | 50 ms throttle with rAF buffer on the controller side                                   |
+| Viewer jitter            | Single persistent `requestAnimationFrame` lerp loop (factor 0.12/frame)                 |
+| Viewer scroll lock       | CSS `overflow: hidden` on `<html>` + `<body>` (belt-and-suspenders event listeners)     |
+| Concurrent connect races | Per-session `asyncio.Lock` serialises all mutations                                     |
+| Controller promotion     | On disconnect: remove client → promote `clients[0]` → send `{type:"role"}`              |
+| StrictMode double-mount  | Stable `clientId` from `sessionStorage`; server replaces stale connections from same ID |
+| Dead socket cleanup      | Failed sends during broadcast trigger deferred pruning under lock                       |
 
 ## Bonus — Section jump mode
 

@@ -5,6 +5,7 @@ import type { Role, WsMessage } from "../../hooks/useWebSocket";
 import ScrollController from "../../components/ScrollController";
 import ScrollViewer from "../../components/ScrollViewer";
 import LyricsContent from "../../components/LyricsContent";
+import styles from "./SessionPage.module.css";
 
 // Stable clientId per browser tab (survives React StrictMode double-mount)
 function getClientId(): string {
@@ -107,68 +108,25 @@ function RoleBanner({
     });
   };
 
+  const roleClass =
+    role === "controller" ? styles.roleController : styles.roleViewer;
+
   return (
-    <div
-      style={{
-        position: "fixed",
-        bottom: "1rem",
-        right: "1rem",
-        zIndex: 200,
-        background: "rgba(15,15,17,0.95)",
-        backdropFilter: "blur(12px)",
-        border: "1px solid #334155",
-        borderRadius: "0.75rem",
-        padding: "0.75rem 1rem",
-        display: "flex",
-        flexDirection: "column",
-        gap: "0.4rem",
-        maxWidth: 320,
-        boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
-      }}
-    >
-      <div
-        style={{
-          fontSize: "0.75rem",
-          color: "#64748b",
-          display: "flex",
-          justifyContent: "space-between",
-        }}
-      >
+    <div className={styles.banner}>
+      <div className={styles.row}>
         <span>Session</span>
-        <span style={{ color: "#e2e8f0", fontWeight: 600 }}>{sessionId}</span>
+        <span className={styles.sessionId}>{sessionId}</span>
       </div>
-      <div
-        style={{
-          fontSize: "0.75rem",
-          color: "#64748b",
-          display: "flex",
-          justifyContent: "space-between",
-        }}
-      >
+      <div className={styles.row}>
         <span>Your role</span>
-        <span
-          style={{
-            fontWeight: 700,
-            color: role === "controller" ? "#38bdf8" : "#f97316",
-          }}
-        >
+        <span className={`${styles.role} ${roleClass}`}>
           {role === "controller" ? "🎮 Controller" : "👁 Viewer"}
         </span>
       </div>
       {role === "controller" && (
         <button
           onClick={copy}
-          style={{
-            marginTop: "0.25rem",
-            padding: "0.4rem 0.75rem",
-            borderRadius: "0.4rem",
-            border: "1px solid #334155",
-            background: copied ? "#1e3a2f" : "#1e293b",
-            color: copied ? "#34d399" : "#94a3b8",
-            fontSize: "0.75rem",
-            cursor: "pointer",
-            transition: "all 0.2s",
-          }}
+          className={`${styles.copyButton} ${copied ? styles.copyButtonCopied : ""}`}
         >
           {copied ? "✓ Copied!" : "Copy viewer link"}
         </button>
@@ -179,29 +137,9 @@ function RoleBanner({
 
 function LoadingScreen() {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "column",
-        gap: "1rem",
-        color: "#475569",
-      }}
-    >
-      <div
-        style={{
-          width: 40,
-          height: 40,
-          border: "3px solid #1e293b",
-          borderTopColor: "#818cf8",
-          borderRadius: "50%",
-          animation: "spin 0.8s linear infinite",
-        }}
-      />
-      <p style={{ fontSize: "0.9rem" }}>Connecting…</p>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <div className={styles.loading}>
+      <div className={styles.spinner} />
+      <p className={styles.loadingText}>Connecting…</p>
     </div>
   );
 }

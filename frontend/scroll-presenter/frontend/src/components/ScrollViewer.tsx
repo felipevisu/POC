@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { WsMessage } from "../hooks/useWebSocket";
+import styles from "./ScrollViewer.module.css";
 
 interface ScrollViewerProps {
   lastMessage: WsMessage | null;
@@ -104,29 +105,10 @@ export default function ScrollViewer({ lastMessage }: ScrollViewerProps) {
   }, [lastMessage]);
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: "0.75rem",
-        left: "50%",
-        transform: "translateX(-50%)",
-        zIndex: 100,
-        padding: "0.4rem 1rem",
-        background: "rgba(15,15,17,0.85)",
-        backdropFilter: "blur(8px)",
-        borderRadius: "2rem",
-        border: "1px solid #334155",
-        fontSize: "0.8rem",
-        color: "#94a3b8",
-        display: "flex",
-        alignItems: "center",
-        gap: "0.5rem",
-        pointerEvents: "none",
-      }}
-    >
-      <span style={{ color: "#f97316" }}>👁</span>
+    <div className={styles.banner}>
+      <span className={styles.icon}>👁</span>
       <span>
-        <strong style={{ color: "#f97316" }}>VIEWER</strong> — scroll
+        <strong className={styles.label}>VIEWER</strong> — scroll
         controlled remotely
       </span>
     </div>
