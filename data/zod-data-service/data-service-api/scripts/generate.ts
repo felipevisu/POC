@@ -224,6 +224,20 @@ async function main() {
     `${OUT_DIR}/openapi.json`,
     JSON.stringify(generateOpenApiSpec(entries), null, 2),
   );
+  writeFileSync(
+    `${OUT_DIR}/json-schemas.json`,
+    JSON.stringify(
+      entries.map(({ groupId, artifactId, version, jsonSchema, pipeline }) => ({
+        groupId,
+        artifactId,
+        version,
+        jsonSchema,
+        pipeline,
+      })),
+      null,
+      2,
+    ),
+  );
 }
 
 main().catch(() => process.exit(1));

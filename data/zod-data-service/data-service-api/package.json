@@ -4,9 +4,13 @@
   "scripts": {
     "seed": "tsx scripts/seed.ts",
     "generate": "tsx scripts/generate.ts",
+    "generate:tests": "tsx scripts/generate-tests.ts",
     "dev": "npm run seed && npm run generate && tsx src/server.ts",
     "build": "npm run generate && tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "pretest": "npm run generate && npm run generate:tests",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "express": "^4.21.0",
@@ -16,8 +20,12 @@
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/node": "^22.0.0",
+    "@types/supertest": "^6.0.2",
+    "json-schema-faker": "^0.5.6",
     "json-schema-to-zod": "^2.4.0",
+    "supertest": "^7.0.0",
     "tsx": "^4.19.0",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
   }
 }
