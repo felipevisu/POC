@@ -1,0 +1,13 @@
+{
+  "name": "claude-loans-backend",
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node --env-file=.env server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.40.1",
+    "express": "^4.21.0",
+    "pg": "^8.13.0"
+  }
+}
