@@ -1,0 +1,7 @@
+Monthly subscriptions renew automatically.
+
+Customers may cancel subscriptions anytime.
+
+Refunds for subscriptions are only available within the first 7 days after renewal.
+
+Canceled subscriptions remain active until the billing cycle ends.
