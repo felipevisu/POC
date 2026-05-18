@@ -18,6 +18,7 @@ function App() {
   const [input, setInput] = useState("");
   const [items, setItems] = useState([]);
   const [pending, setPending] = useState(false);
+  const [useCustom, setUseCustom] = useState(true);
 
   function appendItem(item) {
     const id = item.id ?? `${item.type}-${Date.now()}-${Math.random()}`;
@@ -33,6 +34,7 @@ function App() {
 
     const messages = [{ role: "user", content: text }];
     const schemas = toolSchemas();
+    const customMode = useCustom;
 
     try {
       let suppressFinalText = false;
@@ -60,7 +62,10 @@ function App() {
           break;
         }
 
-        if (toolUses.some((t) => CUSTOM_RENDER_TOOLS.has(t.name))) {
+        if (
+          customMode &&
+          toolUses.some((t) => CUSTOM_RENDER_TOOLS.has(t.name))
+        ) {
           suppressFinalText = true;
         }
 
@@ -68,12 +73,14 @@ function App() {
 
         const toolResults = [];
         for (const call of toolUses) {
-          appendItem({
-            id: call.id,
-            type: "tool_use",
-            name: call.name,
-            input: call.input,
-          });
+          if (customMode) {
+            appendItem({
+              id: call.id,
+              type: "tool_use",
+              name: call.name,
+              input: call.input,
+            });
+          }
 
           const tool = toolsByName[call.name];
           let output;
@@ -87,11 +94,13 @@ function App() {
             output = { error: err?.message ?? String(err) };
           }
 
-          appendItem({
-            id: `${call.id}-result`,
-            type: "tool_result",
-            output,
-          });
+          if (customMode) {
+            appendItem({
+              id: `${call.id}-result`,
+              type: "tool_result",
+              output,
+            });
+          }
 
           toolResults.push({
             type: "tool_result",
@@ -99,7 +108,6 @@ function App() {
             content: JSON.stringify(output),
             is_error: isError,
           });
-
         }
 
         messages.push({ role: "user", content: toolResults });
@@ -116,7 +124,23 @@ function App() {
 
   return (
     <div className="chat">
-      <h1>Weather Chat</h1>
+      <div className="chat-header">
+        <h1>Weather Chat</h1>
+        <label className="toggle">
+          <span className="toggle-label">
+            {useCustom ? "Custom UI" : "Markdown"}
+          </span>
+          <input
+            type="checkbox"
+            checked={useCustom}
+            onChange={(e) => setUseCustom(e.target.checked)}
+            disabled={pending}
+          />
+          <span className="toggle-track" aria-hidden="true">
+            <span className="toggle-thumb" />
+          </span>
+        </label>
+      </div>
       <div className="messages">
         {items.map((item) => (
           <ItemRenderer key={item.id} item={item} />
