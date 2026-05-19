@@ -22,13 +22,11 @@ services:
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
-      # Webhook target — name "WORKER" becomes ARN identifier
-      # arn:minio:sqs::WORKER:webhook used by minio-setup
       MINIO_NOTIFY_WEBHOOK_ENABLE_WORKER: "on"
       MINIO_NOTIFY_WEBHOOK_ENDPOINT_WORKER: "http://worker:8001/webhook"
     ports:
-      - "9000:9000"   # S3 API
-      - "9001:9001"   # Web Console
+      - "9000:9000"
+      - "9001:9001"
     volumes:
       - miniodata:/data
     healthcheck:
@@ -41,6 +39,7 @@ services:
     build:
       context: ./services/worker
       dockerfile: Dockerfile
+    restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
@@ -51,8 +50,18 @@ services:
       MINIO_ENDPOINT: minio:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
+      HF_HOME: /root/.cache/huggingface
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+      - ~/.cache/docling:/root/.cache/docling
     ports:
       - "8001:8001"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 180s
 
   minio-setup:
     image: minio/mc:latest
@@ -60,7 +69,7 @@ services:
       minio:
         condition: service_healthy
       worker:
-        condition: service_started
+        condition: service_healthy
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
@@ -70,44 +79,49 @@ services:
     entrypoint: ["/bin/sh", "/setup.sh"]
     restart: "no"
 
-  api:
+  document-api:
     build:
-      context: ./services/api
+      context: ./services/document-api
       dockerfile: Dockerfile
     depends_on:
       postgres:
         condition: service_healthy
       minio:
         condition: service_healthy
-    env_file:
-      - ./.env
     environment:
       DATABASE_URL: postgresql://rag:rag@postgres:5432/rag
       MINIO_ENDPOINT: minio:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
       MINIO_BUCKET: documents
-      CLAUDE_MODEL: claude-sonnet-4-5
+      HF_HOME: /root/.cache/huggingface
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
     ports:
       - "8000:8000"
+
+  chat:
+    build:
+      context: ./services/chat
+      dockerfile: Dockerfile
+    depends_on:
+      - document-api
+    env_file:
+      - ./.env
+    environment:
+      DOCUMENT_API_URL: http://document-api:8000
+      CLAUDE_MODEL: claude-sonnet-4-6
+    ports:
+      - "3001:3001"
 
   documents-ui:
     build:
       context: ./services/documents-ui
       dockerfile: Dockerfile
     depends_on:
-      - api
+      - document-api
     ports:
       - "3000:3000"
-
-  chat-ui:
-    build:
-      context: ./services/chat-ui
-      dockerfile: Dockerfile
-    depends_on:
-      - api
-    ports:
-      - "3001:3001"
 
 volumes:
   pgdata:

@@ -21,15 +21,15 @@ done
 # still loading models when an event fires, MinIO retries the webhook —
 # no explicit readiness probe needed here (and mc image lacks curl/wget).
 
-echo "→ Creating bucket: $BUCKET"
+echo "Creating bucket: $BUCKET"
 mc mb --ignore-existing $ALIAS/$BUCKET
 
-echo "→ Subscribing bucket to webhook ($WEBHOOK_ARN, PUT, *.pdf)..."
+echo "Subscribing bucket to webhook ($WEBHOOK_ARN, PUT, *.pdf)..."
 # Remove any stale subscription first (ignore error if none), then add.
 mc event remove $ALIAS/$BUCKET $WEBHOOK_ARN --event put --suffix .pdf 2>/dev/null || true
 mc event add    $ALIAS/$BUCKET $WEBHOOK_ARN --event put --suffix .pdf
 
-echo "→ Seeding bucket with existing PDFs from $SOURCE_DIR..."
+echo "Seeding bucket with existing PDFs from $SOURCE_DIR..."
 if [ -d "$SOURCE_DIR" ]; then
   for f in "$SOURCE_DIR"/*.pdf; do
     [ -f "$f" ] || continue
@@ -45,4 +45,4 @@ else
   echo "  no source dir, skipping seed."
 fi
 
-echo "✓ MinIO setup complete."
+echo "MinIO setup complete."

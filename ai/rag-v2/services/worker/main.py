@@ -28,13 +28,29 @@ minio_client = Minio(
 _converter = None
 _chunker = None
 _embedder = None
+_process_sem = None
+
+
+def get_sem():
+    global _process_sem
+    if _process_sem is None:
+        import threading
+        _process_sem = threading.Semaphore(1)
+    return _process_sem
 
 
 def get_converter():
     global _converter
     if _converter is None:
-        from docling.document_converter import DocumentConverter
-        _converter = DocumentConverter()
+        from docling.datamodel.base_models import InputFormat
+        from docling.datamodel.pipeline_options import PdfPipelineOptions
+        from docling.document_converter import DocumentConverter, PdfFormatOption
+        opts = PdfPipelineOptions()
+        opts.do_ocr = False
+        opts.do_table_structure = False
+        _converter = DocumentConverter(
+            format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=opts)}
+        )
     return _converter
 
 
@@ -70,7 +86,6 @@ def init_schema_with_retry(retries: int = 15, delay: int = 2) -> None:
     last_err = None
     for attempt in range(1, retries + 1):
         try:
-            # First connection: enable extension before register_vector
             raw = psycopg2.connect(DATABASE_URL)
             with raw.cursor() as cur:
                 cur.execute("CREATE EXTENSION IF NOT EXISTS vector")
@@ -80,30 +95,35 @@ def init_schema_with_retry(retries: int = 15, delay: int = 2) -> None:
             with db() as conn, conn.cursor() as cur:
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS documents (
-                        id           SERIAL PRIMARY KEY,
-                        filename     TEXT UNIQUE NOT NULL,
-                        processed_at TIMESTAMPTZ DEFAULT NOW()
+                        id            SERIAL PRIMARY KEY,
+                        filename      TEXT UNIQUE NOT NULL,
+                        status        TEXT NOT NULL DEFAULT 'ready',
+                        error_message TEXT,
+                        processed_at  TIMESTAMPTZ DEFAULT NOW()
                     )
                 """)
                 cur.execute(f"""
                     CREATE TABLE IF NOT EXISTS chunks (
-                        id          SERIAL PRIMARY KEY,
-                        document_id INTEGER NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
-                        chunk_index INTEGER NOT NULL,
-                        text        TEXT NOT NULL,
-                        headings    JSONB,
+                        id           SERIAL PRIMARY KEY,
+                        document_id  INTEGER NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+                        chunk_index  INTEGER NOT NULL,
+                        text         TEXT NOT NULL,
+                        headings     JSONB,
                         page_numbers JSONB,
-                        embedding   VECTOR({EMBED_DIM}),
-                        created_at  TIMESTAMPTZ DEFAULT NOW()
+                        embedding    VECTOR({EMBED_DIM}),
+                        created_at   TIMESTAMPTZ DEFAULT NOW()
                     )
                 """)
-                # Idempotent ALTER for pre-existing tables created without the column
                 cur.execute(f"""
                     ALTER TABLE chunks ADD COLUMN IF NOT EXISTS embedding VECTOR({EMBED_DIM})
                 """)
+                cur.execute("""
+                    ALTER TABLE documents ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'ready'
+                """)
+                cur.execute("""
+                    ALTER TABLE documents ADD COLUMN IF NOT EXISTS error_message TEXT
+                """)
                 cur.execute("CREATE INDEX IF NOT EXISTS idx_chunks_document_id ON chunks(document_id)")
-                # HNSW for cosine similarity. Skip if any NULL embeddings present
-                # (HNSW only indexes non-NULL rows but is cheaper to build once data exists).
                 cur.execute("""
                     CREATE INDEX IF NOT EXISTS idx_chunks_embedding_hnsw
                     ON chunks USING hnsw (embedding vector_cosine_ops)
@@ -119,9 +139,12 @@ def init_schema_with_retry(retries: int = 15, delay: int = 2) -> None:
 
 
 def backfill_embeddings() -> None:
-    """Encode any chunks that don't have an embedding yet."""
     with db() as conn, conn.cursor() as cur:
-        cur.execute("SELECT COUNT(*) FROM chunks WHERE embedding IS NULL")
+        cur.execute("""
+            SELECT COUNT(*) FROM chunks c
+            JOIN documents d ON d.id = c.document_id
+            WHERE c.embedding IS NULL AND d.status = 'ready'
+        """)
         pending = cur.fetchone()[0]
     if pending == 0:
         print("No backfill needed.")
@@ -133,10 +156,12 @@ def backfill_embeddings() -> None:
 
     while True:
         with db() as conn, conn.cursor() as cur:
-            cur.execute(
-                "SELECT id, text FROM chunks WHERE embedding IS NULL LIMIT %s",
-                (BATCH,),
-            )
+            cur.execute("""
+                SELECT c.id, c.text FROM chunks c
+                JOIN documents d ON d.id = c.document_id
+                WHERE c.embedding IS NULL AND d.status = 'ready'
+                LIMIT %s
+            """, (BATCH,))
             rows = cur.fetchall()
             if not rows:
                 break
@@ -189,84 +214,119 @@ def _extract_pages(chunk) -> list:
 
 
 def process_pdf(bucket: str, key: str) -> None:
-    """Download PDF from MinIO, chunk it, embed, save chunks to DB. Idempotent."""
     filename = key
+    print(f"[queued] {filename} — waiting for slot")
+    with get_sem():
+        print(f"[start] {filename}")
+        doc_id = None
 
-    with db() as conn, conn.cursor() as cur:
-        cur.execute("SELECT id FROM documents WHERE filename = %s", (filename,))
-        if cur.fetchone():
-            print(f"[skip] already processed: {filename}")
-            return
+        try:
+            with db() as conn, conn.cursor() as cur:
+                cur.execute("SELECT id, status FROM documents WHERE filename = %s", (filename,))
+                row = cur.fetchone()
+                if row:
+                    doc_id, status = row
+                    if status == "ready":
+                        print(f"[skip] {filename} already ready")
+                        return
+                    print(f"[retry] {filename} was {status}, reprocessing")
+                    cur.execute(
+                        "UPDATE documents SET status = 'chunking', error_message = NULL WHERE id = %s",
+                        (doc_id,),
+                    )
+                else:
+                    cur.execute(
+                        "INSERT INTO documents (filename, status) VALUES (%s, 'chunking') RETURNING id",
+                        (filename,),
+                    )
+                    doc_id = cur.fetchone()[0]
+                    print(f"[new] {filename} doc_id={doc_id}")
+                conn.commit()
 
-    tmp_fd, tmp_path = tempfile.mkstemp(suffix=".pdf")
-    os.close(tmp_fd)
+            tmp_fd, tmp_path = tempfile.mkstemp(suffix=".pdf")
+            os.close(tmp_fd)
 
-    try:
-        print(f"[download] {bucket}/{key}")
-        minio_client.fget_object(bucket, key, tmp_path)
+            try:
+                print(f"[download] {bucket}/{key}")
+                minio_client.fget_object(bucket, key, tmp_path)
+                print(f"[convert] {filename} (this may take 1-3 min on CPU)")
+                result = get_converter().convert(tmp_path)
+                print(f"[chunking] {filename}")
+                chunks_data = list(get_chunker().chunk(result.document))
+                print(f"[chunked] {filename} -> {len(chunks_data)} chunks")
+            finally:
+                if os.path.exists(tmp_path):
+                    os.unlink(tmp_path)
 
-        print(f"[convert] {filename}")
-        result = get_converter().convert(tmp_path)
-        chunks = list(get_chunker().chunk(result.document))
-        print(f"[chunked] {filename} -> {len(chunks)} chunks")
+            with db() as conn, conn.cursor() as cur:
+                cur.execute("DELETE FROM chunks WHERE document_id = %s", (doc_id,))
+                for i, chunk in enumerate(chunks_data):
+                    headings = list(chunk.meta.headings) if chunk.meta.headings else []
+                    pages = _extract_pages(chunk)
+                    cur.execute(
+                        """INSERT INTO chunks (document_id, chunk_index, text, headings, page_numbers)
+                           VALUES (%s, %s, %s, %s, %s)""",
+                        (doc_id, i, chunk.text, json.dumps(headings), json.dumps(pages)),
+                    )
+                cur.execute("UPDATE documents SET status = 'embedding' WHERE id = %s", (doc_id,))
+                conn.commit()
+            print(f"[embed] {filename} — generating {len(chunks_data)} embeddings")
 
-        texts = [c.text for c in chunks]
-        print(f"[embed] {filename}")
-        vectors = get_embedder().encode(texts, normalize_embeddings=True)
+            texts = [c.text for c in chunks_data]
+            vectors = get_embedder().encode(texts, normalize_embeddings=True)
 
-        with db() as conn, conn.cursor() as cur:
-            cur.execute(
-                "INSERT INTO documents (filename) VALUES (%s) ON CONFLICT (filename) DO NOTHING RETURNING id",
-                (filename,),
-            )
-            row = cur.fetchone()
-            if not row:
-                print(f"[race] {filename} was inserted by another call")
-                return
-            doc_id = row[0]
-            for i, (chunk, vec) in enumerate(zip(chunks, vectors)):
-                headings = list(chunk.meta.headings) if chunk.meta.headings else []
-                pages = _extract_pages(chunk)
+            with db() as conn, conn.cursor() as cur:
                 cur.execute(
-                    """INSERT INTO chunks
-                       (document_id, chunk_index, text, headings, page_numbers, embedding)
-                       VALUES (%s, %s, %s, %s, %s, %s)""",
-                    (
-                        doc_id,
-                        i,
-                        chunk.text,
-                        json.dumps(headings),
-                        json.dumps(pages),
-                        vec.tolist(),
-                    ),
+                    "SELECT id FROM chunks WHERE document_id = %s ORDER BY chunk_index", (doc_id,)
                 )
-            conn.commit()
-        print(f"[saved] {filename} (doc_id={doc_id}, {len(chunks)} chunks + embeddings)")
+                chunk_ids = [r[0] for r in cur.fetchall()]
+                for cid, vec in zip(chunk_ids, vectors):
+                    cur.execute("UPDATE chunks SET embedding = %s WHERE id = %s", (vec.tolist(), cid))
+                cur.execute(
+                    "UPDATE documents SET status = 'ready', processed_at = NOW() WHERE id = %s", (doc_id,)
+                )
+                conn.commit()
 
-    finally:
-        if os.path.exists(tmp_path):
-            os.unlink(tmp_path)
+            print(f"[done] {filename} — {len(chunks_data)} chunks, embeddings stored")
+
+        except Exception as e:
+            print(f"[error] {filename}: {type(e).__name__}: {e}")
+            if doc_id:
+                try:
+                    with db() as conn, conn.cursor() as cur:
+                        cur.execute(
+                            "UPDATE documents SET status = 'error', error_message = %s WHERE id = %s",
+                            (str(e)[:500], doc_id),
+                        )
+                        conn.commit()
+                except Exception as db_err:
+                    print(f"[error] failed to update error status: {db_err}")
+            raise
 
 
 @app.post("/webhook")
 async def webhook(request: Request, background: BackgroundTasks):
     payload = await request.json()
     records = payload.get("Records", [])
+    print(f"[webhook] received {len(records)} record(s)")
 
     queued = []
     for record in records:
         event_name = record.get("eventName", "")
         if not event_name.startswith("s3:ObjectCreated:"):
+            print(f"[webhook] ignored event: {event_name}")
             continue
         s3 = record.get("s3", {})
         bucket = s3.get("bucket", {}).get("name")
         key = s3.get("object", {}).get("key")
         if not bucket or not key:
+            print(f"[webhook] missing bucket or key, skipping")
             continue
         key = unquote(key)
         if not key.lower().endswith(".pdf"):
-            print(f"[skip] non-PDF: {key}")
+            print(f"[webhook] non-PDF skipped: {key}")
             continue
+        print(f"[webhook] scheduling: {bucket}/{key}")
         background.add_task(process_pdf, bucket, key)
         queued.append(f"{bucket}/{key}")
 

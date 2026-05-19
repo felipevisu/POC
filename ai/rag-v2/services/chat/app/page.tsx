@@ -1,14 +1,29 @@
-import { useState, useRef, useEffect } from 'react'
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
-const API_CHAT = '/api/chat'
-const HISTORY_LIMIT = 10  // last N exchanges fed to Claude
+const HISTORY_LIMIT = 10
 
-function Citations({ citations }) {
+interface Chunk {
+  id: number
+  filename: string
+  text: string
+  page_numbers: number[] | null
+  similarity: number
+}
+
+interface Message {
+  role: 'user' | 'assistant'
+  content: string
+  citations?: Chunk[]
+  error?: boolean
+}
+
+function Citations({ citations }: { citations: Chunk[] }) {
   const [open, setOpen] = useState(false)
-  if (!citations || citations.length === 0) return null
-
+  if (!citations.length) return null
   return (
     <div className="citations">
       <button className="citations-head" onClick={() => setOpen(o => !o)}>
@@ -22,12 +37,10 @@ function Citations({ citations }) {
             <div key={c.id} className="citation">
               <div className="citation-meta">
                 <span className="citation-file">{c.filename}</span>
-                {Array.isArray(c.page_numbers) && c.page_numbers.length > 0 && (
+                {c.page_numbers?.length ? (
                   <span className="citation-page">p.{c.page_numbers.join(', ')}</span>
-                )}
-                <span className="citation-sim">
-                  {(c.similarity * 100).toFixed(1)}%
-                </span>
+                ) : null}
+                <span className="citation-sim">{(c.similarity * 100).toFixed(1)}%</span>
               </div>
               <div className="citation-text">{c.text}</div>
             </div>
@@ -38,15 +51,21 @@ function Citations({ citations }) {
   )
 }
 
-function Message({ msg }) {
-  const renderAsMarkdown = msg.role === 'assistant' && !msg.error
+function ChatMessage({ msg }: { msg: Message }) {
+  const isAssistant = msg.role === 'assistant'
   return (
     <div className={`msg ${msg.role}${msg.error ? ' error' : ''}`}>
       <span className="msg-role">{msg.role === 'user' ? 'You' : 'Claude'}</span>
       <div className="msg-bubble">
-        {renderAsMarkdown ? (
+        {isAssistant && !msg.error ? (
           <div className="markdown">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                p: ({ children }) => <span className="md-p">{children}</span>,
+                br: () => <br />,
+              }}
+            >
               {msg.content}
             </ReactMarkdown>
           </div>
@@ -54,18 +73,17 @@ function Message({ msg }) {
           msg.content
         )}
       </div>
-      {msg.role === 'assistant' && <Citations citations={msg.citations} />}
+      {isAssistant && <Citations citations={msg.citations ?? []} />}
     </div>
   )
 }
 
-export default function App() {
-  const [messages, setMessages] = useState([])
+export default function ChatPage() {
+  const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [pending, setPending] = useState(false)
   const [model, setModel] = useState('')
-  const scrollRef = useRef(null)
-  const textareaRef = useRef(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -77,48 +95,37 @@ export default function App() {
     const text = input.trim()
     if (!text || pending) return
 
-    const userMsg = { role: 'user', content: text }
+    const userMsg: Message = { role: 'user', content: text }
     const next = [...messages, userMsg]
     setMessages(next)
     setInput('')
     setPending(true)
 
-    // Build history sent to Claude (exclude the freshly added user msg, server adds it)
     const history = messages
       .slice(-HISTORY_LIMIT * 2)
       .map(m => ({ role: m.role, content: m.content }))
 
     try {
-      const res = await fetch(API_CHAT, {
+      const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text, history, k: 5 }),
       })
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ detail: res.statusText }))
-        throw new Error(err.detail || `HTTP ${res.status}`)
+        const err = await res.json().catch(() => ({ error: res.statusText }))
+        throw new Error(err.error ?? `HTTP ${res.status}`)
       }
       const data = await res.json()
       if (data.model) setModel(data.model)
-      setMessages([
-        ...next,
-        {
-          role: 'assistant',
-          content: data.answer,
-          citations: data.citations || [],
-        },
-      ])
+      setMessages([...next, { role: 'assistant', content: data.answer, citations: data.citations ?? [] }])
     } catch (e) {
-      setMessages([
-        ...next,
-        { role: 'assistant', content: e.message, error: true, citations: [] },
-      ])
+      setMessages([...next, { role: 'assistant', content: (e as Error).message, error: true, citations: [] }])
     } finally {
       setPending(false)
     }
   }
 
-  function onKey(e) {
+  function onKey(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       send()
@@ -140,14 +147,10 @@ export default function App() {
           <div className="empty">
             <div className="empty-icon">✦</div>
             <p>Ask anything about the indexed documents.</p>
-            <p className="hint">
-              e.g. "How do I cancel my subscription?" · "What if my package is stolen?"
-            </p>
+            <p className="hint">e.g. &quot;How do I cancel my subscription?&quot; · &quot;What if my package is stolen?&quot;</p>
           </div>
         )}
-        {messages.map((m, i) => (
-          <Message key={i} msg={m} />
-        ))}
+        {messages.map((m, i) => <ChatMessage key={i} msg={m} />)}
         {pending && (
           <div className="thinking">
             <span className="dots"><span /><span /><span /></span>
@@ -156,12 +159,8 @@ export default function App() {
         )}
       </div>
 
-      <form
-        className="composer"
-        onSubmit={e => { e.preventDefault(); send() }}
-      >
+      <form className="composer" onSubmit={e => { e.preventDefault(); send() }}>
         <textarea
-          ref={textareaRef}
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={onKey}
@@ -170,9 +169,7 @@ export default function App() {
           rows={1}
           autoFocus
         />
-        <button type="submit" disabled={pending || !input.trim()}>
-          Send
-        </button>
+        <button type="submit" disabled={pending || !input.trim()}>Send</button>
       </form>
     </div>
   )

@@ -150,6 +150,103 @@
   font-family: 'SF Mono', Menlo, monospace;
 }
 
+/* ── Upload Area ─────────────────────────────────────────────── */
+.upload-area {
+  padding: 10px 12px 4px;
+}
+
+.upload-btn {
+  width: 100%;
+  background: #141824;
+  border: 1px dashed #2d3148;
+  border-radius: 8px;
+  color: #6366f1;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.upload-btn:hover:not(:disabled) {
+  background: #1a1d2e;
+  border-color: #4f52e0;
+  color: #a5b4fc;
+  border-style: solid;
+}
+
+.upload-btn.drag-over {
+  background: #1a1d2e;
+  border-color: #4f52e0;
+  border-style: solid;
+  color: #a5b4fc;
+}
+
+.upload-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Status Steps ────────────────────────────────────────────── */
+.status-steps {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 5px;
+  flex-wrap: wrap;
+}
+
+.step-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.step-pill.done    { color: #10b981; border-color: #10b98140; background: #10b98110; }
+.step-pill.active  { color: #fbbf24; border-color: #fbbf2440; background: #fbbf2410; animation: pulse-step 1.2s ease-in-out infinite; }
+.step-pill.pending { color: #374151; border-color: #1e2235;   background: transparent; }
+.step-pill.error   { color: #f87171; border-color: #f8717140; background: #f8717110; }
+
+.step-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.step-sep { color: #374151; font-size: 9px; }
+
+.step-error-msg {
+  font-size: 10px;
+  color: #f87171;
+  opacity: 0.7;
+}
+
+@keyframes pulse-step {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
+/* ── Doc state variants ──────────────────────────────────────── */
+.doc-error .doc-name { color: #f87171; opacity: 0.8; }
+
+.badge-processing {
+  background: #1e2235;
+  color: #64748b;
+}
+
 /* ── Doc List ────────────────────────────────────────────────── */
 .doc-list-header {
   font-size: 12px;

@@ -3,16 +3,31 @@ import './App.css'
 
 // ── API ──────────────────────────────────────────────────────────
 
+async function apiFetch(url, options) {
+  const r = await fetch(url, options)
+  if (!r.ok) {
+    const body = await r.text()
+    let detail = body
+    try { detail = JSON.parse(body).detail ?? body } catch (_) {}
+    throw new Error(detail || `HTTP ${r.status}`)
+  }
+  return r.json()
+}
+
 const api = {
-  documents: () => fetch('/api/documents').then(r => r.json()),
-  chunks: id => fetch(`/api/documents/${id}/chunks`).then(r => r.json()),
-  delete: id => fetch(`/api/documents/${id}`, { method: 'DELETE' }).then(r => {
-    if (!r.ok) throw new Error('Delete failed')
-    return r.json()
-  }),
+  documents: () => apiFetch('/api/documents'),
+  chunks: id => apiFetch(`/api/documents/${id}/chunks`),
+  delete: id => apiFetch(`/api/documents/${id}`, { method: 'DELETE' }),
+  upload: file => {
+    const form = new FormData()
+    form.append('file', file)
+    return apiFetch('/api/documents/upload', { method: 'POST', body: form })
+  },
 }
 
 const MINIO_CONSOLE_URL = 'http://localhost:9001'
+
+const IN_PROGRESS_STATUSES = new Set(['pending', 'chunking', 'embedding'])
 
 // ── Sub-components ───────────────────────────────────────────────
 
@@ -20,7 +35,105 @@ function Spinner({ size = 14 }) {
   return <span className="spinner" style={{ width: size, height: size }} />
 }
 
-function MinioPanel({ docCount, autoRefresh }) {
+function StatusSteps({ status, errorMessage }) {
+  if (status === 'ready') return null
+
+  const steps = [
+    {
+      label: 'Upload',
+      state: 'done',
+    },
+    {
+      label: 'Chunking',
+      state: status === 'chunking' ? 'active'
+           : ['embedding', 'ready'].includes(status) ? 'done'
+           : status === 'error' ? 'error'
+           : 'pending',
+    },
+    {
+      label: 'Embedding',
+      state: status === 'embedding' ? 'active'
+           : status === 'ready' ? 'done'
+           : status === 'error' ? 'error'
+           : 'pending',
+    },
+  ]
+
+  return (
+    <div className="status-steps">
+      {steps.map((step, i) => (
+        <span key={step.label}>
+          <span className={`step-pill ${step.state}`}>
+            <span className="step-dot" />
+            {step.label}
+          </span>
+          {i < steps.length - 1 && <span className="step-sep">›</span>}
+        </span>
+      ))}
+      {status === 'error' && errorMessage && (
+        <span className="step-error-msg" title={errorMessage}>Error</span>
+      )}
+    </div>
+  )
+}
+
+function UploadArea({ onUpload }) {
+  const inputRef = useRef(null)
+  const [uploading, setUploading] = useState(false)
+  const [dragOver, setDragOver] = useState(false)
+
+  async function handleFiles(files) {
+    const pdf = Array.from(files).find(f => f.name.toLowerCase().endsWith('.pdf'))
+    if (!pdf) return
+    setUploading(true)
+    try {
+      await onUpload(pdf)
+    } finally {
+      setUploading(false)
+      if (inputRef.current) inputRef.current.value = ''
+    }
+  }
+
+  function onDrop(e) {
+    e.preventDefault()
+    setDragOver(false)
+    handleFiles(e.dataTransfer.files)
+  }
+
+  return (
+    <div className="upload-area">
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".pdf"
+        style={{ display: 'none' }}
+        onChange={e => handleFiles(e.target.files)}
+      />
+      <button
+        className={`upload-btn ${dragOver ? 'drag-over' : ''}`}
+        disabled={uploading}
+        onClick={() => inputRef.current?.click()}
+        onDragOver={e => { e.preventDefault(); setDragOver(true) }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={onDrop}
+      >
+        {uploading ? (
+          <><Spinner size={13} /> Uploading…</>
+        ) : (
+          <>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M7 1v8M4 4l3-3 3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M1 10v1a2 2 0 002 2h8a2 2 0 002-2v-1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+            </svg>
+            Upload PDF
+          </>
+        )}
+      </button>
+    </div>
+  )
+}
+
+function MinioPanel({ autoRefresh }) {
   return (
     <div className="minio-panel">
       <div className="minio-head">
@@ -29,7 +142,7 @@ function MinioPanel({ docCount, autoRefresh }) {
           Storage
         </div>
         {autoRefresh && (
-          <span className="live-indicator" title="Auto-refresh every 5s">
+          <span className="live-indicator" title="Auto-refresh">
             <span className="live-dot" /> live
           </span>
         )}
@@ -38,37 +151,43 @@ function MinioPanel({ docCount, autoRefresh }) {
         <span>Open MinIO Console</span>
         <span className="minio-arrow">↗</span>
       </a>
-      <div className="minio-hint">
-        Drop PDFs in the <code>documents</code> bucket — they will be chunked automatically.
-      </div>
     </div>
   )
 }
 
 function DocItem({ doc, selected, onSelect, onDelete }) {
   const [hovered, setHovered] = useState(false)
+  const isReady = doc.status === 'ready' || !doc.status
+  const isError = doc.status === 'error'
+
   return (
     <div
-      className={`doc-item ${selected ? 'active' : ''}`}
-      onClick={() => onSelect(doc)}
+      className={`doc-item ${selected ? 'active' : ''} ${isError ? 'doc-error' : ''}`}
+      onClick={() => isReady && onSelect(doc)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       <div className="doc-icon">
-        <svg width="14" height="16" viewBox="0 0 14 16" fill="none">
-          <path d="M2 0h7l5 5v11H2V0z" fill="#1e2235" stroke="#3d4168" strokeWidth="1.2"/>
-          <path d="M9 0v5h5" fill="none" stroke="#3d4168" strokeWidth="1.2"/>
-          <path d="M4 8h6M4 11h4" stroke="#4f52e0" strokeWidth="1" strokeLinecap="round"/>
-        </svg>
+        {!isReady && !isError
+          ? <Spinner size={14} />
+          : (
+          <svg width="14" height="16" viewBox="0 0 14 16" fill="none">
+            <path d="M2 0h7l5 5v11H2V0z" fill="#1e2235" stroke={isError ? '#5c1d23' : '#3d4168'} strokeWidth="1.2"/>
+            <path d="M9 0v5h5" fill="none" stroke={isError ? '#5c1d23' : '#3d4168'} strokeWidth="1.2"/>
+            <path d="M4 8h6M4 11h4" stroke={isError ? '#f87171' : '#4f52e0'} strokeWidth="1" strokeLinecap="round"/>
+          </svg>
+          )}
       </div>
       <div className="doc-body">
         <div className="doc-name" title={doc.filename}>
           {doc.filename.replace(/\.pdf$/i, '')}
         </div>
         <div className="doc-sub">
-          <span className="badge">{doc.chunk_count} chunks</span>
+          {isReady && <span className="badge">{doc.chunk_count} chunks</span>}
+          {!isReady && !isError && <span className="badge badge-processing">{doc.chunk_count} chunks</span>}
           <span className="doc-date">{new Date(doc.processed_at).toLocaleDateString()}</span>
         </div>
+        <StatusSteps status={doc.status} errorMessage={doc.error_message} />
       </div>
       {hovered && (
         <button
@@ -177,6 +296,7 @@ export default function App() {
   const [loadingChunks, setLoadingChunks] = useState(false)
   const [toast, setToast] = useState(null)
   const lastDocCountRef = useRef(0)
+  const intervalRef = useRef(null)
 
   const showToast = useCallback((msg, type = 'error') => {
     setToast({ msg, type })
@@ -187,7 +307,6 @@ export default function App() {
     try {
       const next = await api.documents()
       setDocs(prev => {
-        // Notify when a new doc shows up after initial load
         if (silent && next.length > lastDocCountRef.current && lastDocCountRef.current > 0) {
           const newDoc = next.find(d => !prev.some(p => p.id === d.id))
           if (newDoc) showToast(`New: ${newDoc.filename}`, 'success')
@@ -195,18 +314,29 @@ export default function App() {
         lastDocCountRef.current = next.length
         return next
       })
+      return next
     } catch (e) {
       if (!silent) showToast(e.message)
+      return []
     } finally {
       if (!silent) setLoadingDocs(false)
     }
   }, [showToast])
 
-  useEffect(() => {
-    loadDocs()
-    const interval = setInterval(() => loadDocs(true), 5000)
-    return () => clearInterval(interval)
+  const scheduleRefresh = useCallback((docs) => {
+    if (intervalRef.current) clearInterval(intervalRef.current)
+    const hasInProgress = docs.some(d => IN_PROGRESS_STATUSES.has(d.status))
+    const interval = hasInProgress ? 2000 : 5000
+    intervalRef.current = setInterval(async () => {
+      const next = await loadDocs(true)
+      scheduleRefresh(next)
+    }, interval)
   }, [loadDocs])
+
+  useEffect(() => {
+    loadDocs().then(initial => scheduleRefresh(initial))
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
+  }, [loadDocs, scheduleRefresh])
 
   const selectDoc = useCallback(async doc => {
     setSelected(doc)
@@ -233,6 +363,17 @@ export default function App() {
     }
   }, [selected, loadDocs, showToast])
 
+  const handleUpload = useCallback(async file => {
+    try {
+      await api.upload(file)
+      const next = await loadDocs()
+      scheduleRefresh(next)
+      showToast(`Uploaded ${file.name} — processing…`, 'success')
+    } catch (e) {
+      showToast(e.message)
+    }
+  }, [loadDocs, scheduleRefresh, showToast])
+
   return (
     <div className="layout">
       <aside className="sidebar">
@@ -244,14 +385,15 @@ export default function App() {
           <span className="doc-tally">{docs.length}</span>
         </div>
 
-        <MinioPanel docCount={docs.length} autoRefresh={true} />
+        <UploadArea onUpload={handleUpload} />
+        <MinioPanel autoRefresh={true} />
 
         <div className="doc-list-header">Documents</div>
         <div className="doc-list">
           {loadingDocs ? (
             <div className="state-msg"><Spinner /> Loading…</div>
           ) : docs.length === 0 ? (
-            <div className="state-msg">No documents yet. Upload via MinIO.</div>
+            <div className="state-msg">No documents yet. Upload a PDF above.</div>
           ) : (
             docs.map(doc => (
               <DocItem
@@ -277,7 +419,7 @@ export default function App() {
               </svg>
             </div>
             <p className="empty-title">Select a document</p>
-            <p className="empty-sub">Choose from the sidebar — or upload a PDF in MinIO</p>
+            <p className="empty-sub">Upload a PDF or choose from the sidebar</p>
           </div>
         ) : (
           <>
