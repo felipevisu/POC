@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
@@ -19,6 +19,13 @@ interface Message {
   content: string
   citations?: Chunk[]
   error?: boolean
+}
+
+function tightenLists(md: string): string {
+  return md
+    .replace(/^([ \t]*[-*+].*)\n\n(?=[ \t]*[-*+])/gm, '$1\n')   // blank between bullet items
+    .replace(/^([ \t]*\d+\..*)\n\n(?=[ \t]*\d+\.)/gm, '$1\n')   // blank between numbered items
+    .replace(/([:：])\n\n(?=[ \t]*[-*+])/gm, '$1\n')             // blank after colon before list
 }
 
 function Citations({ citations }: { citations: Chunk[] }) {
@@ -59,14 +66,8 @@ function ChatMessage({ msg }: { msg: Message }) {
       <div className="msg-bubble">
         {isAssistant && !msg.error ? (
           <div className="markdown">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={{
-                p: ({ children }) => <span className="md-p">{children}</span>,
-                br: () => <br />,
-              }}
-            >
-              {msg.content}
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {tightenLists(msg.content)}
             </ReactMarkdown>
           </div>
         ) : (
@@ -78,18 +79,34 @@ function ChatMessage({ msg }: { msg: Message }) {
   )
 }
 
+const STORAGE_KEY = 'rag-chat-history'
+
 export default function ChatPage() {
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (typeof window === 'undefined') return []
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]')
+    } catch { return [] }
+  })
   const [input, setInput] = useState('')
   const [pending, setPending] = useState(false)
   const [model, setModel] = useState('')
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages))
+  }, [messages])
+
+  useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
   }, [messages, pending])
+
+  function clearHistory() {
+    setMessages([])
+    localStorage.removeItem(STORAGE_KEY)
+  }
 
   async function send() {
     const text = input.trim()
@@ -117,7 +134,7 @@ export default function ChatPage() {
       }
       const data = await res.json()
       if (data.model) setModel(data.model)
-      setMessages([...next, { role: 'assistant', content: data.answer, citations: data.citations ?? [] }])
+setMessages([...next, { role: 'assistant', content: data.answer, citations: data.citations ?? [] }])
     } catch (e) {
       setMessages([...next, { role: 'assistant', content: (e as Error).message, error: true, citations: [] }])
     } finally {
@@ -139,7 +156,14 @@ export default function ChatPage() {
           <span className="brand-dot" />
           <span>RAG Chat</span>
         </div>
-        {model && <span className="model-tag">{model}</span>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {model && <span className="model-tag">{model}</span>}
+          {messages.length > 0 && (
+            <button className="clear-btn" onClick={clearHistory} title="Clear history">
+              Clear
+            </button>
+          )}
+        </div>
       </header>
 
       <div className="messages" ref={scrollRef}>

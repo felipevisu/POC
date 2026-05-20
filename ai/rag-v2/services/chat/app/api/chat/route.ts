@@ -12,6 +12,11 @@ If the answer is not in the context, say you don't have that information.
 
 Cite the source filename in your answer when relevant, like (refund_policy.pdf).
 
+Formatting rules:
+- Use tight markdown lists (no blank lines between list items).
+- Never add blank lines between bullet points.
+- Keep responses concise.
+
 CONTEXT CHUNKS:
 {context}`
 
