@@ -1,0 +1,128 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: leaderboard-redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes", "--save", "60", "1"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+    restart: unless-stopped
+
+  # One-shot: populates the leaderboard, then exits. Idempotent.
+  seed:
+    build: .
+    container_name: leaderboard-seed
+    command: ["python", "seed.py"]
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      PLAYER_COUNT: "50000"
+      SEED: "42"
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build: .
+    container_name: leaderboard-api
+    ports:
+      - "8000:8000"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    command:
+      - "uvicorn"
+      - "api:app"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "8000"
+      - "--workers"
+      - "4"
+    depends_on:
+      redis:
+        condition: service_healthy
+      seed:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/healthz').getcode()==200 else 1)"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+
+  # Exposes Redis internals (per-command rates, memory, clients, key size)
+  redis_exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: leaderboard-redis-exporter
+    command: ["--redis.addr=redis://redis:6379", "--check-keys=game:leaderboard:global"]
+    ports:
+      - "9121:9121"
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: leaderboard-prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.enable-remote-write-receiver"   # lets k6 push metrics in
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    depends_on:
+      - api
+      - redis_exporter
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: leaderboard-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_USERS_DEFAULT_THEME: dark
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  k6:
+    image: grafana/k6:latest
+    container_name: leaderboard-k6
+    profiles: ["loadtest"]
+    volumes:
+      - ./loadtest.js:/scripts/loadtest.js:ro
+    environment:
+      BASE_URL: http://api:8000
+      K6_OUT: experimental-prometheus-rw
+      K6_PROMETHEUS_RW_SERVER_URL: http://prometheus:9090/api/v1/write
+      K6_PROMETHEUS_RW_TREND_STATS: "p(95),p(99),avg,max"
+    command: ["run", "/scripts/loadtest.js"]
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  redis-data:
+  prometheus-data:
+  grafana-data:
