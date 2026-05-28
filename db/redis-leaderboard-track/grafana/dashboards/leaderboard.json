@@ -12,7 +12,7 @@
   "panels": [
     {
       "id": 1, "type": "stat", "title": "Leaderboard size (players)",
-      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 10 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "short" }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"] } },
@@ -20,15 +20,15 @@
     },
     {
       "id": 2, "type": "stat", "title": "Redis ops/sec",
-      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 10 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "ops" }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"] } },
-      "targets": [ { "refId": "A", "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "redis_instantaneous_ops_per_sec" } ]
+      "targets": [ { "refId": "A", "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(rate(redis_commands_total[1m]))" } ]
     },
     {
       "id": 3, "type": "stat", "title": "Connected clients",
-      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 10 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "short" }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"] } },
@@ -36,7 +36,7 @@
     },
     {
       "id": 4, "type": "stat", "title": "Redis memory used",
-      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 10 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "bytes" }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"] } },
@@ -44,7 +44,7 @@
     },
     {
       "id": 5, "type": "timeseries", "title": "API request rate by endpoint",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "fillOpacity": 10, "stacking": { "mode": "normal" } }, "unit": "reqps" }, "overrides": [] },
       "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["mean", "lastNotNull"] }, "tooltip": { "mode": "multi" } },
@@ -52,7 +52,7 @@
     },
     {
       "id": 6, "type": "timeseries", "title": "API latency p95 / p99 (all endpoints)",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "fillOpacity": 5 }, "unit": "s" }, "overrides": [] },
       "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
@@ -63,15 +63,46 @@
     },
     {
       "id": 7, "type": "timeseries", "title": "Redis commands/sec by type (ZADD, ZINCRBY, ZREVRANGE, ...)",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 22 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "fillOpacity": 10 }, "unit": "ops" }, "overrides": [] },
       "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } },
       "targets": [ { "refId": "A", "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "topk(10, rate(redis_commands_total[1m]))", "legendFormat": "{{cmd}}" } ]
     },
     {
+      "id": 9, "type": "table", "title": "Top 10 players (live)",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "center", "displayMode": "auto" } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Rank"   }, "properties": [ { "id": "custom.width", "value": 80  } ] },
+          { "matcher": { "id": "byName", "options": "Player" }, "properties": [ { "id": "custom.width", "value": 220 } ] },
+          { "matcher": { "id": "byName", "options": "Score"  }, "properties": [ { "id": "unit", "value": "short" }, { "id": "custom.width", "value": 120 } ] }
+        ]
+      },
+      "options": {
+        "footer": { "show": false }
+      },
+      "transformations": [
+        { "id": "labelsToFields", "options": { "mode": "columns" } },
+        { "id": "merge", "options": {} },
+        { "id": "organize", "options": { "excludeByName": { "Time": true, "__name__": true, "instance": true, "job": true }, "renameByName": { "Value": "Score", "rank": "Rank", "player_id": "Player" } } },
+        { "id": "sortBy", "options": { "fields": [ { "displayName": "Rank", "desc": false } ] } }
+      ],
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "leaderboard_top_player_score",
+          "instant": true,
+          "legendFormat": ""
+        }
+      ]
+    },
+    {
       "id": 8, "type": "timeseries", "title": "k6 load: virtual users & request rate",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 22 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "fillOpacity": 10 }, "unit": "short" }, "overrides": [
         { "matcher": { "id": "byName", "options": "http req/s" }, "properties": [ { "id": "custom.axisPlacement", "value": "right" }, { "id": "unit", "value": "reqps" } ] }

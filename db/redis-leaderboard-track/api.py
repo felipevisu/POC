@@ -3,13 +3,45 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
 import redis.asyncio as redis
+from prometheus_client import Gauge
 from prometheus_fastapi_instrumentator import Instrumentator, metrics
 
 REDIS_HOST = os.getenv("REDIS_HOST", "127.0.0.1")
 REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 LB = "game:leaderboard:global"
+TOP_N = int(os.getenv("LEADERBOARD_TOP_N", "10"))
+# Redis keyspace notification channel for the leaderboard sorted set
+_KEYSPACE_CHANNEL = f"__keyspace@0__:{LB}"
 
 r: redis.Redis = None
+
+leaderboard_score = Gauge(
+    "leaderboard_top_player_score",
+    "Current score of a top-N leaderboard player",
+    ["rank", "player_id"],
+)
+
+
+async def _refresh_gauge():
+    rows = await r.zrevrange(LB, 0, TOP_N - 1, withscores=True)
+    leaderboard_score.clear()
+    for i, (player_id, score) in enumerate(rows):
+        leaderboard_score.labels(rank=str(i + 1), player_id=player_id).set(score)
+
+
+async def _watch_leaderboard():
+    # Dedicated connection for pub/sub (cannot reuse the pool connection)
+    sub = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
+    await sub.config_set("notify-keyspace-events", "Kz")
+    async with sub.pubsub() as ps:
+        await ps.subscribe(_KEYSPACE_CHANNEL)
+        await _refresh_gauge()  # initial snapshot
+        async for _ in ps.listen():
+            try:
+                await _refresh_gauge()
+            except Exception:
+                pass
+    await sub.aclose()
 
 
 @asynccontextmanager
@@ -17,7 +49,10 @@ async def lifespan(app: FastAPI):
     global r
     r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True,
                     max_connections=200)
+    import asyncio
+    task = asyncio.create_task(_watch_leaderboard())
     yield
+    task.cancel()
     await r.aclose()
 
 

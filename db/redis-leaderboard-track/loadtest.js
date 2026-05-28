@@ -45,23 +45,24 @@ export default function () {
     topTrend.add(res.timings.duration);
     check(res, { 'top 200': r => r.status === 200 }) || errors.add(1);
 
-  } else if (roll < 0.90) {
+  } else if (roll < 0.80) {
     // My rank
     res = http.get(`${BASE_URL}/players/${randomPlayer()}`, { tags: { name: 'lookup' } });
     lookupTrend.add(res.timings.duration);
     check(res, { 'lookup 200': r => r.status === 200 }) || errors.add(1);
 
-  } else if (roll < 0.95) {
+  } else if (roll < 0.90) {
     // Around me
     res = http.get(`${BASE_URL}/players/${randomPlayer()}/around?radius=5`, { tags: { name: 'around' } });
     aroundTrend.add(res.timings.duration);
     check(res, { 'around 200': r => r.status === 200 }) || errors.add(1);
 
   } else {
-    // Submit score
+    // Submit score — target top 1000 players so rankings visibly shift
+    const i = randomIntBetween(0, 999);
     const payload = JSON.stringify({
-      player_id: randomPlayer(),
-      delta: randomIntBetween(10, 500),
+      player_id: `player:${String(i).padStart(5, '0')}`,
+      delta: randomIntBetween(100, 2000),
     });
     res = http.post(`${BASE_URL}/scores`, payload, {
       headers: { 'Content-Type': 'application/json' },
