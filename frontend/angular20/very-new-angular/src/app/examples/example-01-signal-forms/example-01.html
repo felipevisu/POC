@@ -1,0 +1,45 @@
+<section class="card">
+  <h2>Angular 21 — Signal Forms (experimental)</h2>
+  <p class="hint">
+    <code>form(model, schema)</code> from <code>&#64;angular/forms/signals</code>. No
+    <code>FormGroup</code>/<code>FormControl</code> — the model is a signal, field state
+    (<code>value</code>, <code>errors</code>, <code>valid</code>, <code>touched</code>) are signals.
+    Bind inputs with the <code>[formField]</code> directive.
+  </p>
+
+  <form (submit)="$event.preventDefault(); onSubmit()">
+    <label>
+      Name
+      <input [formField]="f.name" />
+      @if (f.name().touched() && f.name().errors().length) {
+        <small class="err">{{ f.name().errors()[0].message }}</small>
+      }
+    </label>
+
+    <label>
+      Email
+      <input [formField]="f.email" type="email" />
+      @if (f.email().touched() && f.email().errors().length) {
+        <small class="err">{{ f.email().errors()[0].message }}</small>
+      }
+    </label>
+
+    <label>
+      Age
+      <input [formField]="f.age" type="number" />
+      @if (f.age().touched() && f.age().errors().length) {
+        <small class="err">{{ f.age().errors()[0].message }}</small>
+      }
+    </label>
+
+    <button type="submit" [disabled]="!f().valid()">Sign up</button>
+  </form>
+
+  <p class="state">
+    Form valid: <strong>{{ f().valid() }}</strong> · dirty: <strong>{{ f().dirty() }}</strong>
+  </p>
+
+  @if (submitted(); as s) {
+    <pre class="result">submitted {{ s | json }}</pre>
+  }
+</section>

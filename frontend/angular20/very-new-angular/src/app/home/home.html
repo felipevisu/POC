@@ -1,0 +1,13 @@
+<ul class="examples">
+  @for (ex of examples; track ex.path) {
+    <li>
+      <a [routerLink]="ex.path">
+        <span class="num">{{ ex.number }}</span>
+        <span class="body">
+          <strong>{{ ex.title }}</strong>
+          <small>{{ ex.description }}</small>
+        </span>
+      </a>
+    </li>
+  }
+</ul>

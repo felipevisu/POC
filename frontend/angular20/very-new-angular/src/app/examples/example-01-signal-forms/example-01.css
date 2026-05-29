@@ -1,0 +1,31 @@
+.card {
+  max-width: 480px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  font-family: system-ui, sans-serif;
+}
+h2 { margin: 0 0 .25rem; }
+.hint { color: #666; font-size: .85rem; margin: .5rem 0 1rem; }
+form { display: grid; gap: 1rem; }
+label { display: flex; flex-direction: column; gap: .3rem; font-weight: 600; font-size: .9rem; }
+input {
+  padding: .5rem .6rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+.err { color: #c0392b; font-weight: 400; font-size: .8rem; }
+button {
+  padding: .55rem 1rem;
+  border: 1px solid #00897b;
+  background: #00897b;
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+button:disabled { opacity: .4; cursor: not-allowed; }
+.state { color: #555; font-size: .85rem; margin-top: 1rem; }
+.result { background: #f1f8f6; border-radius: 8px; padding: .75rem; font-size: .85rem; }
