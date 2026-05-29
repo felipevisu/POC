@@ -1,0 +1,23 @@
+<section class="card">
+  <h2>Angular 20 — <code>httpResource</code></h2>
+  <p class="hint">Declarative HTTP. No subscribe. Loading/error/value are signals. Changing the id signal auto-refetches.</p>
+
+  <div class="controls">
+    <button (click)="prev()" [disabled]="userId() <= 1">‹ Prev</button>
+    <span class="badge">user #{{ userId() }}</span>
+    <button (click)="next()" [disabled]="userId() >= 10">Next ›</button>
+  </div>
+
+  @if (user.isLoading()) {
+    <p class="state">Loading…</p>
+  } @else if (user.error()) {
+    <p class="state error">Failed to load user.</p>
+  } @else if (user.value(); as u) {
+    <dl class="user">
+      <dt>Name</dt><dd>{{ u.name }}</dd>
+      <dt>Username</dt><dd>{{ u.username }}</dd>
+      <dt>Email</dt><dd>{{ u.email }}</dd>
+      <dt>Company</dt><dd>{{ u.company.name }}</dd>
+    </dl>
+  }
+</section>

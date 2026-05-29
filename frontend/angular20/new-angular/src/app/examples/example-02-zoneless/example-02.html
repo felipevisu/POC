@@ -1,0 +1,27 @@
+<section class="card">
+  <h2>Angular 20 — Zoneless change detection</h2>
+  <p class="hint">
+    App bootstrapped with <code>provideZonelessChangeDetection()</code> and zero
+    <code>zone.js</code> polyfill. A 1s interval bumps both counters. Watch which one the view follows.
+  </p>
+
+  <div class="counters">
+    <div class="counter ok">
+      <span class="label">signal()</span>
+      <span class="value">{{ signalTicks() }}</span>
+      <small>updates live — signal write notifies the scheduler</small>
+    </div>
+
+    <div class="counter stale">
+      <span class="label">plain field</span>
+      <span class="value">{{ plainTicks }}</span>
+      <small>frozen — async mutation triggers no CD without Zone.js</small>
+    </div>
+  </div>
+
+  <button (click)="refresh()">Force CD (click event)</button>
+  <p class="hint">
+    Clicking handles a template event, which schedules CD — the plain counter jumps to its real
+    value, proving it was changing all along.
+  </p>
+</section>

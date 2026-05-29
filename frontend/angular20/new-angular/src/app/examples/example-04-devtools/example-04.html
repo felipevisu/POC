@@ -1,0 +1,29 @@
+<section class="card">
+  <h2>Angular 20 — Chrome DevTools integration</h2>
+  <p class="hint">
+    <code>enableProfiling()</code> makes Angular publish change-detection and rendering timings to
+    Chrome's <strong>Performance</strong> panel as a dedicated <em>Angular</em> track — no extension needed.
+  </p>
+
+  <ol class="steps">
+    <li>Click <strong>Enable profiling</strong>.</li>
+    <li>Open DevTools → <strong>Performance</strong> → click record (●).</li>
+    <li>Click <strong>Churn 120 frames</strong>, wait ~2s, stop the recording.</li>
+    <li>Find the <strong>Angular</strong> track — entries for change detection &amp; render per frame.</li>
+  </ol>
+
+  <div class="controls">
+    <button (click)="enable()" [class.on]="profiling()" [disabled]="profiling()">
+      {{ profiling() ? 'Profiling on' : 'Enable profiling' }}
+    </button>
+    <button (click)="churn()" [disabled]="running()">
+      {{ running() ? 'Running…' : 'Churn 120 frames' }}
+    </button>
+  </div>
+
+  <div class="grid">
+    @for (n of rows(); track $index) {
+      <span class="cell" [style.opacity]="0.3 + (n % 10) / 14">{{ n }}</span>
+    }
+  </div>
+</section>
