@@ -10,7 +10,7 @@ Upload PDFs and chat with them. Retrieves only relevant chunks before answering 
 
 **Chat UI** — answers grounded in your documents with source citations
 
-![Chat UI](screenshots/chat.ui.png)
+![Chat UI](screenshots/chat-ui.png)
 
 ---
 
