@@ -29,5 +29,17 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./examples/example-04-devtools/example-04').then((m) => m.Example04Devtools),
     title: 'Example 4 — DevTools profiling'
+  },
+  {
+    path: 'example-5',
+    loadComponent: () =>
+      import('./examples/example-05-signals/example-05').then((m) => m.Example05Signals),
+    title: 'Example 5 — Signals deep-dive'
+  },
+  {
+    path: 'example-6',
+    loadComponent: () =>
+      import('./examples/example-06-defer/example-06').then((m) => m.Example06Defer),
+    title: 'Example 6 — Control flow & @defer'
   }
 ];

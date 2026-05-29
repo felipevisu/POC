@@ -1,0 +1,21 @@
+.card {
+  max-width: 520px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  font-family: system-ui, sans-serif;
+}
+h2 { margin: 0 0 .25rem; }
+h3 { margin: 1.25rem 0 .35rem; font-size: .95rem; color: #1976d2; }
+.hint { color: #666; font-size: .85rem; margin: .5rem 0; }
+.controls { display: flex; align-items: center; gap: .75rem; margin: .5rem 0; }
+.controls button { padding: .5rem 1rem; border: 1px solid #ccc; border-radius: 8px; background: #fafafa; cursor: pointer; }
+.badge { font-weight: 600; text-transform: uppercase; letter-spacing: .04em; font-size: .8rem; }
+.state { padding: .6rem .8rem; border-radius: 8px; background: #f3f4f6; margin: .4rem 0; }
+.state.ok { background: #f1f8f2; color: #2e7d32; }
+.state.done { background: #eef4ff; color: #1976d2; }
+.ph { padding: .75rem 1rem; border: 1px dashed #bbb; border-radius: 10px; color: #777; background: #fafafa; }
+.ph.err { color: #c0392b; border-color: #e0a; }
+/* spacer so the defer block starts below the fold and triggers on scroll */
+section.card::after { content: ''; display: block; height: 60vh; }

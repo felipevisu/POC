@@ -1,0 +1,32 @@
+.card {
+  max-width: 520px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  font-family: system-ui, sans-serif;
+}
+h2 { margin: 0 0 .25rem; }
+.hint { color: #666; font-size: .85rem; margin: .5rem 0 1rem; }
+.controls { display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem; }
+.controls button {
+  width: 2.25rem; height: 2.25rem; font-size: 1.25rem;
+  border: 1px solid #ccc; border-radius: 8px; background: #fafafa; cursor: pointer;
+}
+.badge { font-weight: 600; font-variant-numeric: tabular-nums; }
+.grid { display: flex; gap: 1rem; }
+.cell {
+  flex: 1;
+  display: flex; flex-direction: column; gap: .35rem;
+  padding: 1rem; border: 1px solid #d6e0ea; border-radius: 12px; background: #f6f9fc;
+  margin-bottom: 1rem;
+}
+.cell.wide { width: 100%; }
+.label { font-weight: 600; font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: #1976d2; }
+.value { font-size: 1.8rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.value.muted { color: #888; font-size: 1.1rem; }
+.value.err { color: #c0392b; font-size: 1.1rem; }
+.cell small { color: #555; }
+.cell input { padding: .4rem .6rem; border: 1px solid #bbb; border-radius: 8px; font-size: .95rem; }
+.log { list-style: none; margin: .25rem 0 0; padding: 0; font-family: ui-monospace, monospace; font-size: .8rem; }
+.log li { padding: .15rem 0; color: #444; border-bottom: 1px dashed #dde; }

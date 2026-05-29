@@ -30,5 +30,17 @@ export const EXAMPLES: ExampleMeta[] = [
     number: 4,
     title: 'Chrome DevTools integration',
     description: 'enableProfiling() emits CD & render timings to the browser Performance panel as an Angular track.'
+  },
+  {
+    path: 'example-5',
+    number: 5,
+    title: 'Signals deep-dive',
+    description: 'signal / computed / effect / linkedSignal / resource — the reactive core, live.'
+  },
+  {
+    path: 'example-6',
+    number: 6,
+    title: 'Control flow & @defer',
+    description: '@if / @for / @switch built-in syntax + @defer lazy block with placeholder/loading/error.'
   }
 ];

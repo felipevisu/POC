@@ -1,0 +1,31 @@
+<section class="card">
+  <h2>Angular 20 — Control flow &amp; <code>&#64;defer</code></h2>
+  <p class="hint">
+    Built-in template syntax (v17+): <code>&#64;if</code> / <code>&#64;for</code> / <code>&#64;switch</code>,
+    and <code>&#64;defer</code> for lazy-loaded blocks. No <code>NgIf</code> / <code>NgFor</code> imports.
+  </p>
+
+  <h3>&#64;switch + &#64;if</h3>
+  <div class="controls">
+    <button (click)="cycle()">cycle status</button>
+    <span class="badge">{{ status() }}</span>
+  </div>
+  @switch (status()) {
+    @case ('idle')   { <p class="state">⏸ Idle — nothing running.</p> }
+    @case ('active') { <p class="state ok">▶ Active — work in progress.</p> }
+    @case ('done')   { <p class="state done">✔ Done.</p> }
+  }
+
+  <h3>&#64;defer (on viewport)</h3>
+  <p class="hint">Scroll the panel into view — its chunk loads on demand. Placeholder shows first.</p>
+
+  @defer (on viewport) {
+    <app-comments-panel />
+  } @placeholder {
+    <div class="ph">Comments not loaded yet (placeholder).</div>
+  } @loading (minimum 300ms) {
+    <div class="ph">Loading comments chunk…</div>
+  } @error {
+    <div class="ph err">Failed to load.</div>
+  }
+</section>

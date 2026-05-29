@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Angular 19 → 20 → 21 — POC Examples</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css" id="theme">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+
+  <style>
+    :root {
+      --ng-red: #dd0031;
+      --ng-red-2: #c3002f;
+      --ng-purple: #a100ff;
+      --ng-blue: #1976d2;
+      --bg: #0d0d10;
+      --panel: #16161c;
+    }
+    .reveal { font-family: "Inter", "Segoe UI", system-ui, sans-serif; }
+    .reveal .slides { text-align: left; }
+    .reveal h1, .reveal h2, .reveal h3 { font-weight: 800; letter-spacing: -.02em; text-transform: none; }
+    .reveal h1 { font-size: 2.5em; line-height: 1.05; }
+    .reveal section.title-slide { text-align: center; }
+    .reveal section.title-slide h1 {
+      background: linear-gradient(90deg, var(--ng-red), var(--ng-purple));
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .reveal .accent { color: var(--ng-red); }
+    .reveal .muted { color: #8b8b95; font-weight: 400; }
+    .reveal pre { width: 100%; box-shadow: 0 6px 24px rgba(0,0,0,.5); font-size: .56em; }
+    .reveal pre code { padding: 14px 16px; border-radius: 8px; max-height: 520px; }
+
+    /* version pill */
+    .vpill { display:inline-block; padding:.12em .6em; border-radius:999px; font-size:.55em; font-weight:700; vertical-align:middle; margin-left:.4em; }
+    .v19 { background:#3a3a44; color:#cfcfd8; }
+    .v20 { background:var(--ng-red); color:#fff; }
+    .v21 { background:var(--ng-purple); color:#fff; }
+
+    /* two-column code compare */
+    .cols { display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start; }
+    .cols .col h3 { font-size:.8em; margin:0 0 .3em; }
+    .cols pre { font-size:.42em; }
+    .cols pre code { max-height:440px; }
+
+    /* cards row */
+    .cards { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:.4em; }
+    .card { background:var(--panel); border:1px solid #26262f; border-radius:14px; padding:18px 20px; }
+    .card .top { font-size:.62em; font-weight:700; }
+    .card .desc { font-size:.5em; color:#a8a8b2; margin-top:.4em; line-height:1.4; }
+    .card.c19 { border-top:3px solid #6b6b78; }
+    .card.c20 { border-top:3px solid var(--ng-red); }
+    .card.c21 { border-top:3px solid var(--ng-purple); }
+
+    /* compare table */
+    .reveal table.cmp { font-size:.5em; width:100%; border-collapse:collapse; }
+    .reveal table.cmp th, .reveal table.cmp td { padding:.5em .7em; border-bottom:1px solid #26262f; }
+    .reveal table.cmp thead th { color:#fff; border-bottom:2px solid var(--ng-red); }
+    .reveal table.cmp td:first-child { color:#9aa; font-weight:600; }
+    .yes { color:#39d353; font-weight:700; }
+    .no  { color:#5a5a66; }
+    .new { color:var(--ng-red); font-weight:700; }
+
+    .reveal ul { font-size:.78em; }
+    .reveal .small { font-size:.62em; }
+    .tag { font-family: ui-monospace, monospace; background:#222; padding:.05em .4em; border-radius:5px; color:#ffb3c1; font-size:.85em; }
+    .footer-note { position:fixed; bottom:8px; right:14px; font-size:12px; color:#55555f; }
+  </style>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <!-- 1. TITLE -->
+    <section class="title-slide" data-background-color="#0d0d10">
+      <h1>Angular 19 → 20 → 21</h1>
+      <h3 class="muted" style="margin-top:.2em;">Three apps, same shell, one moving frontier</h3>
+      <p class="small muted" style="margin-top:1.4em;">
+        POC: <span class="tag">old-angular</span> · <span class="tag">new-angular</span> · <span class="tag">very-new-angular</span>
+      </p>
+      <p class="small muted">Signals · httpResource · Zoneless · Vitest · Signal Forms</p>
+    </section>
+
+    <!-- 2. THE SETUP -->
+    <section data-background-color="#0d0d10">
+      <h2>The setup</h2>
+      <p class="small muted">Three CLI apps side by side, identical structure — only the version moves.</p>
+      <div class="cards">
+        <div class="card c19">
+          <div class="top">old-angular <span class="vpill v19">v19.2</span></div>
+          <div class="desc">The "before" baseline. Zone.js, Karma/Jasmine, manual HTTP. How we did it pre-resource.</div>
+        </div>
+        <div class="card c20">
+          <div class="top">new-angular <span class="vpill v20">v20.3</span></div>
+          <div class="desc">The pivot. httpResource, zoneless preview, Vitest (experimental), DevTools profiling.</div>
+        </div>
+        <div class="card c21">
+          <div class="top">very-new-angular <span class="vpill v21">v21.2</span></div>
+          <div class="desc">The next step. Zoneless by default, Vitest default, Signal Forms (experimental).</div>
+        </div>
+      </div>
+      <p class="small muted" style="margin-top:1em;">Each app keeps a tiny <span class="tag">examples.ts</span> registry — add a feature, add an entry.</p>
+    </section>
+
+    <!-- 3. VERSION / STACK TABLE -->
+    <section data-background-color="#0d0d10">
+      <h2>What actually changed in the stack</h2>
+      <table class="cmp">
+        <thead>
+          <tr><th>Concern</th><th>v19 (old)</th><th>v20 (new)</th><th>v21 (very-new)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Change detection</td><td>Zone.js</td><td>Zoneless <em>(opt-in)</em></td><td class="new">Zoneless default</td></tr>
+          <tr><td>zone.js dep</td><td class="yes">present</td><td class="yes">present</td><td class="no">removed</td></tr>
+          <tr><td>HTTP</td><td>HttpClient + subscribe</td><td class="new">httpResource</td><td>httpResource</td></tr>
+          <tr><td>Unit tests</td><td>Karma + Jasmine</td><td>Vitest <em>(experimental)</em></td><td class="new">Vitest default</td></tr>
+          <tr><td>Forms</td><td>Reactive/Template</td><td>Reactive/Template</td><td class="new">Signal Forms <em>(exp.)</em></td></tr>
+          <tr><td>Profiling</td><td>—</td><td class="new">enableProfiling()</td><td>enableProfiling()</td></tr>
+          <tr><td>TypeScript</td><td>5.7</td><td>5.9</td><td>5.9</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 4. EXAMPLE 1: HTTP -->
+    <section data-background-color="#0d0d10">
+      <h2>HTTP <span class="muted small">— manual → declarative</span></h2>
+      <div class="cols">
+        <div class="col">
+          <h3>v19 <span class="vpill v19">old</span> hand-rolled</h3>
+          <pre><code data-trim data-noescape class="language-typescript">
+user    = signal&lt;User|null&gt;(null);
+loading = signal(false);
+error   = signal(false);
+
+constructor() {
+  effect(() =&gt; {
+    const id = this.userId();
+    this.loading.set(true);
+    this.error.set(false);
+    this.http.get&lt;User&gt;(url(id)).subscribe({
+      next: u =&gt; { this.user.set(u);
+                   this.loading.set(false); },
+      error: () =&gt; { this.error.set(true);
+                     this.loading.set(false); }
+    });
+  });
+}
+          </code></pre>
+        </div>
+        <div class="col">
+          <h3>v20 <span class="vpill v20">new</span> httpResource</h3>
+          <pre><code data-trim data-noescape class="language-typescript">
+userId = signal(1);
+
+// reactive url → auto refetch
+user = httpResource&lt;User&gt;(
+  () =&gt; `.../users/${this.userId()}`
+);
+
+// built-in signals:
+//   user.value()
+//   user.isLoading()
+//   user.error()
+//   user.status()
+          </code></pre>
+        </div>
+      </div>
+      <p class="small muted">No <span class="tag">subscribe</span>, no manual loading/error bookkeeping. URL is a signal computation → re-fetches itself.</p>
+    </section>
+
+    <!-- 5. ZONELESS -->
+    <section data-background-color="#0d0d10">
+      <h2>Zoneless change detection</h2>
+      <div class="cols">
+        <div class="col">
+          <h3>v20 <span class="vpill v20">opt-in</span></h3>
+          <pre><code data-trim data-noescape class="language-typescript">
+// app.config.ts
+providers: [
+  provideZonelessChangeDetection(),
+  provideRouter(routes),
+  provideHttpClient(),
+]
+          </code></pre>
+          <p class="small muted">You ask for it. zone.js still shipped.</p>
+        </div>
+        <div class="col">
+          <h3>v21 <span class="vpill v21">default</span></h3>
+          <pre><code data-trim data-noescape class="language-typescript">
+// app.config.ts
+providers: [
+  provideBrowserGlobalErrorListeners(),
+  provideRouter(routes),
+]
+// no provider needed —
+// zone.js gone from deps
+          </code></pre>
+          <p class="small muted">Zoneless is the baseline.</p>
+        </div>
+      </div>
+      <p class="small muted">Signals notify the scheduler directly. Mutating a <em>plain</em> field from a timer no longer re-renders — that's the whole point of the v20 demo.</p>
+    </section>
+
+    <!-- 6. TESTING -->
+    <section data-background-color="#0d0d10">
+      <h2>Testing <span class="muted small">— Karma → Vitest</span></h2>
+      <div class="cards">
+        <div class="card c19">
+          <div class="top">v19 <span class="vpill v19">old</span></div>
+          <div class="desc">Karma + Jasmine. Real browser launcher, slow start, the legacy default.</div>
+        </div>
+        <div class="card c20">
+          <div class="top">v20 <span class="vpill v20">new</span></div>
+          <div class="desc"><span class="tag">@angular/build:unit-test</span> + Vitest. jsdom, watch mode. Experimental, opt-in.</div>
+        </div>
+        <div class="card c21">
+          <div class="top">v21 <span class="vpill v21">very-new</span></div>
+          <div class="desc">Vitest is the default runner. Karma/Jasmine deps dropped entirely.</div>
+        </div>
+      </div>
+      <pre style="margin-top:.6em;"><code data-trim data-noescape class="language-typescript">
+import { describe, expect, it } from 'vitest';
+import { add, isEven } from './calc';
+
+describe('calc', () =&gt; {
+  it('adds two numbers', () =&gt; expect(add(2, 3)).toBe(5));
+  it('detects even', () =&gt; expect(isEven(4)).toBe(true));
+});
+      </code></pre>
+    </section>
+
+    <!-- 7. DEVTOOLS PROFILING -->
+    <section data-background-color="#0d0d10">
+      <h2>DevTools profiling <span class="vpill v20">v20+</span></h2>
+      <p class="small muted"><span class="tag">enableProfiling()</span> emits change-detection &amp; render timings as a custom track in Chrome's Performance panel.</p>
+      <pre><code data-trim data-noescape class="language-typescript">
+import { enableProfiling } from '@angular/core';
+
+enable() {
+  enableProfiling();          // one-way for the session — no public disable
+  this.profiling.set(true);
+}
+
+// churn ~120 frames: each frame shuffles a signal → CD + re-render,
+// so the profiler has real Angular work to record.
+churn() {
+  const step = () =&gt; {
+    this.rows.update(r =&gt; r.map(n =&gt; (n + 1) % 1000));
+    if (++this.frames &lt; 120) this.rafId = requestAnimationFrame(step);
+  };
+  this.rafId = requestAnimationFrame(step);
+}
+      </code></pre>
+      <p class="small muted">See <em>where</em> CD time goes, framed against your own app code.</p>
+    </section>
+
+    <!-- 8. SIGNAL FORMS -->
+    <section data-background-color="#0d0d10">
+      <h2>Signal Forms <span class="vpill v21">v21 · experimental</span></h2>
+      <p class="small muted">Forms built on signals — no <span class="tag">FormGroup</span>. Model is a plain signal; <span class="tag">form()</span> wraps it with a schema of validators.</p>
+      <pre><code data-trim data-noescape class="language-typescript">
+import { email, form, min, minLength, required, submit }
+  from '@angular/forms/signals';
+
+model = signal&lt;SignupModel&gt;({ name: '', email: '', age: null });
+
+f = form(this.model, (path) =&gt; {
+  required(path.name,  { message: 'Name is required' });
+  minLength(path.name, 2);
+  required(path.email, { message: 'Email is required' });
+  email(path.email);
+  min(path.age, 18, { message: 'Must be 18 or older' });
+});
+
+// field state is signals:  f().valid()  ·  f.name().errors()  ·  .touched()
+async onSubmit() {
+  await submit(this.f, async () =&gt; { /* server call */ });
+}
+      </code></pre>
+    </section>
+
+    <!-- 8b. SIGNALS DEEP-DIVE -->
+    <section data-background-color="#0d0d10">
+      <h2>Signals <span class="muted small">— the reactive core (v16 → v20)</span></h2>
+      <p class="small muted">Everything in this POC sits on these primitives. The shift: from RxJS streams you subscribe to, toward values that recompute themselves.</p>
+      <pre><code data-trim data-noescape class="language-typescript">
+const count   = signal(0);                 // writable state
+const double  = computed(() =&gt; count() * 2); // derived, cached, lazy
+effect(() =&gt; console.log(double()));         // re-runs on dep change
+
+count.set(5);     count.update(n =&gt; n + 1);
+
+// linkedSignal: writable, but resets when its source changes (v19)
+const selected = linkedSignal(() =&gt; options()[0]);
+
+// resource: async state as signals (the engine behind httpResource)
+const user = resource({
+  params: () =&gt; ({ id: userId() }),
+  loader: ({ params }) =&gt; fetchUser(params.id),   // value / isLoading / error
+});
+      </code></pre>
+      <p class="small muted"><span class="tag">input()</span> · <span class="tag">output()</span> · <span class="tag">model()</span> replaced the <span class="tag">@Input/@Output</span> decorators (v17.1→v19) — component I/O is signals too.</p>
+      <p class="small accent">▶ Runnable: <span class="tag">new-angular</span> → example #5</p>
+    </section>
+
+    <!-- 8c. BUILD + SSR -->
+    <section data-background-color="#0d0d10">
+      <h2>Build &amp; rendering <span class="muted small">— under the hood</span></h2>
+      <p class="small muted">Not in these CSR demos, but the same release arc — and your v20/v21 apps already use the new builder.</p>
+      <table class="cmp">
+        <thead>
+          <tr><th>Area</th><th>Then</th><th>Now</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Builder</td><td>Webpack</td><td class="new">esbuild + Vite dev server <span class="muted">(v17, <span class="tag">@angular/build</span>)</span></td></tr>
+          <tr><td>Components</td><td>NgModule</td><td class="new">Standalone by default <span class="muted">(v17→v19)</span></td></tr>
+          <tr><td>SSR hydration</td><td>Destructive re-render</td><td class="new">Non-destructive + event replay <span class="muted">(v16/18)</span></td></tr>
+          <tr><td>Hydration scope</td><td>Whole app at once</td><td class="new">Incremental: <span class="tag">@defer (hydrate on …)</span> <span class="muted">(v19)</span></td></tr>
+        </tbody>
+      </table>
+      <pre style="margin-top:.5em;"><code data-trim data-noescape class="language-typescript">
+// incremental hydration — ship static HTML, hydrate only on demand
+@defer (hydrate on viewport) {
+  &lt;app-comments /&gt;          // JS for this island loads when it scrolls in
+}
+      </code></pre>
+    </section>
+
+    <!-- 8d. CONTROL FLOW + DEFER -->
+    <section data-background-color="#0d0d10">
+      <h2>Control flow &amp; <span class="tag" style="font-size:.6em;">&#64;defer</span> <span class="muted small">(v17+)</span></h2>
+      <p class="small muted">Built-in template syntax — no <span class="tag">NgIf</span>/<span class="tag">NgFor</span> imports. <span class="tag">@defer</span> code-splits a block and loads it on a trigger (works client-side, no SSR needed).</p>
+      <pre><code data-trim data-noescape class="language-html">
+@switch (status()) {
+  @case ('active') { &lt;p&gt;▶ in progress&lt;/p&gt; }
+  @case ('done')   { &lt;p&gt;✔ done&lt;/p&gt; }
+}
+
+@for (c of comments(); track c.id) {
+  &lt;li&gt;{{ c.user }}: {{ c.text }}&lt;/li&gt;
+} @empty { &lt;li&gt;No comments yet.&lt;/li&gt; }
+
+@defer (on viewport) {          &lt;!-- own JS chunk, loads on scroll --&gt;
+  &lt;app-comments-panel /&gt;
+} @placeholder { &lt;div&gt;not loaded yet&lt;/div&gt; }
+  @loading (minimum 300ms) { &lt;div&gt;loading…&lt;/div&gt; }
+  @error { &lt;div&gt;failed&lt;/div&gt; }
+      </code></pre>
+      <p class="small accent">▶ Runnable: <span class="tag">new-angular</span> → example #6 · the panel splits into its own bundle chunk.</p>
+    </section>
+
+    <!-- 9. THROUGHLINE -->
+    <section data-background-color="#0d0d10">
+      <h2>The throughline</h2>
+      <ul>
+        <li><span class="accent">Signals everywhere</span> — state, HTTP, change detection, now forms.</li>
+        <li><span class="accent">Less framework runtime</span> — Zone.js goes from required → optional → gone.</li>
+        <li><span class="accent">Faster feedback</span> — Karma → Vitest; DevTools profiling built in.</li>
+        <li><span class="accent">Declarative over manual</span> — <span class="tag">httpResource</span> &amp; Signal Forms replace subscribe + FormGroup boilerplate.</li>
+      </ul>
+      <p class="small muted" style="margin-top:1em;">v20 = the pivot point. v21 = the defaults catch up to it.</p>
+    </section>
+
+    <!-- 10. END -->
+    <section class="title-slide" data-background-color="#0d0d10">
+      <h1 style="font-size:2em;">Run it yourself</h1>
+      <pre style="display:inline-block; text-align:left; margin-top:1em;"><code data-trim data-noescape class="language-bash">
+cd old-angular   # or new-angular / very-new-angular
+npm install
+ng serve         # → http://localhost:4200
+ng test          # Karma (v19) · Vitest (v20/v21)
+      </code></pre>
+      <p class="small muted" style="margin-top:1.4em;">Felipe Faria · Angular POC</p>
+    </section>
+
+  </div>
+</div>
+<div class="footer-note">Angular 19 → 20 → 21 POC</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    slideNumber: 'c/t',
+    transition: 'slide',
+    backgroundTransition: 'fade',
+    width: 1280,
+    height: 720,
+    margin: 0.06,
+    plugins: [RevealHighlight, RevealNotes]
+  });
+</script>
+</body>
+</html>

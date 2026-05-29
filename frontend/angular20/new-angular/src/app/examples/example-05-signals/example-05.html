@@ -1,0 +1,48 @@
+<section class="card">
+  <h2>Angular 20 — Signals deep-dive</h2>
+  <p class="hint">
+    The reactive core: <code>signal</code> · <code>computed</code> · <code>effect</code> ·
+    <code>linkedSignal</code> · <code>resource</code>. Change <code>count</code> and watch everything react.
+  </p>
+
+  <div class="controls">
+    <button (click)="dec()" [disabled]="count() <= 1">−</button>
+    <span class="badge">count = {{ count() }}</span>
+    <button (click)="inc()" [disabled]="count() >= 10">+</button>
+  </div>
+
+  <div class="grid">
+    <div class="cell">
+      <span class="label">computed</span>
+      <span class="value">{{ double() }}</span>
+      <small>double = count × 2 · {{ parity() }}</small>
+    </div>
+
+    <div class="cell">
+      <span class="label">linkedSignal</span>
+      <input [value]="note()" (input)="note.set($any($event.target).value)" />
+      <small>edit freely — bumping count resets it</small>
+    </div>
+  </div>
+
+  <div class="cell wide">
+    <span class="label">resource (async)</span>
+    @if (user.isLoading()) {
+      <span class="value muted">loading…</span>
+    } @else if (user.error()) {
+      <span class="value err">failed</span>
+    } @else if (user.value(); as u) {
+      <span class="value">{{ u.name }}</span>
+      <small>&#64;{{ u.username }} — refetched on every count change</small>
+    }
+  </div>
+
+  <div class="cell wide">
+    <span class="label">effect log</span>
+    <ul class="log">
+      @for (line of log(); track $index) {
+        <li>{{ line }}</li>
+      }
+    </ul>
+  </div>
+</section>
