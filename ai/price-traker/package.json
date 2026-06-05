@@ -1,0 +1,18 @@
+{
+  "name": "price-traker",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.74.0",
+    "dotenv": "^17.3.1",
+    "next": "^15.1.0",
+    "puppeteer": "^24.37.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}
