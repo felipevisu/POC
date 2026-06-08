@@ -15,8 +15,6 @@ public class ConsumerApp {
 
     public static void main(String[] args) {
         String groupId   = System.getenv().getOrDefault("GROUP_ID", "order-processors");
-        boolean manual   = "manual".equalsIgnoreCase(System.getenv().getOrDefault("COMMIT_MODE", "auto"));
-        int crashAfter   = Integer.parseInt(System.getenv().getOrDefault("CRASH_AFTER", "0"));
         String strategy  = assignor(System.getenv().getOrDefault("ASSIGNMENT", "range"));
 
         Properties props = new Properties();
@@ -26,10 +24,12 @@ public class ConsumerApp {
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         props.put(ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY_CONFIG, strategy);
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, String.valueOf(!manual));
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, String.valueOf(true));
 
-        System.out.printf("[%s] starting | group=%s | commit=%s | assignor=%s%n",
-                NAME, groupId, manual ? "MANUAL" : "AUTO", strategy.substring(strategy.lastIndexOf('.') + 1));
+        System.out.printf(
+            "[%s] starting | group=%s | commit=%s | assignor=%s%n",
+            NAME, groupId, "AUTO", strategy.substring(strategy.lastIndexOf('.') + 1)
+        );
 
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
 
@@ -42,27 +42,14 @@ public class ConsumerApp {
             }
         };
         consumer.subscribe(Collections.singletonList(TOPIC), listener);
-
-        int processed = 0;
         try {
             while (true) {
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(500));
                 for (ConsumerRecord<String, String> r : records) {
-
-                    System.out.printf("[%s] PROCESSED p%d off=%d key=%s%n",
-                            NAME, r.partition(), r.offset(), r.key());
-                    processed++;
-
-                    if (manual) {
-                        if (crashAfter > 0 && processed >= crashAfter) {
-                            System.out.printf("[%s] >>> CRASHING before commit (processed %d, offset %d NOT committed)%n",
-                                    NAME, processed, r.offset());
-                            System.exit(1);
-                        }
-                        consumer.commitSync(Map.of(
-                                new TopicPartition(r.topic(), r.partition()),
-                                new OffsetAndMetadata(r.offset() + 1)));
-                    }
+                    System.out.printf(
+                        "[%s] PROCESSED p%d off=%d key=%s%n",
+                        NAME, r.partition(), r.offset(), r.key()
+                    );
                 }
             }
         } finally {
@@ -77,10 +64,10 @@ public class ConsumerApp {
 
     private static String assignor(String shortName) {
         return switch (shortName.toLowerCase()) {
-            case "roundrobin"  -> "org.apache.kafka.clients.consumer.RoundRobinAssignor";
-            case "sticky"      -> "org.apache.kafka.clients.consumer.StickyAssignor";
+            case "roundrobin" -> "org.apache.kafka.clients.consumer.RoundRobinAssignor";
+            case "sticky" -> "org.apache.kafka.clients.consumer.StickyAssignor";
             case "cooperative" -> "org.apache.kafka.clients.consumer.CooperativeStickyAssignor";
-            default            -> "org.apache.kafka.clients.consumer.RangeAssignor";
+            default -> "org.apache.kafka.clients.consumer.RangeAssignor";
         };
     }
 }
