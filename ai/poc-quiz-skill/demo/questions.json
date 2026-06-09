@@ -1,0 +1,53 @@
+{
+  "title": "General Knowledge Quiz",
+  "questions": [
+    {
+      "question": "What is the capital of France?",
+      "alternatives": ["London", "Berlin", "Paris", "Madrid"],
+      "correctIndex": 2,
+      "comment": "Paris has been the capital of France since 508 AD."
+    },
+    {
+      "question": "Which planet is known as the Red Planet?",
+      "alternatives": ["Venus", "Mars", "Jupiter", "Saturn"],
+      "correctIndex": 1,
+      "comment": "Mars looks red because of iron oxide (rust) on its surface."
+    },
+    {
+      "question": "What is the largest mammal in the world?",
+      "alternatives": ["African Elephant", "Blue Whale", "Giraffe", "Polar Bear"],
+      "correctIndex": 1,
+      "comment": "The blue whale can reach up to 30 meters long and 200 tonnes."
+    },
+    {
+      "question": "Who wrote the play 'Romeo and Juliet'?",
+      "alternatives": ["Charles Dickens", "Mark Twain", "William Shakespeare", "Jane Austen"],
+      "correctIndex": 2,
+      "comment": "Shakespeare wrote it early in his career, around 1594-1596."
+    },
+    {
+      "question": "What is the chemical symbol for gold?",
+      "alternatives": ["Go", "Gd", "Au", "Ag"],
+      "correctIndex": 2,
+      "comment": "Au comes from the Latin word for gold, 'aurum'. Ag is silver."
+    },
+    {
+      "question": "In which year did World War II end?",
+      "alternatives": ["1943", "1945", "1947", "1950"],
+      "correctIndex": 1,
+      "comment": "WWII ended in 1945 with the surrender of Germany (May) and Japan (September)."
+    },
+    {
+      "question": "What is the smallest prime number?",
+      "alternatives": ["0", "1", "2", "3"],
+      "correctIndex": 2,
+      "comment": "2 is the smallest and the only even prime number."
+    },
+    {
+      "question": "Which language has the most native speakers worldwide?",
+      "alternatives": ["English", "Hindi", "Spanish", "Mandarin Chinese"],
+      "correctIndex": 3,
+      "comment": "Mandarin Chinese has roughly 920 million native speakers."
+    }
+  ]
+}
