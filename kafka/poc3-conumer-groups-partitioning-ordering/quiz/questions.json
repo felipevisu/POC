@@ -1,0 +1,138 @@
+{
+  "title": "Kafka POC 3 — Consumer Groups, Partitioning & Ordering",
+  "summary": "This POC builds an order-processing pipeline on Apache Kafka (KRaft mode, no ZooKeeper) with a Java producer and consumer. Orders are keyed by customer_id so each customer's orders stay ordered within a single partition, while multiple consumers in one group process partitions in parallel. It demonstrates the key→partition→ordering guarantee, consumer-group rebalancing, partition-count as the cap on parallelism, and pluggable partition-assignment strategies.",
+  "questions": [
+    {
+      "question": "What guarantees that all orders for a single customer are processed in order?",
+      "alternatives": [
+        "Orders are timestamped and the consumer sorts them before processing",
+        "Each order uses the customer id as the key, so the same key always maps to the same partition, and a partition is ordered",
+        "The producer sets acks=all which forces global ordering across the topic",
+        "Kafka guarantees total ordering across all partitions of a topic"
+      ],
+      "correctIndex": 1,
+      "comment": "Kafka only guarantees ordering within a partition, not across a topic. The producer keys each record with `customer-N`; the default partitioner hashes the key so the same customer always lands on the same partition, preserving that customer's order. acks=all is about durability, not ordering."
+    },
+    {
+      "question": "The topic `orders` has 6 partitions. What happens when a 7th consumer joins the group `order-processors`?",
+      "alternatives": [
+        "Kafka automatically adds a 7th partition to balance the load",
+        "All 7 consumers share the 6 partitions cooperatively, each getting a fraction",
+        "The 7th consumer sits idle with no partitions assigned until one frees up",
+        "The group throws an error and refuses the new consumer"
+      ],
+      "correctIndex": 2,
+      "comment": "A partition is assigned to at most one consumer per group, so partition count caps active consumers. With 6 partitions, a 7th (or 9th) consumer gets nothing assigned and stays idle — exactly the README's 'why did adding a 9th consumer do nothing' question."
+    },
+    {
+      "question": "Which Kafka mode does the docker-compose broker run in?",
+      "alternatives": [
+        "KRaft mode — broker and controller roles, no ZooKeeper",
+        "Classic mode with a separate ZooKeeper container",
+        "Cluster mode with 3 broker replicas",
+        "Embedded mode inside the kafka-ui container"
+      ],
+      "correctIndex": 0,
+      "comment": "The compose sets KAFKA_PROCESS_ROLES=broker,controller and KAFKA_CONTROLLER_QUORUM_VOTERS, with no ZooKeeper service — that's KRaft mode, where Kafka manages its own metadata quorum."
+    },
+    {
+      "question": "How does the producer decide which customer each order belongs to?",
+      "alternatives": [
+        "It cycles sequentially customer-0 through customer-9",
+        "It reads the customer id from a command-line argument",
+        "It picks a random int 0..9 via ThreadLocalRandom and builds key `customer-<n>`",
+        "It uses the orderId modulo the partition count"
+      ],
+      "correctIndex": 2,
+      "comment": "ProducerApp calls `ThreadLocalRandom.current().nextInt(NUM_CUSTOMERS)` with NUM_CUSTOMERS=10, then forms the key `customer-` + n. Random keys still hash deterministically, so a given customer-N consistently maps to one partition."
+    },
+    {
+      "question": "What is the purpose of the ConsumerRebalanceListener in ConsumerApp?",
+      "alternatives": [
+        "It commits offsets to the database before shutdown",
+        "It logs which partitions are REVOKED and ASSIGNED when the group rebalances",
+        "It manually assigns partitions to each consumer by name",
+        "It throttles polling so consumers don't overload the broker"
+      ],
+      "correctIndex": 1,
+      "comment": "The listener overrides onPartitionsRevoked / onPartitionsAssigned to print `REVOKED`/`ASSIGNED` lines. This makes rebalances visible — when a consumer joins or dies, you see partitions move between consumers."
+    },
+    {
+      "question": "A consumer with no assigned partitions prints `[ none - IDLE ]`. Where does that string come from?",
+      "alternatives": [
+        "Kafka emits it automatically when a consumer is starved",
+        "The `partitionsOf` helper returns it when the partition collection is empty",
+        "It is the broker's response to a failed subscription",
+        "kafka-ui injects it into the consumer's log stream"
+      ],
+      "correctIndex": 1,
+      "comment": "`partitionsOf` checks `parts.isEmpty()` and returns the literal `[ none - IDLE ]`. It's a code-level signal that this consumer joined the group but got zero partitions (e.g., when consumers outnumber partitions)."
+    },
+    {
+      "question": "The consumer sets AUTO_OFFSET_RESET_CONFIG to \"earliest\". What does that control?",
+      "alternatives": [
+        "How long the consumer waits before timing out a poll",
+        "Where a consumer starts reading when it has no committed offset for a partition",
+        "The maximum number of records returned per poll",
+        "Whether offsets are committed automatically or manually"
+      ],
+      "correctIndex": 1,
+      "comment": "auto.offset.reset only applies when there's no valid committed offset (new group or expired offset). \"earliest\" replays from the start of the partition; \"latest\" would skip to new messages. Auto-commit behavior is a separate setting (ENABLE_AUTO_COMMIT_CONFIG=true)."
+    },
+    {
+      "question": "The consumer reads ASSIGNMENT=range by default. What does the `assignor` method do with values like \"sticky\" or \"cooperative\"?",
+      "alternatives": [
+        "Maps the short name to the fully-qualified assignor class (e.g. CooperativeStickyAssignor) for PARTITION_ASSIGNMENT_STRATEGY_CONFIG",
+        "Sets the number of partitions to create on the topic",
+        "Chooses between earliest and latest offset reset",
+        "Selects which consumer group the instance joins"
+      ],
+      "correctIndex": 0,
+      "comment": "The `assignor` switch maps short names to FQ class names — RangeAssignor, RoundRobinAssignor, StickyAssignor, CooperativeStickyAssignor — fed into PARTITION_ASSIGNMENT_STRATEGY_CONFIG. This lets you experiment with how partitions get distributed and whether rebalances are eager (revoke-all) or cooperative (incremental)."
+    },
+    {
+      "question": "With 3 consumers running and 6 partitions, you Ctrl-C one consumer. What do the survivors log?",
+      "alternatives": [
+        "Nothing — the dead consumer's partitions go unprocessed",
+        "An error that the group is now under-provisioned",
+        "A REVOKED then ASSIGNED as they rebalance and pick up the orphaned partitions",
+        "They each spawn a thread to replace the dead consumer"
+      ],
+      "correctIndex": 2,
+      "comment": "Killing a consumer triggers a group rebalance. With the default eager RangeAssignor, survivors first get REVOKED (all partitions dropped) then ASSIGNED (new wider set), absorbing the dead consumer's partitions so processing continues — group state flips Rebalancing→Stable."
+    },
+    {
+      "question": "Why does the producer call `producer.send(record).get()` instead of just `producer.send(record)`?",
+      "alternatives": [
+        "`.get()` is required or the record is never actually sent",
+        "It blocks on the returned Future to get RecordMetadata (partition/offset) and send synchronously",
+        "It retries the send until it succeeds",
+        "It commits the producer's transaction"
+      ],
+      "correctIndex": 1,
+      "comment": "send() returns a Future<RecordMetadata>; calling `.get()` blocks until the broker acks and yields the actual partition and offset, which the demo prints. It also makes sends synchronous — simple and deterministic for the POC, though it sacrifices throughput versus async callbacks."
+    },
+    {
+      "question": "What role does the kafka-ui service play, and how does it reach the broker?",
+      "alternatives": [
+        "It is a second broker for replication, connecting on localhost:9092",
+        "A web UI on port 8080 that connects to the broker via the internal listener kafka:19092",
+        "A CLI tool that creates the topic on startup",
+        "The producer's REST gateway on port 9092"
+      ],
+      "correctIndex": 1,
+      "comment": "kafka-ui (kafbat/kafka-ui) exposes a dashboard on :8080 to watch topics, partitions, consumer groups and lag. It uses BOOTSTRAPSERVERS=kafka:19092 — the INTERNAL listener for container-to-container traffic — while host apps use the EXTERNAL localhost:9092."
+    },
+    {
+      "question": "All consumers default to GROUP_ID=order-processors. If you instead gave each consumer a unique group id, what changes?",
+      "alternatives": [
+        "Each group independently consumes every partition, so every consumer sees all 6 partitions and all messages",
+        "Only the first consumer receives messages, the rest are rejected",
+        "The topic must be recreated for new groups to attach",
+        "Ordering per customer is lost because keys are ignored"
+      ],
+      "correctIndex": 0,
+      "comment": "Partition splitting happens within a group. Separate group ids mean separate offset tracking, so each group gets a full copy of the stream — every consumer is assigned all 6 partitions. Sharing one group id is what makes them divide the partitions and scale out."
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POC Learning Quiz</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="quiz" id="quiz">
+    <header class="quiz__header">
+      <h1 id="quiz-title">Quiz</h1>
+      <div class="progress" id="progress" hidden>
+        <div class="progress__bar" id="progress-bar"></div>
+      </div>
+      <p class="progress__label" id="progress-label" hidden></p>
+    </header>
+
+    <!-- Start view -->
+    <section class="card start" id="start-view">
+      <h2>Ready to test what you learned?</h2>
+      <p class="start__summary" id="start-summary"></p>
+      <p class="start__meta" id="start-meta"></p>
+      <button class="btn" id="start-btn">Start quiz</button>
+    </section>
+
+    <!-- Question view -->
+    <section class="card" id="question-view" hidden>
+      <h2 class="question" id="question-text"></h2>
+      <ul class="alternatives" id="alternatives"></ul>
+      <div class="feedback" id="feedback" hidden></div>
+      <div class="actions">
+        <button class="btn" id="submit-btn" disabled>Submit answer</button>
+        <button class="btn" id="next-btn" hidden>Next</button>
+      </div>
+    </section>
+
+    <!-- Result view -->
+    <section class="card result" id="result-view" hidden>
+      <h2>Quiz complete!</h2>
+      <p class="result__score" id="result-score"></p>
+      <p class="result__message" id="result-message"></p>
+      <ul class="result__review" id="result-review"></ul>
+      <button class="btn" id="retry-btn">Retry quiz</button>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
