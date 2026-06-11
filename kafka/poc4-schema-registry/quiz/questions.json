@@ -1,0 +1,138 @@
+{
+  "title": "POC 4 — Schema Registry & Avro — Learning Quiz",
+  "summary": "This POC adds a Confluent Schema Registry and Avro encoding to a Kafka order-processing pipeline. Orders are keyed by customer_id, partitioned across 6 partitions, and consumed by a scalable group. Instead of hand-built JSON, every message is Avro-encoded: the schema lives once in a shared common Maven module that generates the Order Java class at build time, while at runtime the producer stamps a schema ID onto each message and the consumer fetches the schema by ID to decode. This quiz tests your grasp of schema-as-contract, the build-time vs runtime split, the Confluent serializers, and the surrounding Kafka mechanics.",
+  "questions": [
+    {
+      "question": "What core problem does adding a Schema Registry solve in this POC, compared to the previous JSON-string approach?",
+      "alternatives": [
+        "It compresses messages so they take less space on the broker",
+        "It enforces a shared data contract so producers and consumers agree on the message structure",
+        "It encrypts the message payload in transit",
+        "It increases the number of partitions automatically"
+      ],
+      "correctIndex": 1,
+      "comment": "The README's Goal 1 is explicit: the registry enforces a contract on the data. Producers and consumers agree on an Avro schema; messages carry a schema ID, not the schema itself. It is about governance/compatibility, not compression or encryption."
+    },
+    {
+      "question": "In the docker-compose stack, which container stores the Avro schemas and on which port?",
+      "alternatives": [
+        "kafka-ui on port 8080",
+        "kafka on port 9092",
+        "schema-registry on port 8081",
+        "schema-registry on port 9093"
+      ],
+      "correctIndex": 2,
+      "comment": "The confluentinc/cp-schema-registry container exposes 8081 (SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081). Port 8080 is kafka-ui, 9092 is Kafka's external listener, and 9093 is the KRaft controller."
+    },
+    {
+      "question": "The order.avsc schema declares namespace \"com.poc.orders\". What is the effect of that namespace?",
+      "alternatives": [
+        "It becomes the Kafka topic name",
+        "It becomes the Java package of the generated Order class (com.poc.orders.Order)",
+        "It sets the Schema Registry subject name",
+        "It defines the consumer group ID"
+      ],
+      "correctIndex": 1,
+      "comment": "Avro maps namespace -> Java package. The avro-maven-plugin generates com.poc.orders.Order. The topic is 'orders', the subject is 'orders-value', and the group is 'order-processors' — all independent of the namespace."
+    },
+    {
+      "question": "Why does the schema live in BOTH common/src/main/avro/order.avsc and in the Schema Registry — what distinct purpose does each serve?",
+      "alternatives": [
+        "They are redundant copies for backup",
+        "The .avsc is for build time (generates the typed Order class); the registry is for runtime (maps schema IDs to schemas for decoding)",
+        "The .avsc is for the producer; the registry is for kafka-ui only",
+        "The .avsc validates JSON; the registry validates Avro"
+      ],
+      "correctIndex": 1,
+      "comment": "The README stresses these are NOT duplicates. Build time: the Avro Maven plugin reads the .avsc and generates the Order class your code compiles against. Runtime: the producer stamps a schema ID on the bytes and the consumer fetches the matching schema from the registry to decode."
+    },
+    {
+      "question": "How does the schema first appear in the Schema Registry under the subject 'orders-value'?",
+      "alternatives": [
+        "It must always be registered manually with curl before any producer runs",
+        "kafka-ui registers it when you open the Schemas tab",
+        "The KafkaAvroSerializer auto-registers it on the producer's first send",
+        "Docker compose registers it at startup"
+      ],
+      "correctIndex": 2,
+      "comment": "On the first send, the KafkaAvroSerializer auto-registers the schema under 'orders-value'. Manual curl/UI registration is optional — only needed if you want the schema to exist before any producer runs."
+    },
+    {
+      "question": "In ProducerApp, which two serializers are configured for keys and values respectively?",
+      "alternatives": [
+        "KafkaAvroSerializer for the key, StringSerializer for the value",
+        "StringSerializer for the key, KafkaAvroSerializer for the value",
+        "StringSerializer for both key and value",
+        "KafkaAvroSerializer for both key and value"
+      ],
+      "correctIndex": 1,
+      "comment": "KEY_SERIALIZER is StringSerializer (the key is the customer-N string), and VALUE_SERIALIZER is KafkaAvroSerializer (the value is the Avro Order). The inline comment notes the value serializer 'was StringSerializer' in the prior POC."
+    },
+    {
+      "question": "The producer sets the record key to \"customer-\" + customer (0..9). What does this guarantee about message ordering?",
+      "alternatives": [
+        "All orders are processed in global order across all partitions",
+        "Every message lands on a random partition each time for load balancing",
+        "All orders for the same customer land on the same partition, preserving per-customer order",
+        "Ordering is guaranteed only if there is a single consumer"
+      ],
+      "correctIndex": 2,
+      "comment": "Kafka hashes the key to pick a partition, so a given key always maps to the same partition. Per-customer order is preserved because Kafka guarantees ordering within a partition. There is no global cross-partition ordering."
+    },
+    {
+      "question": "The consumer sets KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG to true. What does this do?",
+      "alternatives": [
+        "Forces the consumer to read only from partition 0",
+        "Returns decoded values as the generated specific Order class instead of a generic GenericRecord",
+        "Disables auto-registration of schemas",
+        "Makes the consumer commit offsets synchronously"
+      ],
+      "correctIndex": 1,
+      "comment": "SPECIFIC_AVRO_READER=true makes the deserializer return the generated specific type (com.poc.orders.Order), so r.value() is an Order and you can call order.getOrderId()/getAmount(). Without it you'd get a generic GenericRecord and have to access fields by name."
+    },
+    {
+      "question": "You run 7 consumers in the group 'order-processors' against the 6-partition 'orders' topic. What happens to the 7th consumer?",
+      "alternatives": [
+        "It triggers Kafka to add a 7th partition automatically",
+        "It throws an error and the group fails to form",
+        "It sits idle with no partitions assigned (ASSIGNED [ none - IDLE ])",
+        "It shares partition 0 with another consumer in parallel"
+      ],
+      "correctIndex": 2,
+      "comment": "A partition is consumed by at most one consumer per group. With 6 partitions and 7 consumers, the extra one gets ASSIGNED [ none - IDLE ]. Partitions are not added automatically, and two consumers in the same group never share a partition."
+    },
+    {
+      "question": "Why must you run 'mvn clean install' from the orders root rather than building producer-service alone first?",
+      "alternatives": [
+        "The root pom contains the producer's main method",
+        "The common module must compile and generate the Order class first, since both services depend on it",
+        "Maven cannot resolve the Confluent repository from a submodule",
+        "The topic must be created before compilation"
+      ],
+      "correctIndex": 1,
+      "comment": "common holds order.avsc and generates com.poc.orders.Order at build time via the avro-maven-plugin. producer-service and consumer-service depend on common, so it must build first — otherwise you get 'package com.poc.orders does not exist'."
+    },
+    {
+      "question": "What does the Avro-encoded message bytes actually carry to identify its schema, rather than the full schema text?",
+      "alternatives": [
+        "The complete order.avsc JSON inline with every message",
+        "A schema ID that the consumer uses to fetch the schema from the registry",
+        "The Java class bytecode of Order",
+        "The subject name 'orders-value' as a string header"
+      ],
+      "correctIndex": 1,
+      "comment": "The whole point: messages carry a schema ID, not the schema itself. The consumer reads that ID and fetches the matching schema from the registry by ID to decode. This keeps payloads small and centralizes the contract."
+    },
+    {
+      "question": "The README warns to keep kafka-clients on the 3.9.x line with the Confluent 7.7.0 serializer. What is the symptom of a mismatched major version?",
+      "alternatives": [
+        "The schema fails to auto-register",
+        "Partitions are assigned unevenly",
+        "A NoSuchMethodError surfaces at runtime",
+        "kafka-ui cannot decode Avro messages"
+      ],
+      "correctIndex": 2,
+      "comment": "The version note says mismatched majors between kafka-clients and the Confluent serializer surface as NoSuchMethodError at runtime — a classpath/binary-compatibility problem, not a registration or partitioning issue."
+    }
+  ]
+}
