@@ -1,0 +1,480 @@
+:root {
+  --text: #6b6375;
+  --text-h: #08060d;
+  --bg: #fff;
+  --border: #e5e4e7;
+  --code-bg: #f4f3ec;
+  --accent: #aa3bff;
+  --accent-bg: rgba(170, 59, 255, 0.1);
+  --accent-border: rgba(170, 59, 255, 0.5);
+  --social-bg: rgba(244, 243, 236, 0.5);
+  --shadow:
+    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+  font: 18px/145% var(--sans);
+  letter-spacing: 0.18px;
+  color-scheme: light dark;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @media (max-width: 1024px) {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #9ca3af;
+    --text-h: #f3f4f6;
+    --bg: #16171d;
+    --border: #2e303a;
+    --code-bg: #1f2028;
+    --accent: #c084fc;
+    --accent-bg: rgba(192, 132, 252, 0.15);
+    --accent-border: rgba(192, 132, 252, 0.5);
+    --social-bg: rgba(47, 48, 58, 0.5);
+    --shadow:
+      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+  }
+
+  #social .button-icon {
+    filter: invert(1) brightness(2);
+  }
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  width: 1126px;
+  max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  border-inline: 1px solid var(--border);
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+h1,
+h2 {
+  font-family: var(--heading);
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+h1 {
+  font-size: 56px;
+  letter-spacing: -1.68px;
+  margin: 32px 0;
+  @media (max-width: 1024px) {
+    font-size: 36px;
+    margin: 20px 0;
+  }
+}
+h2 {
+  font-size: 24px;
+  line-height: 118%;
+  letter-spacing: -0.24px;
+  margin: 0 0 8px;
+  @media (max-width: 1024px) {
+    font-size: 20px;
+  }
+}
+p {
+  margin: 0;
+}
+
+code,
+.counter {
+  font-family: var(--mono);
+  display: inline-flex;
+  border-radius: 4px;
+  color: var(--text-h);
+}
+
+code {
+  font-size: 15px;
+  line-height: 135%;
+  padding: 4px 8px;
+  background: var(--code-bg);
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0 24px 16px;
+  text-align: left;
+  min-height: 0;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.chat-header h1 {
+  margin: 32px 0;
+  @media (max-width: 1024px) {
+    margin: 20px 0;
+  }
+}
+
+.messages {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  padding: 12px 0;
+  min-height: 0;
+}
+
+.item {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  background: var(--bg);
+}
+
+.item .role {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.item .text {
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-h);
+}
+
+.item .text.markdown {
+  white-space: normal;
+}
+
+.item .text.markdown > :first-child {
+  margin-top: 0;
+}
+
+.item .text.markdown > :last-child {
+  margin-bottom: 0;
+}
+
+.item .text.markdown p {
+  margin: 0 0 8px;
+}
+
+.item .text.markdown ul,
+.item .text.markdown ol {
+  margin: 0 0 8px;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.item .text.markdown h1,
+.item .text.markdown h2,
+.item .text.markdown h3 {
+  font-size: 17px;
+  margin: 0 0 8px;
+}
+
+.item .text.markdown strong {
+  color: var(--text-h);
+  font-weight: 600;
+}
+
+.item .text.markdown a {
+  color: var(--accent);
+}
+
+.item.message.user {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+  align-self: flex-end;
+  max-width: 80%;
+}
+
+.item.message.assistant {
+  align-self: flex-start;
+  max-width: 80%;
+}
+
+.item.reasoning {
+  background: var(--social-bg);
+  font-style: italic;
+  font-size: 14px;
+}
+
+.item.tool-call,
+.item.tool-output {
+  background: var(--code-bg);
+}
+
+.item.tool-call .args,
+.item.tool-output .args {
+  font-family: var(--mono);
+  font-size: 13px;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-h);
+  max-height: 320px;
+  overflow: auto;
+}
+
+.item.error {
+  border-color: #d33;
+  color: #d33;
+}
+
+.composer {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.composer input {
+  flex: 1;
+  padding: 10px 14px;
+  font: inherit;
+  color: var(--text-h);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+}
+
+.composer input:focus {
+  border-color: var(--accent);
+}
+
+.composer button {
+  padding: 10px 18px;
+  font: inherit;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.composer button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.status {
+  font-size: 13px;
+  color: var(--text);
+  font-style: italic;
+}
+
+/* ── Secure PII form ─────────────────────────────────────── */
+.item.pii-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-self: flex-start;
+  max-width: 80%;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-bg);
+}
+
+.pii-lock {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.pii-note {
+  font-size: 15px;
+  color: var(--text-h);
+}
+
+.pii-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pii-field-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+.pii-field input,
+.pii-field textarea {
+  font: inherit;
+  font-size: 15px;
+  padding: 8px 12px;
+  color: var(--text-h);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+  resize: vertical;
+}
+
+.pii-field input:focus,
+.pii-field textarea:focus {
+  border-color: var(--accent);
+}
+
+.pii-error {
+  font-size: 12px;
+  color: #d33;
+}
+
+.pii-submit {
+  align-self: flex-start;
+  padding: 9px 18px;
+  font: inherit;
+  font-weight: 500;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.pii-hint {
+  font-size: 12px;
+  color: var(--text);
+}
+
+.item.pii-form.done {
+  background: var(--social-bg);
+  border-color: var(--border);
+}
+
+.pii-saved-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pii-saved-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.pii-saved-label {
+  color: var(--text);
+}
+
+.pii-saved-value {
+  color: var(--text-h);
+  font-weight: 500;
+  word-break: break-word;
+  text-align: right;
+}
+
+/* ── Application summary card ─────────────────────────────── */
+.item.summary-card {
+  align-self: flex-start;
+  max-width: 80%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-color: var(--accent-border);
+}
+
+.summary-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.summary-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.summary-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.summary-position {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.summary-text {
+  color: var(--text-h);
+  font-size: 15px;
+}
+
+.summary-highlights {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--text-h);
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.summary-contact {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.summary-contact-head {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.summary-contact-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.summary-contact-label {
+  color: var(--text);
+}
+
+.summary-contact-value {
+  color: var(--text-h);
+  font-weight: 500;
+  word-break: break-word;
+  text-align: right;
+}
