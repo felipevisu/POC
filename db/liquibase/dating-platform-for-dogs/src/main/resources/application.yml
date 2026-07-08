@@ -1,0 +1,23 @@
+server:
+    port: 8090
+
+spring:
+    profiles:
+        active: mysql
+    datasource:
+        url: jdbc:mysql://localhost:3307/dating?useUnicode=yes&characterEncoding=UTF-8&serverTimezone=UTC
+        username: webuser
+        password: aSecretPass
+    jpa:
+        openInView: false
+        show_sql: true
+        generate-ddl: false
+        hibernate:
+            ddl-auto: none
+            naming:
+                physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        properties:
+            hibernate.cache.use_query_cache: false
+            hibernate.generate_statistics: true
+    main:
+        log-startup-info: false
