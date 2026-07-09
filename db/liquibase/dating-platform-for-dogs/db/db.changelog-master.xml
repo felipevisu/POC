@@ -5,6 +5,15 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
           http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
 
-    <!-- Baseline schema provisioned by db/create.sql. Add future changesets below. -->
+    <!-- Schema + webuser bootstrapped manually via db/create.sql (root-only DDL). -->
+    <changeSet id="1-create-tables" author="felipe">
+        <sqlFile path="create-tables.sql" relativeToChangelogFile="true"
+                 splitStatements="true" stripComments="true" endDelimiter=";"/>
+    </changeSet>
+
+    <changeSet id="2-seed-profiles" author="felipe">
+        <sqlFile path="seed-profiles.sql" relativeToChangelogFile="true"
+                 splitStatements="true" stripComments="true" endDelimiter=";"/>
+    </changeSet>
 
 </databaseChangeLog>
