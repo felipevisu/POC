@@ -18,7 +18,9 @@
     "demo4:yup": "tsx demo4/yup.ts",
     "demo5:zod": "tsx demo5/zod.ts",
     "demo5:yup": "tsx demo5/yup.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "bench": "tsx demo6/bench.ts",
+    "bench:k6": "k6 run demo6/k6.js -e BASE_URL=http://localhost:3000"
   },
   "dependencies": {
     "express": "^5.2.1",
