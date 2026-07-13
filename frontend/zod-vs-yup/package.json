@@ -7,15 +7,22 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
+    "demo0": "tsx demo0/server.ts",
     "demo1:zod": "tsx demo1/zod.ts",
     "demo1:yup": "tsx demo1/yup.ts",
     "demo2:zod": "tsx demo2/zod.ts",
     "demo2:yup": "tsx demo2/yup.ts",
     "demo3:zod": "tsx demo3/zod.ts",
     "demo3:yup": "tsx demo3/yup.ts",
+    "demo4:zod": "tsx demo4/zod.ts",
+    "demo4:yup": "tsx demo4/yup.ts",
+    "demo5:zod": "tsx demo5/zod.ts",
+    "demo5:yup": "tsx demo5/yup.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "express": "^5.2.1",
+    "swagger-ui-express": "^5.0.1",
     "tsx": "^4.23.0",
     "yup": "^1.7.1",
     "zod": "^4.4.3"
