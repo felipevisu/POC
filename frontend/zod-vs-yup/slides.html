@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zod vs Yup</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/monokai.css" />
+  <style>
+    .reveal h1, .reveal h2 { text-transform: none; }
+    .reveal pre { width: 100%; font-size: 0.55em; }
+    .cols { display: flex; gap: 1em; }
+    .cols > div { flex: 1; min-width: 0; }
+    .cols h3 { font-size: 0.9em; text-transform: none; }
+    .zod { color: #3068b7; }
+    .yup { color: #e04f5f; }
+    .reveal .small { font-size: 0.7em; }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <section>
+        <h1><span class="zod">Zod</span> vs <span class="yup">Yup</span></h1>
+        <p>Two TypeScript schema validation libraries, compared with real code</p>
+      </section>
+
+      <section>
+        <h2>Round 1: Type inference defaults</h2>
+        <div class="cols">
+          <div>
+            <h3 class="yup">Yup: optional by default</h3>
+            <pre><code class="language-ts" data-trim>
+const userSchema = yup.object({
+  name: yup.string(),
+  age: yup.number(),
+});
+
+type User = yup.InferType&lt;typeof userSchema&gt;;
+// {
+//   name?: string | undefined;
+//   age?: number | undefined;
+// }
+            </code></pre>
+          </div>
+          <div>
+            <h3 class="zod">Zod: required by default</h3>
+            <pre><code class="language-ts" data-trim>
+const userSchema = z.object({
+  name: z.string(),
+  age: z.number(),
+});
+
+type User = z.infer&lt;typeof userSchema&gt;;
+// {
+//   name: string;
+//   age: number;
+// }
+            </code></pre>
+          </div>
+        </div>
+        <p class="small">Same-looking schema, opposite inferred types. Yup needs <code>.required()</code> everywhere; Zod needs <code>.optional()</code> only where you mean it.</p>
+      </section>
+
+      <section>
+        <h2>Round 2: Saying what you mean</h2>
+        <div class="cols">
+          <div>
+            <h3 class="yup">Yup</h3>
+            <pre><code class="language-ts" data-trim>
+const schema = yup.object({
+  email: yup.string().email().required(),
+  nickname: yup.string(),
+});
+// { email: string; nickname?: string }
+            </code></pre>
+          </div>
+          <div>
+            <h3 class="zod">Zod</h3>
+            <pre><code class="language-ts" data-trim>
+const schema = z.object({
+  email: z.email(),
+  nickname: z.string().optional(),
+});
+// { email: string; nickname?: string }
+            </code></pre>
+          </div>
+        </div>
+        <p class="small">Both can express the same type; the difference is which direction you annotate. Zod's default matches how most API types actually look.</p>
+      </section>
+
+      <section>
+        <h2>Round 3: Error handling</h2>
+        <div class="cols">
+          <div>
+            <h3 class="yup">Yup: throws, try/catch</h3>
+            <pre><code class="language-ts" data-trim>
+try {
+  await schema.validate(
+    { name: 123, age: "x" },
+    { abortEarly: false } // default: stops at 1st error!
+  );
+} catch (err) {
+  if (err instanceof yup.ValidationError) {
+    console.log(err.inner); // all errors
+  }
+}
+            </code></pre>
+          </div>
+          <div>
+            <h3 class="zod">Zod: result object</h3>
+            <pre><code class="language-ts" data-trim>
+const result = schema.safeParse(
+  { name: 123, age: "x" }
+);
+
+if (!result.success) {
+  console.log(result.error.issues);
+  // all errors, always
+}
+            </code></pre>
+          </div>
+        </div>
+        <p class="small">Yup aborts early unless you remember <code>{ abortEarly: false }</code>. Zod's <code>safeParse</code> never throws and always collects every issue.</p>
+      </section>
+
+      <section>
+        <h2>Round 4: Sync vs async</h2>
+        <div class="cols">
+          <div>
+            <h3 class="yup">Yup: async by default</h3>
+            <pre><code class="language-ts" data-trim>
+// always a Promise, even for min(3)
+const promise = schema.validate({ username: "ana" });
+
+// validateSync exists, but throws
+// if the schema has ANY async test
+asyncSchema.validateSync({ username: "ana" }); // 💥
+            </code></pre>
+          </div>
+          <div>
+            <h3 class="zod">Zod: sync by default</h3>
+            <pre><code class="language-ts" data-trim>
+// immediate result, no await
+const result = schema.safeParse({ username: "ana" });
+
+// async only when YOU add async logic,
+// and zod forces the explicit switch:
+await asyncSchema.safeParseAsync({ username: "ana" });
+            </code></pre>
+          </div>
+        </div>
+        <p class="small">With Yup you pay the Promise tax on every validation. With Zod, async is opt-in and the API makes the boundary explicit.</p>
+      </section>
+
+      <section>
+        <h2>Round 5: Conditional validation</h2>
+        <div class="cols">
+          <div>
+            <h3 class="yup">Yup: <code>.when()</code> built in</h3>
+            <pre><code class="language-ts" data-trim>
+const schema = yup.object({
+  deliveryMethod: yup.string()
+    .oneOf(["pickup", "ship"]).required(),
+  address: yup.string().when("deliveryMethod", {
+    is: "ship",
+    then: (s) => s.required(),
+    otherwise: (s) => s.strip(),
+  }),
+});
+// InferType: address?: string
+// (type can't see the condition)
+            </code></pre>
+          </div>
+          <div>
+            <h3 class="zod">Zod: discriminated union</h3>
+            <pre><code class="language-ts" data-trim>
+const schema = z.discriminatedUnion("deliveryMethod", [
+  z.object({ deliveryMethod: z.literal("pickup") }),
+  z.object({
+    deliveryMethod: z.literal("ship"),
+    address: z.string(),
+  }),
+]);
+// type Order =
+//   | { deliveryMethod: "pickup" }
+//   | { deliveryMethod: "ship"; address: string }
+            </code></pre>
+          </div>
+        </div>
+        <p class="small">Yup's <code>.when()</code> is ergonomic but invisible to the type system. Zod encodes the condition in the type itself (<code>.refine()</code> as fallback).</p>
+      </section>
+
+      <section>
+        <h2>Round 6: Behavior at the API boundary</h2>
+        <table class="small">
+          <thead>
+            <tr><th>Input</th><th class="yup">Yup</th><th class="zod">Zod</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>age: "30"</code> (string)</td>
+              <td>✅ passes (casts to number)</td>
+              <td>❌ fails (no silent coercion)</td>
+            </tr>
+            <tr>
+              <td>extra key <code>role: "admin"</code></td>
+              <td>kept in output</td>
+              <td>stripped from output</td>
+            </tr>
+            <tr>
+              <td>OpenAPI / JSON Schema</td>
+              <td>needs 3rd-party lib</td>
+              <td><code>z.toJSONSchema(schema)</code> built in</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="small">Yup was born for forms (casting is a feature there). Zod behaves like a strict API contract.</p>
+      </section>
+
+      <section>
+        <h2>Final round: dependencies</h2>
+        <div class="cols">
+          <div>
+            <h3 class="yup">Yup</h3>
+            <pre><code class="language-json" data-trim>
+"dependencies": {
+  "property-expr": "^2.0.5",
+  "tiny-case": "^1.0.3",
+  "toposort": "^2.0.2",
+  "type-fest": "^2.19.0"
+}
+            </code></pre>
+          </div>
+          <div>
+            <h3 class="zod">Zod</h3>
+            <pre><code class="language-json" data-trim>
+"dependencies": {}
+            </code></pre>
+          </div>
+        </div>
+        <p><span class="zod"><strong>Zod is zero-dependency.</strong></span></p>
+        <ul class="small">
+          <li>Nothing else enters your <code>node_modules</code>: smaller install, smaller attack surface</li>
+          <li>No transitive packages to audit, patch, or get supply-chain-attacked through</li>
+          <li>No version conflicts with the rest of your dependency tree</li>
+          <li>The whole library is one self-contained import that works the same in Node, browsers, edge runtimes</li>
+        </ul>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/highlight.js"></script>
+  <script>
+    Reveal.initialize({ hash: true, plugins: [RevealHighlight] });
+  </script>
+</body>
+</html>
