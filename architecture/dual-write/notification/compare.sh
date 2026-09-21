@@ -1,5 +1,6 @@
 #!/bin/sh
 # Compares registered users (version's database) against welcome emails sent (notification's database).
+# Matches on email address, not user id: after a database crash postgres can hand the same id to a different user.
 # Only counts requests tagged with the version folder's name as source (version1, version2, ...).
 # usage: ./compare.sh [version-folder]   (default: ../version1)
 set -eu
@@ -13,18 +14,24 @@ notif_q() { echo "$1" | docker compose --project-directory "$here" exec -T postg
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
-users_q "SELECT id FROM users" | sort > "$tmp/users"
-notif_q "SELECT DISTINCT user_id FROM notification_requests WHERE source = :'src'" | sort > "$tmp/requested"
-notif_q "SELECT DISTINCT user_id FROM emails_sent WHERE source = :'src'" | sort > "$tmp/emailed"
+users_q "SELECT email FROM users" | sort > "$tmp/users"
+notif_q "SELECT DISTINCT email FROM notification_requests WHERE source = :'src'" | sort > "$tmp/requested"
+notif_q "SELECT DISTINCT email FROM emails_sent WHERE source = :'src'" | sort > "$tmp/emailed"
 
 echo "source: $source"
 echo "users registered:     $(wc -l < "$tmp/users" | tr -d ' ')"
 echo "users with a request: $(wc -l < "$tmp/requested" | tr -d ' ')"
 echo "users with an email:  $(wc -l < "$tmp/emailed" | tr -d ' ')"
 echo
-# prints "label (count): ids"
-report() { ids=$(cat); echo "$1 ($(echo "$ids" | grep -c . || true)): $(echo "$ids" | paste -sd' ' -)"; }
-comm -23 "$tmp/users" "$tmp/requested" | sort -n | report "never requested, call never reached the service"
-comm -23 "$tmp/requested" "$tmp/emailed" | sort -n | report "requested but never emailed, service failed"
-notif_q "SELECT user_id || 'x' || count(*) FROM emails_sent WHERE source = :'src' GROUP BY user_id HAVING count(*) > 1 ORDER BY user_id" | report "emailed more than once (user_id x count)"
-comm -13 "$tmp/users" "$tmp/emailed" | sort -n | report "emailed but not registered"
+# prints "label: count", then the first few entries
+report() {
+  entries=$(cat)
+  count=$(echo "$entries" | grep -c . || true)
+  echo "$1: $count"
+  echo "$entries" | grep . | head -5 | sed 's/^/    /' || true
+  if [ "$count" -gt 5 ]; then echo "    ... and $((count - 5)) more"; fi
+}
+comm -23 "$tmp/users" "$tmp/requested" | report "registered but never requested (call never reached the service)"
+comm -23 "$tmp/requested" "$tmp/emailed" | report "requested but never emailed (service failed)"
+notif_q "SELECT email || ' x' || count(*) FROM emails_sent WHERE source = :'src' GROUP BY email HAVING count(*) > 1 ORDER BY email" | report "emailed more than once"
+comm -13 "$tmp/users" "$tmp/emailed" | report "emailed but not registered"
