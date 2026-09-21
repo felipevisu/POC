@@ -97,16 +97,116 @@ The duplicates in versions 2 and 4 are messages that were in flight when RabbitM
 
 ## Run
 
-You need Docker and [k6](https://k6.io). Each version's compose file starts everything it needs: the API, its database, the notification service and RabbitMQ. Only one version can run at a time (they share ports), so stop one before starting the next.
+You need Docker and [k6](https://k6.io).
+
+Each version's compose file starts everything it needs: the API, its database, the notification service and RabbitMQ. All versions use the same ports, so only one can run at a time: always `docker compose stop` one before starting the next.
+
+Every test starts from clean data, registers users for 30 seconds, kills one container from second 10 to second 20, and prints the k6 summary followed by the comparison of users against emails.
+
+### Version 1
+
+One test: `./load-test.sh` kills the notification service.
+
+```
+cd version1
+docker compose up -d --build
+./load-test.sh
+docker compose stop
+cd ..
+```
+
+### Version 2
+
+Two tests: `notification-down` kills the notification service, `queue-down` kills RabbitMQ.
+
+```
+cd version2
+docker compose up -d --build
+./load-test.sh notification-down
+./load-test.sh queue-down
+docker compose stop
+cd ..
+```
+
+### Version 3
+
+One test, which kills the version3 database. The second command is the same test under load; repeat it a few times.
+
+```
+cd version3
+docker compose up -d --build
+./load-test.sh
+RATE=100 PHASE=3 ./load-test.sh
+docker compose stop
+cd ..
+```
+
+The email without a user only appears when the database dies in a gap of a few milliseconds, so most runs find nothing. It showed up in 3 of 14 runs of the second command.
+
+### Version 4
+
+Four tests: `queue-down` kills RabbitMQ, `consumer-down` kills the outbox consumer, `notification-down` kills the notification service, `database-down` kills the version4 database.
 
 ```
 cd version4
 docker compose up -d --build
 ./load-test.sh queue-down
+./load-test.sh consumer-down
+./load-test.sh notification-down
+./load-test.sh database-down
 docker compose stop
+cd ..
 ```
 
-Each version's readme lists its tests. Every test starts from clean data and prints the k6 summary followed by the comparison.
+### Options
+
+Both are environment variables, for any test of any version:
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `RATE` | `10` | users registered per second |
+| `PHASE` | `10` | seconds of each phase (up, down, up), so a run lasts three times this |
+
+```
+RATE=50 PHASE=5 ./load-test.sh queue-down
+```
+
+### Reading the results
+
+The numbers that matter are at the end of each run:
+
+```
+users registered:     301
+users with an email:  178
+registered but never requested (call never reached the service): 123    <- user without email
+requested but never emailed (service failed): 0                         <- user without email
+emailed more than once: 2                                               <- duplicate
+emailed but not registered: 0                                           <- email without user
+```
+
+To run the comparison again without re-running the test, from the root folder, with that version still up:
+
+```
+./notification/compare.sh version2
+```
+
+While a version is up you can also register a user by hand and watch the queue in the RabbitMQ UI at http://localhost:15672 (user `rabbit`, password `rabbit`):
+
+```
+curl -X POST localhost:3000/users -H 'content-type: application/json' -d '{
+  "firstName": "Ada", "lastName": "Lovelace", "documentNumber": "123.456.789-09",
+  "email": "ada@example.com", "birthdate": "1990-12-10",
+  "phoneNumber": "+55 11 99999-9999", "password": "correct horse"
+}'
+```
+
+### Cleaning up
+
+`docker compose stop` keeps the containers and their data. To remove everything a version created, from its folder:
+
+```
+docker compose down -v
+```
 
 ## Folders
 
