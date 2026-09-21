@@ -1,6 +1,5 @@
 const crypto = require('node:crypto');
 const { promisify } = require('node:util');
-const amqp = require('amqplib');
 const express = require('express');
 const { Pool } = require('pg');
 
@@ -9,6 +8,8 @@ const scrypt = promisify(crypto.scrypt);
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/users',
 });
+
+pool.on('error', (err) => console.error(`idle database connection lost: ${err.message}`));
 
 const SCHEMA = `
   CREATE TABLE IF NOT EXISTS users (
@@ -21,7 +22,20 @@ const SCHEMA = `
     phone_number TEXT NOT NULL,
     password_hash TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-  )`;
+  );
+  CREATE TABLE IF NOT EXISTS outbox (
+    id BIGSERIAL PRIMARY KEY,
+    payload JSONB NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    published_at TIMESTAMPTZ
+  );
+  CREATE INDEX IF NOT EXISTS outbox_unpublished ON outbox (id) WHERE published_at IS NULL;
+  CREATE OR REPLACE FUNCTION notify_outbox() RETURNS trigger AS $$
+  BEGIN
+    PERFORM pg_notify('outbox', '');
+    RETURN NULL;
+  END $$ LANGUAGE plpgsql;
+  CREATE OR REPLACE TRIGGER outbox_notify AFTER INSERT ON outbox FOR EACH STATEMENT EXECUTE FUNCTION notify_outbox()`;
 
 const isValidDate = (s) => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
@@ -44,41 +58,6 @@ const validate = (body) =>
     .filter(([field, ok]) => typeof body?.[field] !== 'string' || !ok(body[field]))
     .map(([field]) => field);
 
-const RABBITMQ_URL = process.env.RABBITMQ_URL || 'amqp://rabbit:rabbit@localhost:5672';
-const QUEUE = 'welcome-emails';
-
-let channelPromise;
-const getChannel = () => {
-  channelPromise ??= amqp
-    .connect(RABBITMQ_URL)
-    .then(async (connection) => {
-      connection.on('error', (err) => console.error(`rabbitmq: ${err.message}`));
-      connection.on('close', () => { channelPromise = undefined; });
-      const channel = await connection.createConfirmChannel();
-      await channel.assertQueue(QUEUE, { durable: true });
-      return channel;
-    })
-    .catch((err) => {
-      channelPromise = undefined;
-      throw err;
-    });
-  return channelPromise;
-};
-
-const queueWelcomeEmail = async (userId, email, firstName) => {
-  try {
-    const channel = await getChannel();
-    const message = Buffer.from(JSON.stringify({ source: 'version2', userId, email, firstName }));
-    await new Promise((resolve, reject) =>
-      channel.sendToQueue(QUEUE, message, { persistent: true }, (err) => (err ? reject(err) : resolve())),
-    );
-    return true;
-  } catch (err) {
-    console.error(`welcome email for user ${userId} not queued: ${err.message}`);
-    return false;
-  }
-};
-
 const hashPassword = async (password) => {
   const salt = crypto.randomBytes(16);
   const hash = await scrypt(password, salt, 64);
@@ -93,14 +72,31 @@ app.post('/users', async (req, res) => {
   if (invalid.length) return res.status(400).json({ error: 'invalid fields', fields: invalid });
 
   const { firstName, lastName, documentNumber, email, birthdate, phoneNumber, password } = req.body;
+  const passwordHash = await hashPassword(password);
+
+  let client;
   try {
-    const { rows } = await pool.query(
+    client = await pool.connect();
+  } catch (err) {
+    console.error(`database unavailable: ${err.message}`);
+    return res.status(503).json({ error: 'registration unavailable, nothing was saved, try again' });
+  }
+  const onClientError = (err) => console.error(`database connection lost: ${err.message}`);
+  client.on('error', onClientError);
+  let broken;
+  try {
+    await client.query('BEGIN');
+    const { rows } = await client.query(
       `INSERT INTO users (first_name, last_name, document_number, email, birthdate, phone_number, password_hash)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id, created_at`,
-      [firstName.trim(), lastName.trim(), documentNumber, email.toLowerCase(), birthdate, phoneNumber, await hashPassword(password)],
+      [firstName.trim(), lastName.trim(), documentNumber, email.toLowerCase(), birthdate, phoneNumber, passwordHash],
     );
-    const welcomeEmailQueued = await queueWelcomeEmail(rows[0].id, email.toLowerCase(), firstName.trim());
+
+    await client.query('INSERT INTO outbox (payload) VALUES ($1)', [
+      { source: 'version4', userId: rows[0].id, email: email.toLowerCase(), firstName: firstName.trim() },
+    ]);
+    await client.query('COMMIT');
     res.status(201).json({
       id: rows[0].id,
       firstName: firstName.trim(),
@@ -110,12 +106,16 @@ app.post('/users', async (req, res) => {
       birthdate,
       phoneNumber,
       createdAt: rows[0].created_at,
-      welcomeEmailQueued,
     });
   } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
     if (err.code === '23505') return res.status(409).json({ error: 'document number or email already registered' });
-    console.error(err);
+    broken = err;
+    console.error(`registration of ${email.toLowerCase()} failed: ${err.message}`);
     res.status(500).json({ error: 'internal error' });
+  } finally {
+    client.removeListener('error', onClientError);
+    client.release(broken);
   }
 });
 

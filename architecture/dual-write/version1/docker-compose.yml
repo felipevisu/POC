@@ -1,12 +1,12 @@
+include:
+  - ../notification/docker-compose.yml
+
 services:
   api:
     build: .
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/users
-      # notification runs in its own compose stack, reached through the host
-      NOTIFICATION_URL: http://host.docker.internal:3001
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      NOTIFICATION_URL: http://notification:3000
     ports:
       - "3000:3000"
     depends_on:

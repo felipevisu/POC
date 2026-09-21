@@ -6,9 +6,18 @@ services:
     build: .
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/users
-      RABBITMQ_URL: amqp://rabbit:rabbit@rabbitmq:5672
     ports:
       - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  outbox-consumer:
+    build: .
+    command: ["node", "outbox-consumer.js"]
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/users
+      RABBITMQ_URL: amqp://rabbit:rabbit@rabbitmq:5672
     depends_on:
       postgres:
         condition: service_healthy

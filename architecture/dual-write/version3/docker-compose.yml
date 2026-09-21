@@ -1,12 +1,12 @@
+include:
+  - ../notification/docker-compose.yml
+
 services:
   api:
     build: .
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/users
-      # rabbitmq runs in the notification compose stack, reached through the host
-      RABBITMQ_URL: amqp://rabbit:rabbit@host.docker.internal:5672
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      RABBITMQ_URL: amqp://rabbit:rabbit@rabbitmq:5672
     ports:
       - "3000:3000"
     depends_on:

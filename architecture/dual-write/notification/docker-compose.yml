@@ -2,22 +2,20 @@ services:
   notification:
     build: .
     environment:
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/notifications
+      DATABASE_URL: postgres://postgres:postgres@notification-db:5432/notifications
       RABBITMQ_URL: amqp://rabbit:rabbit@rabbitmq:5672
       DELAY_MS: "100"
     ports:
       - "3001:3000"
     depends_on:
-      postgres:
+      notification-db:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
 
-  # the queue lives here so it stays up while the notification service is down
   rabbitmq:
     image: rabbitmq:4-management
     environment:
-      # not guest: guest is only allowed from localhost, the version APIs connect through the host
       RABBITMQ_DEFAULT_USER: rabbit
       RABBITMQ_DEFAULT_PASS: rabbit
     ports:
@@ -29,7 +27,7 @@ services:
       timeout: 10s
       retries: 12
 
-  postgres:
+  notification-db:
     image: postgres:17
     environment:
       POSTGRES_PASSWORD: postgres

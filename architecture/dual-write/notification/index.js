@@ -9,7 +9,6 @@ const pool = new Pool({
 const RABBITMQ_URL = process.env.RABBITMQ_URL || 'amqp://rabbit:rabbit@localhost:5672';
 const QUEUE = 'welcome-emails';
 
-// simulated provider latency
 const DELAY_MS = Number(process.env.DELAY_MS ?? 100);
 
 const SCHEMA = `
@@ -33,8 +32,6 @@ const SCHEMA = `
 const isValid = ({ source, userId, email } = {}) =>
   typeof source === 'string' && /^[\w.-]{1,50}$/.test(source) && /^\d+$/.test(String(userId)) && typeof email === 'string' && email.includes('@');
 
-// records the request, then "sends" the email; shared by the HTTP endpoint and the queue consumer
-// source tags the caller (version1, version2, ...) so each version can be compared on its own
 const sendWelcomeEmail = async ({ source, userId, email, firstName }) => {
   const { rows } = await pool.query(
     'INSERT INTO notification_requests (source, user_id, email) VALUES ($1, $2, $3) RETURNING id',
@@ -65,8 +62,6 @@ app.post('/welcome-email', async (req, res) => {
   }
 });
 
-// messages are acked only after the email is recorded, so anything in flight when the service
-// dies goes back to the queue (at-least-once: a crash between send and ack means a duplicate email)
 const consume = async () => {
   try {
     const connection = await amqp.connect(RABBITMQ_URL);
@@ -76,7 +71,7 @@ const consume = async () => {
     await channel.assertQueue(QUEUE, { durable: true });
     await channel.prefetch(10);
     await channel.consume(QUEUE, async (msg) => {
-      if (!msg) return; // consumer cancelled by the broker
+      if (!msg) return;
       let payload;
       try {
         payload = JSON.parse(msg.content.toString());
@@ -93,11 +88,9 @@ const consume = async () => {
         console.error(err);
       }
       try {
-        // ponytail: immediate requeue spins if the database is down, add a dead-letter queue with backoff if that matters
         if (sent) channel.ack(msg);
         else channel.nack(msg, false, true);
       } catch (err) {
-        // the connection died while this message was in flight: the broker redelivers it after the reconnect
         console.error(`could not settle message for user ${payload.userId}: ${err.message}`);
       }
     });

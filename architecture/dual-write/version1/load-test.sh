@@ -1,25 +1,25 @@
 #!/bin/sh
-# Registers users with k6 while the notification service goes down in the middle of the run,
-# then compares registered users against welcome emails sent.
-# usage: ./load-test.sh   (PHASE=seconds per phase, RATE=users per second)
 set -eu
 here=$(cd "$(dirname "$0")" && pwd)
 notification="$here/../notification"
 PHASE=${PHASE:-10}
 
-# never leave the notification service stopped, even if the run is interrupted
-trap 'docker compose --project-directory "$notification" start notification >/dev/null 2>&1' EXIT
+trap 'docker compose --project-directory "$here" start notification >/dev/null 2>&1' EXIT
+
+echo ">>> clearing version1 users and version1 notification rows"
+docker compose --project-directory "$here" exec -T postgres psql -U postgres -d users -qc "TRUNCATE users RESTART IDENTITY"
+docker compose --project-directory "$here" exec -T notification-db psql -U postgres -d notifications -q \
+  -c "DELETE FROM emails_sent WHERE source = 'version1'" -c "DELETE FROM notification_requests WHERE source = 'version1'"
 
 DURATION="$((PHASE * 3))s" k6 run --quiet "$here/load-test.js" &
 k6_pid=$!
 
 sleep "$PHASE"
 echo ">>> killing notification service"
-# kill, not stop: stop waits 10s for a graceful shutdown, a crash does not
-docker compose --project-directory "$notification" kill notification >/dev/null 2>&1
+docker compose --project-directory "$here" kill notification >/dev/null 2>&1
 sleep "$PHASE"
 echo ">>> starting notification service"
-docker compose --project-directory "$notification" start notification >/dev/null 2>&1
+docker compose --project-directory "$here" start notification >/dev/null 2>&1
 
 wait "$k6_pid" || true
 echo

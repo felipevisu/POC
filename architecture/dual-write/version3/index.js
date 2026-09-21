@@ -10,7 +10,6 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/users',
 });
 
-// idle pooled connections report a dead database here; unhandled, it would crash the process
 pool.on('error', (err) => console.error(`idle database connection lost: ${err.message}`));
 
 const SCHEMA = `
@@ -29,7 +28,6 @@ const SCHEMA = `
 const isValidDate = (s) => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
   const d = new Date(s);
-  // round trip rejects things like 2023-02-30
   return !isNaN(d) && d.toISOString().slice(0, 10) === s && d < new Date();
 };
 
@@ -43,7 +41,6 @@ const RULES = {
   password: (v) => v.length >= 8 && v.length <= 128,
 };
 
-// returns the list of invalid field names
 const validate = (body) =>
   Object.entries(RULES)
     .filter(([field, ok]) => typeof body?.[field] !== 'string' || !ok(body[field]))
@@ -52,7 +49,6 @@ const validate = (body) =>
 const RABBITMQ_URL = process.env.RABBITMQ_URL || 'amqp://rabbit:rabbit@localhost:5672';
 const QUEUE = 'welcome-emails';
 
-// one shared confirm channel, opened on first use and reopened after a connection loss
 let channelPromise;
 const getChannel = () => {
   channelPromise ??= amqp
@@ -71,11 +67,9 @@ const getChannel = () => {
   return channelPromise;
 };
 
-// throws when the broker does not confirm the message, so the caller can roll the registration back
 const queueWelcomeEmail = async (userId, email, firstName) => {
   const channel = await getChannel();
   const message = Buffer.from(JSON.stringify({ source: 'version3', userId, email, firstName }));
-  // resolves only when the broker confirms it has the persistent message
   await new Promise((resolve, reject) =>
     channel.sendToQueue(QUEUE, message, { persistent: true }, (err) => (err ? reject(err) : resolve())),
   );
@@ -97,9 +91,6 @@ app.post('/users', async (req, res) => {
   const { firstName, lastName, documentNumber, email, birthdate, phoneNumber, password } = req.body;
   const passwordHash = await hashPassword(password);
 
-  // the insert and the publish share one transaction: the user is committed only after the broker
-  // confirms the welcome email, and rolled back if it cannot be queued.
-  // not fully atomic: a crash or failed COMMIT after the confirm leaves an email for a user that does not exist
   let client;
   try {
     client = await pool.connect();
@@ -107,7 +98,6 @@ app.post('/users', async (req, res) => {
     console.error(`database unavailable: ${err.message}`);
     return res.status(503).json({ error: 'registration unavailable, nothing was saved, try again' });
   }
-  // without a listener, the database dying while this connection is checked out would crash the process
   const onClientError = (err) => console.error(`database connection lost: ${err.message}`);
   client.on('error', onClientError);
   let broken;
@@ -128,8 +118,6 @@ app.post('/users', async (req, res) => {
       return res.status(503).json({ error: 'registration unavailable, nothing was saved, try again' });
     }
 
-    // if the database goes down in this moment of the code, the email will be send but the user will not exist in the database
-
     await client.query('COMMIT');
     res.status(201).json({
       id: rows[0].id,
@@ -149,7 +137,7 @@ app.post('/users', async (req, res) => {
     res.status(500).json({ error: 'internal error' });
   } finally {
     client.removeListener('error', onClientError);
-    client.release(broken); // a connection that failed is destroyed instead of going back to the pool
+    client.release(broken);
   }
 });
 

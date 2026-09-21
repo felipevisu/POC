@@ -25,7 +25,6 @@ const SCHEMA = `
 const isValidDate = (s) => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
   const d = new Date(s);
-  // round trip rejects things like 2023-02-30
   return !isNaN(d) && d.toISOString().slice(0, 10) === s && d < new Date();
 };
 
@@ -39,7 +38,6 @@ const RULES = {
   password: (v) => v.length >= 8 && v.length <= 128,
 };
 
-// returns the list of invalid field names
 const validate = (body) =>
   Object.entries(RULES)
     .filter(([field, ok]) => typeof body?.[field] !== 'string' || !ok(body[field]))
@@ -47,7 +45,6 @@ const validate = (body) =>
 
 const NOTIFICATION_URL = process.env.NOTIFICATION_URL || 'http://localhost:3001';
 
-// the naive dual write: the user is already committed, so a failure here loses the email for good
 const sendWelcomeEmail = async (userId, email, firstName) => {
   try {
     const response = await fetch(`${NOTIFICATION_URL}/welcome-email`, {

@@ -22,7 +22,6 @@ export const options = {
 };
 
 export default function () {
-  // timestamp + global iteration number keeps document and email unique across runs
   const unique = `${Date.now()}${String(exec.scenario.iterationInTest).padStart(6, '0')}`;
   const res = http.post(
     `${API_URL}/users`,

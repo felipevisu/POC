@@ -1,16 +1,11 @@
 #!/bin/sh
-# Compares registered users (version's database) against welcome emails sent (notification's database).
-# Matches on email address, not user id: after a database crash postgres can hand the same id to a different user.
-# Only counts requests tagged with the version folder's name as source (version1, version2, ...).
-# usage: ./compare.sh [version-folder]   (default: ../version1)
 set -eu
 here=$(cd "$(dirname "$0")" && pwd)
 version=$(cd "${1:-$here/../version1}" && pwd)
 source=$(basename "$version")
 
 users_q() { docker compose --project-directory "$version" exec -T postgres psql -U postgres -d users -At -c "$1"; }
-# query goes through stdin because psql does not interpolate :'src' with -c
-notif_q() { echo "$1" | docker compose --project-directory "$here" exec -T postgres psql -U postgres -d notifications -At -v src="$source"; }
+notif_q() { echo "$1" | docker compose --project-directory "$version" exec -T notification-db psql -U postgres -d notifications -At -v src="$source"; }
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
@@ -23,7 +18,6 @@ echo "users registered:     $(wc -l < "$tmp/users" | tr -d ' ')"
 echo "users with a request: $(wc -l < "$tmp/requested" | tr -d ' ')"
 echo "users with an email:  $(wc -l < "$tmp/emailed" | tr -d ' ')"
 echo
-# prints "label: count", then the first few entries
 report() {
   entries=$(cat)
   count=$(echo "$entries" | grep -c . || true)
