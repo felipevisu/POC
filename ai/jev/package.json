@@ -1,0 +1,20 @@
+{
+  "name": "jev",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node --env-file-if-exists=.env index.js",
+    "agent": "node --env-file-if-exists=.env agent.js",
+    "chat": "node --env-file-if-exists=.env server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "ai": "^7.0.111",
+    "zod": "^4.6.5"
+  }
+}

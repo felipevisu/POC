@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terra Boa — teste do agente</title>
+<style>
+  :root { --bg:#f4efe6; --panel:#fffdf8; --ink:#2a2118; --muted:#7a6d5e; --me:#dcecc6; --bot:#fff; --accent:#b8741a; --line:#e6dccb; --code:#f7f2e8; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#17130f; --panel:#201a14; --ink:#efe6d8; --muted:#a3947f; --me:#35452a; --bot:#2a221a; --accent:#e0a14a; --line:#3a3026; --code:#1b1611; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.45 system-ui, sans-serif; height:100dvh; display:flex; flex-direction:column; }
+  header { padding:12px 16px; border-bottom:1px solid var(--line); background:var(--panel); display:flex; gap:12px; align-items:center; }
+  header h1 { font-size:18px; margin:0; flex:1; }
+  header small { color:var(--muted); font-family:ui-monospace, monospace; font-size:12px; }
+  button { font:inherit; border:1px solid var(--line); background:var(--panel); color:var(--ink); border-radius:8px; padding:6px 12px; cursor:pointer; }
+  button:hover { border-color:var(--accent); }
+  #log { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; max-width:760px; width:100%; margin:0 auto; }
+  .msg { max-width:85%; padding:8px 12px; border-radius:12px; white-space:pre-wrap; box-shadow:0 1px 0 var(--line); }
+  .user { align-self:flex-end; background:var(--me); border-bottom-right-radius:4px; }
+  .bot { align-self:flex-start; background:var(--bot); border-bottom-left-radius:4px; }
+  .err { align-self:center; color:#c0392b; font-size:12px; }
+  .trace { align-self:flex-start; max-width:85%; font-size:12px; color:var(--muted); }
+  .trace summary { cursor:pointer; }
+  .route { display:inline-block; font-family:ui-monospace, monospace; background:var(--code); border:1px solid var(--line); border-radius:6px; padding:1px 6px; margin:2px 4px 2px 0; }
+  .route.tool { color:var(--accent); }
+  .trace pre { background:var(--code); border:1px solid var(--line); border-radius:6px; padding:8px; overflow-x:auto; margin:4px 0; }
+  form { display:flex; gap:8px; padding:12px 16px; border-top:1px solid var(--line); background:var(--panel); max-width:760px; width:100%; margin:0 auto; }
+  input { flex:1; font:inherit; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--bg); color:var(--ink); }
+  input:focus { outline:2px solid var(--accent); outline-offset:-1px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Cervejaria Terra Boa</h1>
+  <small>chat: {{CHAT_MODEL}} · router: {{ROUTER_MODEL}}</small>
+  <button id="reset" type="button">Nova conversa</button>
+</header>
+<main id="log" aria-live="polite"></main>
+<form id="form">
+  <label for="text" hidden>Mensagem</label>
+  <input id="text" autocomplete="off" placeholder="Escreva como cliente…" autofocus>
+  <button>Enviar</button>
+</form>
+<script>
+  let messages = [];
+  const log = document.getElementById('log');
+  const input = document.getElementById('text');
+
+  const add = (cls, text) => {
+    const el = document.createElement('div');
+    el.className = cls;
+    el.textContent = text;
+    log.append(el);
+    log.scrollTop = log.scrollHeight;
+    return el;
+  };
+
+  const addTrace = (trace) => {
+    const d = document.createElement('details');
+    d.className = 'trace';
+    const s = document.createElement('summary');
+    for (const t of trace) {
+      const r = document.createElement('span');
+      r.className = 'route' + (t.route === 'no_tool' ? '' : ' tool');
+      r.textContent = 'jev → ' + t.route;
+      s.append(r);
+    }
+    d.append(s);
+    for (const t of trace) {
+      if (!t.calls.length) continue;
+      const pre = document.createElement('pre');
+      pre.textContent = JSON.stringify({ calls: t.calls, results: t.results }, null, 2);
+      d.append(pre);
+    }
+    log.append(d);
+  };
+
+  document.getElementById('form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    input.disabled = true;
+    add('msg user', text);
+    messages.push({ role: 'user', content: text });
+    const wait = add('msg bot', '…');
+    try {
+      const res = await fetch('/chat', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      messages.push(...data.messages);
+      wait.remove();
+      addTrace(data.trace);
+      add('msg bot', data.text || '(sem texto — limite de passos atingido)');
+    } catch (err) {
+      wait.remove();
+      messages.pop();
+      add('err', 'Erro: ' + err.message);
+    }
+    input.disabled = false;
+    input.focus();
+  });
+
+  document.getElementById('reset').addEventListener('click', async () => {
+    await fetch('/reset', { method: 'POST' });
+    messages = [];
+    log.replaceChildren();
+    input.focus();
+  });
+</script>
+</body>
+</html>
