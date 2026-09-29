@@ -129,7 +129,7 @@
 
   const CHECKS = {
     tool_order: 'Expected tools called in order',
-    turn_order: 'Tools called in the right turn',
+    turn_order: 'Tools called in the right message',
     final_state: 'Backend ended in the expected state',
     cost: 'Within cost limit',
     latency: 'Within time limit',
@@ -156,7 +156,7 @@
       li.append(mark(false), ' ', CHECKS[key] ?? key);
       const reason = String(c.reason ?? '').split('\n')[0];
       const detail = key === 'tool_order' ? `${o.expected_hit}/${o.expected_total}`
-        : key === 'turn_order' ? `${o.turn_checks_passed}/${o.turn_checks_total} turns`
+        : key === 'turn_order' ? `${o.turn_checks_passed}/${o.turn_checks_total} messages`
         : reason.startsWith('Custom function') ? '' : reason;
       if (detail) li.append(el('span', 'detail', ` — ${detail}`));
       checks.append(li);
@@ -204,7 +204,8 @@
 
     const cells = turns.map((t, k) => {
       const cell = el('div', 'turn');
-      const label = el('div', 'turn-n', `Turn ${k + 1}`);
+      const spent = t.metrics?.steps ?? t.trace?.length ?? 0;
+      const label = el('div', 'turn-n', `Message ${k + 1} · ${spent} ${spent === 1 ? 'turn' : 'turns'}`);
       if (t.check) {
         const c = t.check;
         label.append(' · ', mark(c.ok));
@@ -213,7 +214,7 @@
           ...c.forbidden.map((x) => `called ${x} too early`),
         ];
         const rule = [c.expect.length && `expects ${c.expect.join(' → ')}`, c.forbid.length && `must not call ${c.forbid.join(', ')}`].filter(Boolean).join('; ');
-        label.append(el('span', c.ok ? null : 'bad', ` ${c.ok ? 'right turn' : why.join(' · ')}`));
+        label.append(el('span', c.ok ? null : 'bad', ` ${c.ok ? 'right message' : why.join(' · ')}`));
         label.title = rule;
       }
       cell.append(label);
@@ -272,7 +273,7 @@
     }
     const table = el('table');
     const hr = el('tr');
-    for (const h of ['Provider', 'Passed', 'Right order', 'Right turn', 'Total cost', 'Cost per pass', 'Avg time']) hr.append(el('th', null, h));
+    for (const h of ['Provider', 'Passed', 'Right order', 'Right message', 'Total cost', 'Cost per pass', 'Avg time']) hr.append(el('th', null, h));
     table.append(hr);
     for (const [label, b] of by) {
       const tr = el('tr');
