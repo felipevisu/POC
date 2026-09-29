@@ -11,15 +11,16 @@ export default class LoanAgentProvider {
   constructor(options) {
     this.useJev = !!options.config?.useJev;
     this.model = options.config?.model;
+    this.cache = process.env.EVAL_CACHE === 'on';
   }
 
   id() {
-    return `loan-agent:${this.model ?? 'default'}:${this.useJev ? 'jev' : 'direct'}`;
+    return `loan-agent:${this.model ?? 'default'}:${this.useJev ? 'jev' : 'direct'}${this.cache ? ':cache' : ''}`;
   }
 
   async callApi(_prompt, context) {
     try {
-      const r = await exclusive(() => runScenario(context.vars.scenario, this.useJev, this.model));
+      const r = await exclusive(() => runScenario(context.vars.scenario, this.useJev, this.model, this.cache));
       return {
         output: r,
         cost: r.cost_usd,

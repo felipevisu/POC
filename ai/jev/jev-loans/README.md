@@ -14,6 +14,7 @@ The AI Gateway key comes from `../.env` (`AI_GATEWAY_API_KEY`, shared with the c
 # .env (optional)
 CHAT_MODEL=anthropic/claude-opus-5.5   # default: anthropic/claude-haiku-4.5
 ROUTER=off                             # jev off by default in the chat
+CACHE=on                               # prompt cache on by default in the chat (evals use --enable-cache instead)
 ```
 
 ## Services
@@ -29,6 +30,7 @@ ROUTER=off                             # jev off by default in the chat
 ### Chat — http://localhost:4748
 
 - **route with jev** checkbox at the top: turns jev on/off per message.
+- **prompt cache** checkbox: turns prompt caching on/off per message (see [Prompt caching](#prompt-caching)).
 - Side panel: test customers (click to fill in), current step of the process, loans, and running metrics (time, tokens, cost) per mode.
 - The SMS code is always **`123456`**.
 
@@ -56,26 +58,44 @@ Test customers:
 
 ## Benchmark
 
-`eval/promptfooconfig.yaml` defines 6 providers × 10 scenarios (`eval/scenarios.js`):
+`eval/promptfooconfig.yaml` defines 6 providers × 10 scenarios (`eval/scenarios.js`): each model with and without jev.
 
-| Provider | Model | jev |
-|---|---|---|
-| `haiku` / `haiku+jev` | anthropic/claude-haiku-4.5 | no / yes |
-| `sonnet` / `sonnet+jev` | anthropic/claude-sonnet-5.5 | no / yes |
-| `opus` / `opus+jev` | anthropic/claude-opus-5.5 | no / yes |
+| Providers | Model |
+|---|---|
+| `haiku`, `haiku+jev` | anthropic/claude-haiku-4.5 |
+| `sonnet`, `sonnet+jev` | anthropic/claude-sonnet-5.5 |
+| `opus`, `opus+jev` | anthropic/claude-opus-5.5 |
 
 > ⚠️ **Every run calls the models and costs money.** Scenarios run one at a time (the mock backend is shared in-memory state).
 > Reference from earlier runs, per provider over the 10 scenarios: Haiku ≈ $0.25 and ~2–3 min; Opus ≈ $1.60 and ~5 min.
-> The full suite with all 6 providers should land around **$4–5 and 20–25 min** (estimate; Sonnet hasn't been measured yet).
+> Measured without cache over the 10 scenarios: Sonnet ≈ $0.79, Sonnet+jev ≈ $0.35. The full suite with all 6 providers should land around **$4–5 and 20–25 min** (estimate).
+
+Options: `--providers <model>` runs that model with and without jev (`haiku`, `sonnet` or `opus`; comma-separate for more), `--enable-cache` turns prompt caching on, `-n N` runs only the first N scenarios.
 
 ```bash
-npm run eval                                              # everything: 6 providers × 10 scenarios
-npm run eval -- --filter-providers 'haiku'                # haiku and haiku+jev only (regex on the label)
-npm run eval -- --filter-providers '^(sonnet|sonnet\+jev)$'
-npm run eval -- --filter-pattern happy_path               # one scenario, all providers
-npm run eval -- -n 1 --filter-providers 'opus\+jev'       # first scenario, one provider (cheap test)
-npm run eval -- --repeat 3                                # repeat each test 3× (steadier numbers)
+npm run eval -- --providers sonnet                  # sonnet and sonnet+jev, no cache
+npm run eval -- --providers sonnet --enable-cache   # sonnet and sonnet+jev, with cache
+npm run eval -- --providers haiku                   # haiku and haiku+jev
+npm run eval -- --providers opus                    # opus and opus+jev
+npm run eval                                        # all three models
+npm run eval -- -n 1 --providers opus               # first scenario only (cheap test)
 ```
+
+### Prompt caching
+
+Off by default. Add `--enable-cache` to turn it on for every provider in the run; the run file gets a `_cache` suffix (`eval/runs/<date_time>_cache.json`) so cached and uncached runs are easy to tell apart in the replay selector. Compare, for example, `npm run eval -- --providers sonnet` with `npm run eval -- --providers sonnet --enable-cache`.
+
+It uses the AI Gateway's automatic caching (`providerOptions.gateway.caching: 'auto'`) on the chat model only; jev is not cached. The summary shows `cache` and `input_from_cache`, and cost already reflects cache pricing (writes ~1.25× the input price, reads ~0.1×). `CACHE=on` in `.env` only sets the chat's default and never affects evals.
+
+What to expect:
+
+- **Haiku 4.5 only caches prompts of at least 4,096 tokens.** Its average call here is ~3,400 tokens (~2,500 with jev), so most Haiku calls won't cache at all. Sonnet 5.5 and Opus 5.5 cache from 512 tokens.
+- **Changing the tool list breaks the cache.** Tool definitions come first in the cached prefix, and jev narrows or drops them per step, so jev modes get fewer cache hits than direct mode.
+- **Scenarios share the cache.** They run one after another with the same instructions and tools, so later scenarios can read what earlier ones wrote (entries live 5 minutes). That's realistic for production traffic, but it makes cost depend a little on run order.
+
+Don't confuse this with `--no-cache` in the eval script: that disables promptfoo's own result cache, so every run really calls the models.
+
+### Results
 
 When it finishes, the run is saved to `eval/runs/<date_time>.json` and the summary is printed. To see the summary of an earlier run again:
 
@@ -110,6 +130,7 @@ eval/
   scenarios.js          the 10 scripted scenarios
   provider.js           promptfoo custom provider
   summary.js            cost/pass table per provider
+  run.js                `npm run eval` runner: handles --providers and --enable-cache, names the run file, prints the summary
   runs/                 one run per file (gitignored)
 test/
   loans.test.js             domain tests (no model calls)

@@ -144,6 +144,7 @@
     const tokens = (o.input_tokens ?? 0) + (o.output_tokens ?? 0) + (o.router_tokens ?? 0);
     const parts = [o.model, `${usd(o.cost_usd)}${o.router_cost_usd ? ` (router ${usd(o.router_cost_usd)})` : ''}`, secs(o.ms), `${tokens.toLocaleString()} tokens`];
     if (o.jev_routing) parts.push(`jev ${o.jev_routing}`);
+    if (o.cache) parts.push(`cache on: ${o.input_tokens ? Math.round((100 * o.cache_read_tokens) / o.input_tokens) : 0}% of input read from cache`);
     if (o.mode === 'jev' && o.route_ignored) parts.push(`${o.route_ignored} jev routes ignored`);
     head.append(el('div', 'stats', parts.filter(Boolean).join(' · ')));
 

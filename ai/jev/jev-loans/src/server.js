@@ -1,11 +1,12 @@
 import { createServer } from 'node:http';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
-import { reply, reset, state, CHAT_MODEL, ROUTER_MODEL, USE_JEV } from './agent.js';
+import { reply, reset, state, CHAT_MODEL, ROUTER_MODEL, USE_JEV, USE_CACHE } from './agent.js';
 
 const page = readFileSync(new URL('../public/chat.html', import.meta.url), 'utf8')
   .replace('{{CHAT_MODEL}}', CHAT_MODEL)
   .replace('{{ROUTER_MODEL}}', ROUTER_MODEL)
-  .replace('{{USE_JEV}}', USE_JEV ? 'checked' : '');
+  .replace('{{USE_JEV}}', USE_JEV ? 'checked' : '')
+  .replace('{{USE_CACHE}}', USE_CACHE ? 'checked' : '');
 const PORT = process.env.PORT ?? 4748;
 const resultsPage = new URL('../public/results.html', import.meta.url);
 const runsDir = new URL('../eval/runs/', import.meta.url);
@@ -33,8 +34,8 @@ createServer(async (req, res) => {
       if (!runs.includes(run)) return json(res, 404, { error: runs.length ? `Unknown run ${run}` : 'No eval results yet — run `npm run eval` first.' });
       res.writeHead(200, { 'content-type': 'application/json' }).end(readFileSync(new URL(run, runsDir)));
     } else if (req.method === 'POST' && pathname === '/chat') {
-      const { messages, useJev } = await readJson(req);
-      json(res, 200, await reply(messages, { useJev: useJev ?? USE_JEV }));
+      const { messages, useJev, cache } = await readJson(req);
+      json(res, 200, await reply(messages, { useJev: useJev ?? USE_JEV, cache: cache ?? USE_CACHE }));
     } else if (req.method === 'POST' && pathname === '/reset') {
       reset();
       json(res, 200, state());

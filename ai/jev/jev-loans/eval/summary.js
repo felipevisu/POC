@@ -9,7 +9,7 @@ const usd = (x) => `$${x.toFixed(4)}`;
 const by = {};
 for (const r of results) {
   const o = r.response?.output ?? {};
-  const b = (by[r.provider.label] ??= { n: 0, pass: 0, order: 0, turn: 0, chat: 0, router: 0, ms: 0, errors: 0, ignored: 0 });
+  const b = (by[r.provider.label] ??= { n: 0, pass: 0, order: 0, turn: 0, chat: 0, router: 0, ms: 0, errors: 0, ignored: 0, input: 0, cached: 0, cache: false });
   b.n++;
   b.pass += r.success ? 1 : 0;
   b.order += o.expected_total != null && o.expected_hit === o.expected_total ? 1 : 0;
@@ -19,6 +19,9 @@ for (const r of results) {
   b.ms += o.ms ?? 0;
   b.errors += o.tool_errors ?? 0;
   b.ignored += o.route_ignored ?? 0;
+  b.input += o.input_tokens ?? 0;
+  b.cached += o.cache_read_tokens ?? 0;
+  b.cache ||= !!o.cache;
   console.log(`${r.success ? '✓' : '✗'} ${r.vars.scenario.padEnd(22)} ${r.provider.label.padEnd(11)} ${usd(o.cost_usd ?? 0)} ${String(o.ms ?? 0).padStart(6)}ms  ${(o.calls ?? []).join(' → ')}`);
 }
 
@@ -34,4 +37,6 @@ console.table(Object.fromEntries(Object.entries(by).map(([mode, b]) => [mode, {
   avg_ms: Math.round(b.ms / b.n),
   tool_errors: b.errors,
   route_ignored: b.ignored,
+  cache: b.cache ? 'on' : 'off',
+  input_from_cache: b.input ? `${Math.round((100 * b.cached) / b.input)}%` : '—',
 }])));

@@ -26,3 +26,17 @@ test('the next turn sees earlier tool calls and results, not just the text reply
   assert.deepEqual(tools('tool-call'), ['find_customer', 'send_verification_code']);
   assert.deepEqual(tools('tool-result'), ['find_customer', 'send_verification_code']);
 });
+
+test('cache toggle: gateway caching is requested only when on, and cache tokens are reported', async () => {
+  const cachedUsage = { inputTokens: { total: 1000, noCache: 100, cacheRead: 900, cacheWrite: 0 }, outputTokens: { total: 5, text: 5 } };
+  const model = new MockLanguageModelV3({ doGenerate: async () => ({ ...text('hi'), usage: cachedUsage, warnings: [] }) });
+  reset();
+  const on = await reply([{ role: 'user', content: 'hi' }], { useJev: false, model, cache: true });
+  const off = await reply([{ role: 'user', content: 'hi' }], { useJev: false, model, cache: false });
+  const [first, second] = model.doGenerateCalls;
+  assert.deepEqual(first.providerOptions?.gateway, { caching: 'auto' });
+  assert.equal(second.providerOptions?.gateway, undefined);
+  assert.equal(on.metrics.cache, true);
+  assert.equal(off.metrics.cache, false);
+  assert.equal(on.metrics.cache_read_tokens, 900);
+});

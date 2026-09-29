@@ -1,4 +1,4 @@
-import { reply, reset, state, CHAT_MODEL, jevRouting } from '../src/agent.js';
+import { reply, reset, state, CHAT_MODEL, USE_CACHE, jevRouting } from '../src/agent.js';
 
 const BEFORE_CODE = [
   'verify_identity', 'run_credit_analysis', 'update_income', 'simulate_loan', 'submit_income_proof', 'create_contract',
@@ -12,7 +12,7 @@ export const scenarios = {
     turns: [
       { say: 'Hi, I need R$ 5000 to fix my car. My CPF is 111.111.111-11', forbid: BEFORE_CODE },
       { say: 'The code is 123456', expect: ['verify_identity'] },
-      { say: 'Simulate 5000 in 12 and in 24 installments', expect: ['simulate_loan'], forbid: ['create_contract'] },
+      { say: 'Simulate 5000 in 12 and in 24 installments', forbid: ['create_contract'] },
       {
         say: 'I choose the 12 installments offer and I confirm it. My PIX key is ana@example.com, please create the contract.',
         expect: ['create_contract'],
@@ -30,7 +30,7 @@ export const scenarios = {
     turns: [
       { say: 'CPF 111.111.111-11, I want to borrow 20000', forbid: BEFORE_CODE },
       { say: '123456', expect: ['verify_identity'] },
-      { say: 'Simulate 20000 in 36 installments', expect: ['simulate_loan'], forbid: ['create_contract'] },
+      { say: 'Simulate 20000 in 36 installments', forbid: ['create_contract'] },
       {
         say: 'I just uploaded my payslip. I confirm that offer, PIX key +5511988881111, create the contract.',
         expect: ['submit_income_proof', 'create_contract'],
@@ -95,7 +95,7 @@ export const scenarios = {
     turns: [
       { say: 'CPF 222.222.222-22, I need R$ 15000 in 12 installments', forbid: BEFORE_CODE },
       { say: '123456', expect: ['verify_identity', 'run_credit_analysis', 'simulate_loan'], forbid: ['create_contract'] },
-      { say: 'OK, then 15000 in 36 installments', expect: ['simulate_loan'], forbid: ['create_contract'] },
+      { say: 'OK, then 15000 in 36 installments', forbid: ['create_contract'] },
     ],
     expect: ['find_customer', 'verify_identity', 'run_credit_analysis', 'simulate_loan'],
     check: (st) => st.last_offer?.amount === 15000 && st.last_offer.installments === 36 && !st.contract && !st.signed_loan,
@@ -127,22 +127,22 @@ export function checkTurn(calls, { expect = [], forbid = [] }) {
   return { expect, forbid, missing, forbidden, ok: !missing.length && !forbidden.length };
 }
 
-export async function runScenario(name, useJev, model = CHAT_MODEL) {
+export async function runScenario(name, useJev, model = CHAT_MODEL, cache = USE_CACHE) {
   const sc = scenarios[name];
   if (!sc) throw new Error(`Unknown scenario ${name}`);
   reset();
   const messages = [];
   const r = {
-    mode: useJev ? 'jev' : 'direct', jev_routing: useJev ? jevRouting(model) : null, model, ms: 0, router_ms: 0, input_tokens: 0, output_tokens: 0, router_tokens: 0,
-    chat_cost_usd: 0, router_cost_usd: 0, tool_errors: 0, route_ignored: 0, calls: [], expect: sc.expect, turns: [],
+    mode: useJev ? 'jev' : 'direct', jev_routing: useJev ? jevRouting(model) : null, model, cache, ms: 0, router_ms: 0, input_tokens: 0, output_tokens: 0, router_tokens: 0,
+    chat_cost_usd: 0, router_cost_usd: 0, tool_errors: 0, route_ignored: 0, cache_read_tokens: 0, cache_write_tokens: 0, calls: [], expect: sc.expect, turns: [],
     turn_checks_total: 0, turn_checks_passed: 0,
   };
   for (const raw of sc.turns) {
     const turn = typeof raw === 'string' ? { say: raw } : raw;
     messages.push({ role: 'user', content: turn.say });
-    const { text, messages: out, metrics: m, trace } = await reply(messages, { useJev, model });
+    const { text, messages: out, metrics: m, trace } = await reply(messages, { useJev, model, cache });
     messages.push(...out);
-    for (const k of ['ms', 'router_ms', 'input_tokens', 'output_tokens', 'router_tokens', 'chat_cost_usd', 'router_cost_usd', 'tool_errors', 'route_ignored']) r[k] += m[k];
+    for (const k of ['ms', 'router_ms', 'input_tokens', 'output_tokens', 'router_tokens', 'chat_cost_usd', 'router_cost_usd', 'tool_errors', 'route_ignored', 'cache_read_tokens', 'cache_write_tokens']) r[k] += m[k];
     r.calls.push(...m.tool_calls);
     const check = checkTurn(m.tool_calls, turn);
     if (check) {

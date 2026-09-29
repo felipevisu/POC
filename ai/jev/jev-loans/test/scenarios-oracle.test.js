@@ -109,3 +109,24 @@ for (const [name, sc] of Object.entries(scenarios)) {
     assert.ok(sc.check(L.state()), `final_state: ${JSON.stringify(L.state())}`);
   });
 }
+
+test('an agent that simulates ahead of the request still passes', () => {
+  const early = scenarios.happy_path;
+  L.reset();
+  const calls = [];
+  const run = (tool, fn) => { calls.push(tool); return fn(); };
+  run('find_customer', () => L.findCustomer({ cpf: '11111111111' }));
+  run('send_verification_code', () => L.sendVerificationCode());
+  assert.ok(checkTurn(calls.splice(0), early.turns[0]).ok !== false);
+  run('verify_identity', () => L.verifyIdentity({ code: '123456' }));
+  run('run_credit_analysis', () => L.runCreditAnalysis());
+  const o12 = run('simulate_loan', () => L.simulateLoan({ amount: 5000, installments: 12 }));
+  run('simulate_loan', () => L.simulateLoan({ amount: 5000, installments: 24 }));
+  assert.ok(checkTurn(calls.splice(0), early.turns[1]).ok);
+  assert.ok(checkTurn([], early.turns[2]).ok, 'answering turn 3 from earlier simulations is fine');
+  const k = run('create_contract', () => L.createContract({ offer_id: o12.offer_id, pix_key: 'ana@example.com' }));
+  assert.ok(checkTurn(calls.splice(0), early.turns[3]).ok);
+  run('sign_contract', () => L.signContract({ contract_id: k.contract_id, code: '123456' }));
+  assert.ok(checkTurn(calls.splice(0), early.turns[4]).ok);
+  assert.ok(early.check(L.state()));
+});

@@ -25,3 +25,30 @@ test('jev forces the tool except for models that reject forced toolChoice', asyn
   assert.equal(jevRouting('anthropic/claude-sonnet-5.5'), 'soft');
   assert.equal(jevRouting('anthropic/claude-opus-5.5'), 'soft');
 });
+
+test('--enable-cache turns caching on for the whole run and marks the run file', async () => {
+  const { parseArgs, runFile } = await import('../eval/run.js');
+  assert.deepEqual(parseArgs(['--filter-providers', 'sonnet', '--enable-cache']), { cache: true, promptfooArgs: ['--filter-providers', 'sonnet'] });
+  assert.deepEqual(parseArgs(['-n', '1']), { cache: false, promptfooArgs: ['-n', '1'] });
+  const labels = ['haiku', 'haiku+jev', 'sonnet', 'sonnet+jev', 'opus', 'opus+jev'];
+  const pick = (argv) => { const f = parseArgs(argv).promptfooArgs; const re = new RegExp(f[f.indexOf('--filter-providers') + 1]); return labels.filter((l) => re.test(l)); };
+  assert.deepEqual(pick(['--providers', 'sonnet']), ['sonnet', 'sonnet+jev']);
+  assert.deepEqual(pick(['--providers', 'haiku']), ['haiku', 'haiku+jev']);
+  assert.deepEqual(pick(['--providers', 'opus', '--enable-cache']), ['opus', 'opus+jev']);
+  assert.deepEqual(pick(['--providers', 'haiku,opus']), ['haiku', 'haiku+jev', 'opus', 'opus+jev']);
+  assert.throws(() => parseArgs(['--providers']), /model names/);
+  assert.throws(() => parseArgs(['--providers', 'sonnet+jev']), /model names/);
+  const d = new Date('2026-09-28T22:40:00Z');
+  assert.equal(runFile(d, true), 'eval/runs/2026-09-28_22-40-00_cache.json');
+  assert.equal(runFile(d, false), 'eval/runs/2026-09-28_22-40-00.json');
+
+  const { default: Provider } = await import('../eval/provider.js');
+  process.env.EVAL_CACHE = 'on';
+  const cached = new Provider({ config: { model: 'anthropic/claude-sonnet-5.5', useJev: true } });
+  process.env.EVAL_CACHE = 'off';
+  const plain = new Provider({ config: { model: 'anthropic/claude-sonnet-5.5', useJev: true } });
+  delete process.env.EVAL_CACHE;
+  assert.equal(cached.cache, true);
+  assert.equal(plain.cache, false);
+  assert.notEqual(plain.id(), cached.id());
+});

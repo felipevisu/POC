@@ -6,6 +6,7 @@ import * as loans from './loans.js';
 export const CHAT_MODEL = process.env.CHAT_MODEL ?? 'anthropic/claude-haiku-4.5';
 export const ROUTER_MODEL = 'typesafe-ai/jev';
 export const USE_JEV = process.env.ROUTER !== 'off';
+export const USE_CACHE = process.env.CACHE === 'on';
 
 const desc = {
   get_loan_info:
@@ -139,7 +140,7 @@ export const jevRouting = (model) => (SOFT_ROUTING_MODELS.has(model) ? 'soft' : 
 export const reset = () => loans.reset();
 export const state = () => loans.state();
 
-export async function reply(messages, { useJev = USE_JEV, model = CHAT_MODEL } = {}) {
+export async function reply(messages, { useJev = USE_JEV, model = CHAT_MODEL, cache = USE_CACHE } = {}) {
   const started = performance.now();
   const routing = jevRouting(model);
   const routes = [];
@@ -148,6 +149,7 @@ export async function reply(messages, { useJev = USE_JEV, model = CHAT_MODEL } =
   let routerCost = 0;
   const result = await generateText({
     model,
+    providerOptions: cache ? { gateway: { caching: 'auto' } } : undefined,
     instructions: INSTRUCTIONS,
     messages,
     tools,
@@ -182,7 +184,10 @@ export async function reply(messages, { useJev = USE_JEV, model = CHAT_MODEL } =
     tool_calls: trace.flatMap((t) => t.calls.map((c) => c.tool)),
     tool_errors: trace.flatMap((t) => t.results).filter((r) => r.output?.error).length,
     route_ignored: useJev ? trace.filter((t) => t.route !== 'no_tool' && !t.calls.some((c) => c.tool === t.route)).length : 0,
+    cache,
     input_tokens: result.totalUsage?.inputTokens ?? 0,
+    cache_read_tokens: result.totalUsage?.inputTokenDetails?.cacheReadTokens ?? 0,
+    cache_write_tokens: result.totalUsage?.inputTokenDetails?.cacheWriteTokens ?? 0,
     output_tokens: result.totalUsage?.outputTokens ?? 0,
     router_tokens: routerTokens,
     chat_cost_usd: result.steps.reduce((sum, step) => sum + gatewayCost(step.providerMetadata), 0),
