@@ -1,0 +1,37 @@
+{
+  "name": "list-bff",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "node --watch server/index.js & vite",
+    "server": "node --watch server/index.js",
+    "build": "tsc --noEmit && vite build",
+    "test": "node --test server/*.test.js && jest",
+    "test:ui": "jest"
+  },
+  "type": "module",
+  "dependencies": {
+    "@tanstack/react-query": "^5.104.0",
+    "axios": "^1.20.0",
+    "express": "^5.2.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^8.0.6",
+    "@rolldown/plugin-babel": "^0.2.4",
+    "@swc/core": "^1.16.12",
+    "@swc/jest": "^0.2.39",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "jest": "^30.5.2",
+    "jest-environment-jsdom": "^30.5.2",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.1"
+  },
+  "private": true
+}
