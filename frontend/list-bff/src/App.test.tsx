@@ -120,3 +120,22 @@ it('an invalid date left in the field reverts instead of becoming the filter', a
   expect((screen.getByLabelText('Report date') as HTMLInputElement).value).toBe(daysAgo(1))
   expect(query().reportDate).toBeUndefined()
 })
+
+it('category dropdown: checking options filters, the button summarizes, All clears', async () => {
+  const button = screen.getByRole('button', { name: /Categories/ })
+  expect(button.textContent).toBe('All')
+
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Fee' }))
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Deposit' }))
+  await settle()
+  expect(query().categories).toBe('Deposit,Fee')
+  expect(button.textContent).toBe('Deposit, Fee') // options order
+  expect((screen.getByRole('checkbox', { name: 'All' }) as HTMLInputElement).checked).toBe(false)
+  expect(callsTo('daily-cash').at(-1)).toContain('"categories":"Deposit,Fee"')
+
+  fireEvent.click(screen.getByRole('checkbox', { name: 'All' }))
+  await settle()
+  expect(query().categories).toBeUndefined()
+  expect(button.textContent).toBe('All')
+  expect((screen.getByRole('checkbox', { name: 'All' }) as HTMLInputElement).checked).toBe(true)
+})

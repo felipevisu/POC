@@ -13,10 +13,17 @@ h1 { font-size: 1.4rem; }
 .filters { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; margin-bottom: 16px; }
 label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; }
 input, select, button { font: inherit; padding: 4px 8px; }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; border: 0; padding: 0; margin: 0; }
-.chips legend { font-size: 0.85rem; margin-bottom: 4px; }
-.chips button { border: 1px solid var(--border); border-radius: 999px; background: none; color: inherit; cursor: pointer; }
-.chips button[aria-pressed='true'] { background: var(--accent); border-color: var(--accent); color: white; }
+.field { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; }
+.select { min-width: 11rem; max-width: 16rem; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  padding-right: 1.6rem; border: 1px solid var(--border); border-radius: 4px; background: none; color: inherit; cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: right 0.75rem center, right 0.45rem center; background-size: 0.3rem 0.3rem; background-repeat: no-repeat; }
+/* Popover list, anchored under its button. Only styled as flex while open, so the popover's own display:none still applies when closed. */
+.select-list { inset: auto; top: anchor(bottom); left: anchor(left); min-width: anchor-size(width); margin: 4px 0 0;
+  padding: 6px; border: 1px solid var(--border); border-radius: 6px; background: Canvas; color: CanvasText; }
+.select-list:popover-open { display: flex; flex-direction: column; gap: 2px; }
+.select-list label { flex-direction: row; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
+.select-list label:hover { background: color-mix(in srgb, currentColor 8%, transparent); }
 .results { transition: opacity 0.15s; }
 .results[aria-busy='true'] { opacity: 0.5; }
 table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }

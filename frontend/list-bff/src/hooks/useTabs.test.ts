@@ -50,3 +50,16 @@ it('single → single keeps the report date', () => {
   act(() => result.current.selectTab(as))
   expect(query()).toEqual({ reportDate: '2026-09-20', tab: 'account-summary' })
 })
+
+it('single → range: the 30 days cross month, year and leap-day boundaries', () => {
+  for (const [reportDate, startDate] of [
+    ['2026-01-15', '2025-12-16'],
+    ['2024-03-30', '2024-02-29'],
+  ]) {
+    history.replaceState(null, '', `/?reportDate=${reportDate}`)
+    const { result, unmount } = setup()
+    act(() => result.current.selectTab(op))
+    expect(query()).toMatchObject({ startDate, endDate: reportDate })
+    unmount()
+  }
+})

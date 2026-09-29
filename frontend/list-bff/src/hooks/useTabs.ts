@@ -1,5 +1,5 @@
 import { createContext, useState } from 'react'
-import { defaultRange, defaultReportDate, rangeEndingOn } from '../dates'
+import { defaultRange, defaultReportDate } from '../dates'
 import { setUrlParams, useUrlParam } from './useUrlParam'
 
 type TabLike = { id: string; dates: 'single' | 'range' }
@@ -20,17 +20,26 @@ export function useTabs<T extends TabLike>(tabs: readonly T[]) {
   if (!opened.has(active.id)) setOpened(new Set(opened).add(active.id))
 
   const selectTab = (next: T) => {
+    const url = new URLSearchParams(location.search)
     // A new tab starts on its first page.
     const patch: Record<string, string | null> = { tab: next.id, page: null }
-    // Each tab's URL only holds its own date params; the date carries over between modes.
-    const params = new URLSearchParams(location.search)
+
+    // Single date → range: the range ends on the report date and starts 30 days earlier.
     if (active.dates === 'single' && next.dates === 'range') {
-      // Range ends on the report date and starts 30 days earlier.
-      Object.assign(patch, rangeEndingOn(params.get('reportDate') ?? defaultReportDate()), { reportDate: null })
-    } else if (active.dates === 'range' && next.dates === 'single') {
-      // Report date is where the range ended (the default end if the URL has none).
-      Object.assign(patch, { reportDate: params.get('endDate') ?? defaultRange().endDate, startDate: null, endDate: null })
+      const end = url.get('reportDate') ?? defaultReportDate()
+      const [y, m, d] = end.split('-').map(Number)
+      patch.startDate = new Date(y, m - 1, d - 30).toLocaleDateString('en-CA') // calendar math, DST-safe
+      patch.endDate = end
+      patch.reportDate = null
     }
+
+    // Range → single date: the report date is where the range ended.
+    if (active.dates === 'range' && next.dates === 'single') {
+      patch.reportDate = url.get('endDate') ?? defaultRange().endDate
+      patch.startDate = null
+      patch.endDate = null
+    }
+
     setUrlParams(patch)
   }
 
