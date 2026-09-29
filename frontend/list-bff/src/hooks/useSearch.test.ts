@@ -45,3 +45,10 @@ it('follows the URL when it changes from outside (Back/Forward)', () => {
   act(() => setUrlParams({ search: 'ACC-1' }))
   expect(result.current.input.value).toBe('ACC-1')
 })
+
+it('commits a pending search right away when hidden/unmounted mid-debounce', () => {
+  const { result, unmount } = setup()
+  act(() => result.current.input.setValue('ACC-1'))
+  unmount() // what <Activity mode="hidden"> does to effects
+  expect(new URLSearchParams(location.search).get('search')).toBe('ACC-1')
+})

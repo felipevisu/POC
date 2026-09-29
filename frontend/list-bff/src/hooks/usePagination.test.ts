@@ -30,3 +30,11 @@ it('empty result still has one page and no next', () => {
   const { result } = renderHook(() => usePagination(0))
   expect(result.current).toMatchObject({ page: 0, pageCount: 1, hasPrev: false, hasNext: false })
 })
+
+it('invalid page/pageSize in the URL fall back to defaults', () => {
+  history.replaceState(null, '', '/?page=abc&pageSize=1000')
+  const { result } = renderHook(() => usePagination(25))
+  expect(result.current).toMatchObject({ page: 0, pageCount: 3 }) // pageSize fell back to 10
+  history.replaceState(null, '', '/?page=-2')
+  expect(renderHook(() => usePagination(25)).result.current.page).toBe(0)
+})

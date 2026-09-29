@@ -1,7 +1,7 @@
 import { ListView } from '../components/ListView'
 import type { Column } from '../components/DataTable'
 import { CATEGORIES } from '../categories'
-import { daysAgo } from '../dates'
+import { defaultRange } from '../dates'
 import { money } from '../format'
 
 type Loan = { id: string; date: string; loanId: string; borrower: string; category: string; principal: number; rate: number }
@@ -22,7 +22,7 @@ export default function OutstandingPrincipal() {
       endpoint="outstanding-principal"
       columns={columns}
       categories={CATEGORIES}
-      dates={{ startDate: daysAgo(7), endDate: daysAgo(0) }}
+      dates={defaultRange()}
     />
   )
 }

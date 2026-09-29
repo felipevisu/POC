@@ -36,15 +36,20 @@ export function ListView<T extends { id: string }>({ title, endpoint, columns, c
       </div>
       <ErrorBoundary>
         <Suspense fallback={<p className="muted">Loading…</p>}>
-          <Results endpoint={endpoint} columns={columns} dates={dates} />
+          <Results endpoint={endpoint} columns={columns} dates={dates} searchable={!!searchLabel} />
         </Suspense>
       </ErrorBoundary>
     </>
   )
 }
 
-function Results<T extends { id: string }>({ endpoint, columns, dates }: Pick<Props<T>, 'endpoint' | 'columns' | 'dates'>) {
-  const { data, isStale } = useListQuery<T>(endpoint, dates)
+function Results<T extends { id: string }>({
+  endpoint,
+  columns,
+  dates,
+  searchable,
+}: Pick<Props<T>, 'endpoint' | 'columns' | 'dates'> & { searchable: boolean }) {
+  const { data, isStale } = useListQuery<T>(endpoint, dates, searchable)
   return (
     <div className="results" aria-busy={isStale}>
       <DataTable rows={data.items} columns={columns} />

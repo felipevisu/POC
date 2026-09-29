@@ -1,5 +1,5 @@
 import { createContext, useState } from 'react'
-import { defaultReportDate, rangeEndingOn } from '../dates'
+import { defaultRange, defaultReportDate, rangeEndingOn } from '../dates'
 import { setUrlParams, useUrlParam } from './useUrlParam'
 
 type TabLike = { id: string; dates: 'single' | 'range' }
@@ -28,8 +28,8 @@ export function useTabs<T extends TabLike>(tabs: readonly T[]) {
       // Range ends on the report date and starts 30 days earlier.
       Object.assign(patch, rangeEndingOn(params.get('reportDate') ?? defaultReportDate()), { reportDate: null })
     } else if (active.dates === 'range' && next.dates === 'single') {
-      // Report date is where the range ended.
-      Object.assign(patch, { reportDate: params.get('endDate'), startDate: null, endDate: null })
+      // Report date is where the range ended (the default end if the URL has none).
+      Object.assign(patch, { reportDate: params.get('endDate') ?? defaultRange().endDate, startDate: null, endDate: null })
     }
     setUrlParams(patch)
   }

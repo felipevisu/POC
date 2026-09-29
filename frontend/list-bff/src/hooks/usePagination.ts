@@ -3,14 +3,16 @@ import { setUrlParams, useUrlParam } from './useUrlParam'
 export const PAGE_SIZES = [10, 25, 50, 100]
 
 export function usePageSize() {
-  const pageSize = Number(useUrlParam('pageSize', '10'))
+  const n = Number(useUrlParam('pageSize', '10'))
+  const pageSize = PAGE_SIZES.includes(n) ? n : 10 // hand-edited URLs can't break paging
   const setPageSize = (size: number) => setUrlParams({ pageSize: String(size), page: null })
   return { pageSize, setPageSize }
 }
 
 /** Current page, zero-based (store, API and hook); only the UI shows it +1. Needs no `total`, so it's usable before fetching. */
 export function usePage() {
-  const page = Number(useUrlParam('page', '0'))
+  const n = Number(useUrlParam('page', '0'))
+  const page = Number.isInteger(n) && n > 0 ? n : 0 // `?page=abc` or `-1` → first page
   const setPage = (p: number) => setUrlParams({ page: p > 0 ? String(p) : null })
   return { page, setPage }
 }

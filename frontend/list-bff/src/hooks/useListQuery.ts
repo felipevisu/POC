@@ -9,24 +9,28 @@ import { TabActiveContext } from './useTabs'
 
 export type Page<T> = { items: T[]; total: number; page: number; pageSize: number }
 
-/** Reads the filters from the URL and fetches that page. Suspends: wrap in <Suspense> + <ErrorBoundary>. */
-export function useListQuery<T>(endpoint: string, dateDefaults: DateDefaults) {
+/**
+ * Reads the filters from the URL and fetches that page. Suspends: wrap in <Suspense> + <ErrorBoundary>.
+ * `searchable: false` leaves `search` out, so a list without search never refetches when it changes.
+ */
+export function useListQuery<T>(endpoint: string, dateDefaults: DateDefaults, searchable: boolean) {
   const { single, reportDate, startDate, endDate } = useDateParams(dateDefaults)
   const { raw: categories } = useMultiSelect('categories')
   const { pageSize } = usePageSize()
   const { page } = usePage()
   const search = useSearch()
+  const searchParam = searchable ? search : ''
 
   // Stable identity matters: isStale compares params by reference.
   const params = useMemo(
     () => ({
       ...(single ? { reportDate } : { startDate, endDate }),
       categories,
-      search,
+      ...(searchParam && { search: searchParam }),
       page: String(page),
       pageSize: String(pageSize),
     }),
-    [single, reportDate, startDate, endDate, categories, search, page, pageSize],
+    [single, reportDate, startDate, endDate, categories, searchParam, page, pageSize],
   )
   // A hidden tab keeps the params it had while visible: switching tabs rewrites the URL
   // (e.g. clears the other tab's dates), and a hidden tab must not fetch for that.

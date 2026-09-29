@@ -8,6 +8,9 @@ export function daysAgo(n: number) {
 /** Default for single-date tabs: yesterday. */
 export const defaultReportDate = () => daysAgo(1)
 
+/** Default for the range tab when the URL has no dates: the last 7 days. */
+export const defaultRange = () => ({ startDate: daysAgo(7), endDate: daysAgo(0) })
+
 /** `days` days before a YYYY-MM-DD date (calendar math, DST-safe). */
 export function daysBefore(date: string, days: number) {
   const [y, m, d] = date.split('-').map(Number)

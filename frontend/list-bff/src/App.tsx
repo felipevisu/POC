@@ -32,7 +32,8 @@ export function App() {
         ))}
       </div>
       {/* Activity hides opened-but-inactive tabs without unmounting them (keeps scroll,
-          input state, fetched data). While hidden they don't re-render, so they don't fetch. */}
+          input state, fetched data). Hidden tabs don't fetch: useListQuery keeps the params
+          they had while visible (TabActiveContext). */}
       {openedTabs.map(({ id, Page }) => (
         <Activity key={id} mode={id === active.id ? 'visible' : 'hidden'}>
           <section role="tabpanel" id={`panel-${id}`} aria-labelledby={`tab-${id}`}>

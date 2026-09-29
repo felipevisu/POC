@@ -4,20 +4,20 @@ import { setUrlParams, useUrlParam } from './useUrlParam'
 
 describe('useUrlParam', () => {
   it('returns the fallback when the param is missing, else the URL value', () => {
-    expect(renderHook(() => useUrlParam('from', '2026-01-01')).result.current).toBe('2026-01-01')
-    history.replaceState(null, '', '/?from=2026-09-20')
-    expect(renderHook(() => useUrlParam('from', '2026-01-01')).result.current).toBe('2026-09-20')
+    expect(renderHook(() => useUrlParam('reportDate', '2026-01-01')).result.current).toBe('2026-01-01')
+    history.replaceState(null, '', '/?reportDate=2026-09-20')
+    expect(renderHook(() => useUrlParam('reportDate', '2026-01-01')).result.current).toBe('2026-09-20')
   })
 
   it('only re-renders when its own param changes', () => {
     let renders = 0
     renderHook(() => {
       renders++
-      return useUrlParam('from')
+      return useUrlParam('reportDate')
     })
     act(() => setUrlParams({ page: '2' })) // unrelated param
     expect(renders).toBe(1)
-    act(() => setUrlParams({ from: '2026-09-20' }))
+    act(() => setUrlParams({ reportDate: '2026-09-20' }))
     expect(renders).toBe(2)
   })
 
@@ -43,9 +43,9 @@ describe('useUrlParam', () => {
 
 describe('setUrlParams', () => {
   it('patches params, keeping the others; null or "" removes', () => {
-    history.replaceState(null, '', '/?tab=daily-cash&dc.page=4&dc.categories=Fee')
-    setUrlParams({ 'dc.page': null, 'dc.categories': '', 'dc.search': 'ACC' })
-    expect(location.search).toBe('?tab=daily-cash&dc.search=ACC')
+    history.replaceState(null, '', '/?tab=daily-cash&page=4&categories=Fee')
+    setUrlParams({ page: null, categories: '', search: 'ACC' })
+    expect(location.search).toBe('?tab=daily-cash&search=ACC')
   })
 
   it('pushes a history entry, so Back undoes the change', () => {
