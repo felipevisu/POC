@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lumen Crédito — loan agent test</title>
+<style>
+  :root { --bg:#eef2f1; --panel:#fbfdfc; --ink:#14201d; --muted:#5d6e69; --me:#cfe9df; --bot:#fff; --accent:#0f7a5c; --line:#d6e0dc; --code:#f2f6f4; --warn:#b3261e; --done:#0f7a5c; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0e1513; --panel:#141d1a; --ink:#e3ece8; --muted:#8fa39c; --me:#1d4034; --bot:#1a2521; --accent:#3fc59a; --line:#26332f; --code:#101916; --warn:#f2877f; --done:#3fc59a; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.45 system-ui, sans-serif; height:100dvh; display:flex; flex-direction:column; }
+  header { padding:12px 16px; border-bottom:1px solid var(--line); background:var(--panel); display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  header h1 { font-size:18px; margin:0; flex:1; }
+  header small { color:var(--muted); font-family:ui-monospace, monospace; font-size:12px; }
+  label.toggle { display:flex; gap:6px; align-items:center; font-size:13px; cursor:pointer; }
+  header a { color:var(--accent); font-size:13px; }
+  button { font:inherit; border:1px solid var(--line); background:var(--panel); color:var(--ink); border-radius:8px; padding:6px 12px; cursor:pointer; }
+  button:hover { border-color:var(--accent); }
+  .wrap { flex:1; display:flex; min-height:0; }
+  .chat { flex:1; display:flex; flex-direction:column; min-width:0; }
+  #log { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; }
+  aside { width:300px; border-left:1px solid var(--line); background:var(--panel); padding:16px; overflow-y:auto; font-size:13px; }
+  aside h2 { font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:16px 0 8px; }
+  aside h2:first-child { margin-top:0; }
+  ol.steps { list-style:none; padding:0; margin:0; }
+  ol.steps li { padding:4px 0 4px 22px; position:relative; color:var(--muted); }
+  ol.steps li::before { content:''; position:absolute; left:4px; top:9px; width:9px; height:9px; border-radius:50%; border:2px solid var(--line); }
+  ol.steps li.done { color:var(--ink); }
+  ol.steps li.done::before { background:var(--done); border-color:var(--done); }
+  ol.steps li.fail { color:var(--warn); }
+  ol.steps li.fail::before { background:var(--warn); border-color:var(--warn); }
+  .persona { display:block; width:100%; text-align:left; margin-bottom:6px; font-size:13px; }
+  .persona span { color:var(--muted); display:block; font-size:12px; }
+  .hint { color:var(--muted); font-size:12px; }
+  .stats td { padding:2px 8px 2px 0; font-variant-numeric:tabular-nums; }
+  .msg { max-width:85%; padding:8px 12px; border-radius:12px; white-space:pre-wrap; box-shadow:0 1px 0 var(--line); }
+  .user { align-self:flex-end; background:var(--me); border-bottom-right-radius:4px; }
+  .bot { align-self:flex-start; background:var(--bot); border-bottom-left-radius:4px; }
+  .err { align-self:center; color:var(--warn); font-size:12px; }
+  .trace { align-self:flex-start; max-width:85%; font-size:12px; color:var(--muted); }
+  .trace summary { cursor:pointer; }
+  .route { display:inline-block; font-family:ui-monospace, monospace; background:var(--code); border:1px solid var(--line); border-radius:6px; padding:1px 6px; margin:2px 4px 2px 0; }
+  .route.tool { color:var(--accent); }
+  .route.bad { color:var(--warn); }
+  .trace pre { background:var(--code); border:1px solid var(--line); border-radius:6px; padding:8px; overflow-x:auto; margin:4px 0; }
+  form { display:flex; gap:8px; padding:12px 16px; border-top:1px solid var(--line); background:var(--panel); }
+  input[type=text] { flex:1; font:inherit; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--bg); color:var(--ink); }
+  input:focus-visible, button:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+  @media (max-width: 760px) { .wrap { flex-direction:column; } aside { width:auto; border-left:0; border-top:1px solid var(--line); max-height:35vh; order:2; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Lumen Crédito <small>mock loans</small></h1>
+  <small>chat: {{CHAT_MODEL}}</small>
+  <label class="toggle"><input type="checkbox" id="jev" {{USE_JEV}}> route with {{ROUTER_MODEL}}</label>
+  <a href="/results">Eval replay</a>
+  <button id="reset" type="button">New conversation</button>
+</header>
+<div class="wrap">
+  <div class="chat">
+    <main id="log" aria-live="polite"></main>
+    <form id="form">
+      <label for="text" hidden>Message</label>
+      <input type="text" id="text" autocomplete="off" placeholder="Write as the customer… e.g. “I need R$ 5,000”" autofocus>
+      <button>Send</button>
+    </form>
+  </div>
+  <aside>
+    <h2>Process</h2>
+    <ol class="steps" id="steps"></ol>
+    <h2>Loans</h2>
+    <div id="loans" class="hint">—</div>
+    <h2>Test personas</h2>
+    <div id="personas"></div>
+    <p class="hint">Any other CPF → registration flow. SMS code is always <b>123456</b>.</p>
+    <h2>Session metrics</h2>
+    <table class="stats" id="stats"></table>
+  </aside>
+</div>
+<script>
+  let messages = [];
+  const $ = (id) => document.getElementById(id);
+  const log = $('log');
+  const input = $('text');
+  const totals = { jev: [], direct: [] };
+
+  const personas = [
+    ['111.111.111-11', 'Ana — score 820, income R$ 9k', 'tier A, up to R$ 50k'],
+    ['222.222.222-22', 'Bruno — score 640, income R$ 3.5k', 'tier B, small budget'],
+    ['333.333.333-33', 'Carla — negative record', 'denied'],
+    ['444.444.444-44', 'Diego — has an active loan', 'reduced budget, list/payoff'],
+  ];
+  for (const [cpf, who, what] of personas) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'persona';
+    b.textContent = who;
+    const sp = document.createElement('span');
+    sp.textContent = `${cpf} · ${what}`;
+    b.append(sp);
+    b.onclick = () => { input.value = `Hi, I need a loan. My CPF is ${cpf}`; input.focus(); };
+    $('personas').append(b);
+  }
+
+  const renderState = (st) => {
+    const a = st.analysis;
+    const steps = [
+      ['Customer identified', !!st.customer, st.customer && `${st.customer.name} (${st.customer.cpf})`],
+      ['Identity verified (SMS)', st.verified],
+      ['Credit analysis', a && a.status === 'approved', a && (a.status === 'approved' ? `tier ${a.tier}, up to R$ ${a.max_amount}` : 'denied'), a && a.status === 'denied'],
+      ['Offers simulated', st.offers > 0, st.offers ? `${st.offers} offer(s)` : ''],
+      ['Proof of income', st.income_proof, 'only above R$ 10k'],
+      ['Contract created', !!st.contract, st.contract && st.contract.contract_id],
+      ['Signed & paid out (PIX)', !!st.signed_loan, st.signed_loan],
+    ];
+    $('steps').replaceChildren(...steps.map(([label, done, note, fail]) => {
+      const li = document.createElement('li');
+      li.className = fail ? 'fail' : done ? 'done' : '';
+      li.textContent = label + (note ? ` — ${note}` : '');
+      return li;
+    }));
+    $('loans').textContent = st.loans.length
+      ? st.loans.map((l) => `${l.loan_id} · ${l.status} · R$ ${l.amount} in ${l.installments}× R$ ${l.monthly_payment}`).join('\n')
+      : '—';
+    $('loans').style.whiteSpace = 'pre-line';
+  };
+
+  const renderStats = () => {
+    const rows = [['', 'jev', 'direct']];
+    const agg = (k, f) => ['jev', 'direct'].map((m) => (totals[m].length ? f(totals[m].map((x) => x[k])) : '—'));
+    const avg = (xs) => Math.round(xs.reduce((a, b) => a + b, 0) / xs.length);
+    const sum = (xs) => xs.reduce((a, b) => a + b, 0);
+    rows.push(['turns', ...['jev', 'direct'].map((m) => totals[m].length)]);
+    rows.push(['avg ms', ...agg('ms', avg)]);
+    rows.push(['avg router ms', ...agg('router_ms', avg)]);
+    rows.push(['tool calls', ...agg('tool_calls', (xs) => sum(xs.map((x) => x.length)))]);
+    rows.push(['tool errors', ...agg('tool_errors', sum)]);
+    rows.push(['chat tokens', ...['jev', 'direct'].map((m) => totals[m].length ? sum(totals[m].map((x) => x.input_tokens + x.output_tokens)) : '—')]);
+    rows.push(['router tokens', ...agg('router_tokens', sum)]);
+    rows.push(['chat cost $', ...agg('chat_cost_usd', (xs) => sum(xs).toFixed(4))]);
+    rows.push(['router cost $', ...agg('router_cost_usd', (xs) => sum(xs).toFixed(4))]);
+    $('stats').replaceChildren(...rows.map((r) => {
+      const tr = document.createElement('tr');
+      for (const c of r) { const td = document.createElement('td'); td.textContent = c; tr.append(td); }
+      return tr;
+    }));
+  };
+
+  const add = (cls, text) => {
+    const el = document.createElement('div');
+    el.className = cls;
+    el.textContent = text;
+    log.append(el);
+    log.scrollTop = log.scrollHeight;
+    return el;
+  };
+
+  const addTrace = (trace, m) => {
+    const d = document.createElement('details');
+    d.className = 'trace';
+    const s = document.createElement('summary');
+    for (const t of trace) {
+      const r = document.createElement('span');
+      const tools = t.calls.map((c) => c.tool).join(', ') || 'reply';
+      const bad = t.results.some((x) => x.output && x.output.error);
+      r.className = 'route' + (bad ? ' bad' : t.calls.length ? ' tool' : '');
+      r.textContent = t.route ? `jev → ${t.route}` : `direct → ${tools}`;
+      s.append(r);
+    }
+    s.append(` ${m.mode} · ${m.ms}ms · ${m.input_tokens + m.output_tokens + m.router_tokens} tok · $${(m.chat_cost_usd + m.router_cost_usd).toFixed(4)}`);
+    d.append(s);
+    for (const t of trace) {
+      if (!t.calls.length) continue;
+      const pre = document.createElement('pre');
+      pre.textContent = JSON.stringify({ calls: t.calls, results: t.results }, null, 2);
+      d.append(pre);
+    }
+    log.append(d);
+  };
+
+  $('form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    input.disabled = true;
+    add('msg user', text);
+    messages.push({ role: 'user', content: text });
+    const wait = add('msg bot', '…');
+    try {
+      const res = await fetch('/chat', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages, useJev: $('jev').checked }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      messages.push(...data.messages);
+      wait.remove();
+      addTrace(data.trace, data.metrics);
+      add('msg bot', data.text || '(no text — step limit reached)');
+      renderState(data.state);
+      totals[data.metrics.mode].push(data.metrics);
+      renderStats();
+    } catch (err) {
+      wait.remove();
+      messages.pop();
+      add('err', 'Error: ' + err.message);
+    }
+    input.disabled = false;
+    input.focus();
+  });
+
+  const resetAll = async () => {
+    const res = await fetch('/reset', { method: 'POST' });
+    renderState(await res.json());
+    messages = [];
+    totals.jev = []; totals.direct = [];
+    renderStats();
+    log.replaceChildren();
+    input.focus();
+  };
+  $('reset').addEventListener('click', resetAll);
+  resetAll();
+</script>
+</body>
+</html>

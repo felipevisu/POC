@@ -1,0 +1,33 @@
+description: Loan agent — jev routing vs direct tool choice
+
+prompts:
+  - '{{scenario}}'
+
+providers:
+  - { id: file://provider.js, label: haiku, config: { model: anthropic/claude-haiku-4.5, useJev: false } }
+  - { id: file://provider.js, label: haiku+jev, config: { model: anthropic/claude-haiku-4.5, useJev: true } }
+  - { id: file://provider.js, label: sonnet, config: { model: anthropic/claude-sonnet-5.5, useJev: false } }
+  - { id: file://provider.js, label: sonnet+jev, config: { model: anthropic/claude-sonnet-5.5, useJev: true } }
+  - { id: file://provider.js, label: opus, config: { model: anthropic/claude-opus-5.5, useJev: false } }
+  - { id: file://provider.js, label: opus+jev, config: { model: anthropic/claude-opus-5.5, useJev: true } }
+
+tests: file://scenarios.js
+
+evaluateOptions:
+  maxConcurrency: 1
+
+defaultTest:
+  assert:
+    - type: javascript
+      metric: tool_order
+      value: output.expected_hit === output.expected_total
+    - type: javascript
+      metric: turn_order
+      value: output.turn_ok
+    - type: javascript
+      metric: final_state
+      value: output.state_ok
+    - type: cost
+      threshold: 0.50
+    - type: latency
+      threshold: 60000

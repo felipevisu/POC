@@ -1,0 +1,22 @@
+{
+  "name": "jev-loans",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file-if-exists=../.env --env-file-if-exists=.env src/server.js",
+    "start:direct": "ROUTER=off npm start",
+    "agent": "node --env-file-if-exists=../.env --env-file-if-exists=.env src/agent.js",
+    "test": "node --test",
+    "eval": "sh -c 'mkdir -p eval/runs && out=eval/runs/$(date +%Y-%m-%d_%H-%M-%S).json && node --env-file-if-exists=../.env --env-file-if-exists=.env node_modules/.bin/promptfoo eval -c eval/promptfooconfig.yaml --no-cache -o \"$out\" \"$@\"; node eval/summary.js \"$out\"' --",
+    "eval:view": "promptfoo view",
+    "eval:summary": "node eval/summary.js"
+  },
+  "dependencies": {
+    "ai": "^7.0.111",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "promptfoo": "^0.123.1"
+  }
+}
