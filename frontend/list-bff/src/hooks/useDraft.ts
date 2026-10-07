@@ -31,8 +31,8 @@ export function useDraft(committed: string, commit: (value: string) => void, del
     return () => clearTimeout(t) // changing again restarts the timer
   }, [pending, draft, delay])
 
-  // Fallback when there was no blur (e.g. Back button): hidden tab (<Activity> runs effect
-  // cleanups) or unmount mid-debounce commits now instead of dropping the draft.
+  // Fallback when there was no blur (e.g. Back button): unmounting mid-debounce (tab switch)
+  // commits now instead of dropping the draft.
   const flushPending = useEffectEvent(flush)
   useEffect(() => () => flushPending(), [])
 

@@ -11,10 +11,8 @@ const [dc, as, op] = tabs
 const query = () => Object.fromEntries(new URLSearchParams(location.search))
 const setup = () => renderHook(() => useTabs(tabs))
 
-it('starts on the first tab with only that tab opened', () => {
-  const { result } = setup()
-  expect(result.current.active).toBe(dc)
-  expect(result.current.openedTabs).toEqual([dc])
+it('starts on the first tab', () => {
+  expect(setup().result.current.active).toBe(dc)
 })
 
 it('restores the active tab from the URL (refresh)', () => {
@@ -22,12 +20,10 @@ it('restores the active tab from the URL (refresh)', () => {
   expect(setup().result.current.active).toBe(as)
 })
 
-it('opens tabs as they are selected and keeps them opened', () => {
+it('selecting a tab makes it active', () => {
   const { result } = setup()
   act(() => result.current.selectTab(op))
-  act(() => result.current.selectTab(dc))
-  expect(result.current.active).toBe(dc)
-  expect(result.current.openedTabs).toEqual([dc, op])
+  expect(result.current.active).toBe(op)
 })
 
 it('single → range: range ends on the report date, starts 30 days earlier; reportDate and page cleared', () => {

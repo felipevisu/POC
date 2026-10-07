@@ -1,11 +1,10 @@
-import { use, useDeferredValue, useMemo, useState } from 'react'
+import { useDeferredValue, useMemo } from 'react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { api } from '../api'
 import { useDateParams, type DateDefaults } from './useDateParams'
 import { useMultiSelect } from './useMultiSelect'
 import { usePage, usePageSize } from './usePagination'
 import { useSearch } from './useSearch'
-import { TabActiveContext } from './useTabs'
 
 export type Page<T> = { items: T[]; total: number; page: number; pageSize: number }
 
@@ -32,21 +31,15 @@ export function useListQuery<T>(endpoint: string, dateDefaults: DateDefaults, se
     }),
     [single, reportDate, startDate, endDate, categories, searchParam, page, pageSize],
   )
-  // A hidden tab keeps the params it had while visible: switching tabs rewrites the URL
-  // (e.g. clears the other tab's dates), and a hidden tab must not fetch for that.
-  const isActive = use(TabActiveContext)
-  const [shownParams, setShownParams] = useState(params)
-  if (isActive && shownParams !== params) setShownParams(params)
-  const current = isActive ? params : shownParams
 
   // URL-store updates are synchronous; deferring the params keeps the previous page on
   // screen (instead of the Suspense fallback) while the next one loads.
-  const deferredParams = useDeferredValue(current)
+  const deferredParams = useDeferredValue(params)
 
   const { data } = useSuspenseQuery({
     queryKey: [endpoint, deferredParams],
     // signal lets React Query abort requests nobody needs anymore (e.g. fast paging).
     queryFn: ({ signal }) => api.get<Page<T>>(`/${endpoint}`, { params: deferredParams, signal }).then((r) => r.data),
   })
-  return { data, isStale: current !== deferredParams }
+  return { data, isStale: params !== deferredParams }
 }

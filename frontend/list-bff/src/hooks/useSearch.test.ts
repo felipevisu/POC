@@ -46,9 +46,9 @@ it('follows the URL when it changes from outside (Back/Forward)', () => {
   expect(result.current.input.value).toBe('ACC-1')
 })
 
-it('commits a pending search right away when hidden/unmounted mid-debounce', () => {
+it('commits a pending search right away when unmounted mid-debounce', () => {
   const { result, unmount } = setup()
   act(() => result.current.input.setValue('ACC-1'))
-  unmount() // what <Activity mode="hidden"> does to effects
+  unmount() // switching tabs unmounts the list
   expect(new URLSearchParams(location.search).get('search')).toBe('ACC-1')
 })

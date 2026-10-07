@@ -1,5 +1,4 @@
-import { Activity } from 'react'
-import { TabActiveContext, useTabs } from './hooks/useTabs'
+import { useTabs } from './hooks/useTabs'
 import AccountSummary from './pages/AccountSummary'
 import DailyCash from './pages/DailyCash'
 import OutstandingPrincipal from './pages/OutstandingPrincipal'
@@ -12,7 +11,7 @@ const tabs = [
 ] as const
 
 export function App() {
-  const { active, openedTabs, selectTab } = useTabs(tabs)
+  const { active, selectTab } = useTabs(tabs)
 
   return (
     <main>
@@ -24,25 +23,18 @@ export function App() {
             role="tab"
             id={`tab-${t.id}`}
             aria-selected={t === active}
-            aria-controls={`panel-${t.id}`}
+            aria-controls={t === active ? `panel-${t.id}` : undefined}
             onClick={() => selectTab(t)}
           >
             {t.label}
           </button>
         ))}
       </div>
-      {/* Activity hides opened-but-inactive tabs without unmounting them (keeps scroll,
-          input state, fetched data). Hidden tabs don't fetch: useListQuery keeps the params
-          they had while visible (TabActiveContext). */}
-      {openedTabs.map(({ id, Page }) => (
-        <Activity key={id} mode={id === active.id ? 'visible' : 'hidden'}>
-          <section role="tabpanel" id={`panel-${id}`} aria-labelledby={`tab-${id}`}>
-            <TabActiveContext value={id === active.id}>
-              <Page />
-            </TabActiveContext>
-          </section>
-        </Activity>
-      ))}
+      {/* Only the active tab is mounted: filters are global URL params, so a tab re-reads them
+          when it comes back (cached keys are instant) instead of flashing stale data. */}
+      <section role="tabpanel" id={`panel-${active.id}`} aria-labelledby={`tab-${active.id}`}>
+        <active.Page />
+      </section>
     </main>
   )
 }

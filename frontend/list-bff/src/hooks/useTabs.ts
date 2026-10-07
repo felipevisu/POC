@@ -1,23 +1,14 @@
-import { createContext, useState } from 'react'
 import { defaultRange, defaultReportDate } from '../dates'
 import { setUrlParams, useUrlParam } from './useUrlParam'
 
 type TabLike = { id: string; dates: 'single' | 'range' }
 
-/** Whether the surrounding tab is the visible one. Outside tabs, everything counts as active. */
-export const TabActiveContext = createContext(true)
-
 /**
- * Tabs whose active tab lives in `?tab=`. Tabs mount (and fetch) only once opened,
- * and switching carries the date over between single-date and range tabs.
+ * Tabs whose active tab lives in `?tab=`. Switching carries the date over between single-date and range tabs.
  */
 export function useTabs<T extends TabLike>(tabs: readonly T[]) {
   const tabParam = useUrlParam('tab', tabs[0].id)
   const active = tabs.find((t) => t.id === tabParam) ?? tabs[0]
-
-  // Updated during render so it also covers tab changes via Back/Forward.
-  const [opened, setOpened] = useState(() => new Set<string>([active.id]))
-  if (!opened.has(active.id)) setOpened(new Set(opened).add(active.id))
 
   const selectTab = (next: T) => {
     const url = new URLSearchParams(location.search)
@@ -43,5 +34,5 @@ export function useTabs<T extends TabLike>(tabs: readonly T[]) {
     setUrlParams(patch)
   }
 
-  return { active, openedTabs: tabs.filter((t) => opened.has(t.id)), selectTab }
+  return { active, selectTab }
 }
