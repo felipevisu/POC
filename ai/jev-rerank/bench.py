@@ -1,4 +1,5 @@
-"""Benchmark: hybrid-qwen3-0.6b (BM25 + Qwen3 embeddings, RRF) with and without Jev reranking the top 10.
+"""Benchmark: hybrid-qwen3-0.6b (BM25 + Qwen3 embeddings, RRF) alone, with a local cross-encoder
+(bge-reranker-v2-m3) and with Jev reranking the top 10.
 
 Everything in memory, no DB: data/ holds the corpus (279 chunks of 57 environmental bills),
 the 38 questions and the chunks that answer each one.
@@ -26,6 +27,7 @@ EMBEDDER = "Qwen/Qwen3-Embedding-0.6B"
 QUERY_PREFIX = "Instruct: Given a web search query, retrieve relevant passages that answer the query\nQuery: "
 RRF_K = 60       # Cormack et al. 2009
 RRF_DEPTH = 50   # candidates per ranker before fusing
+RERANKER = "BAAI/bge-reranker-v2-m3"  # multilingual cross-encoder, the usual open-source baseline
 JEV_MODEL = "jev-1.13.0"  # pinned: P(yes) shifts between versions
 TYPESAFE_URL = "https://api.typesafe.ai/v1/systemone"
 # Asked in English (Jev's best language) about Portuguese text. criteria split "answers"
@@ -119,6 +121,11 @@ def jev_scores(key: str, q: str, passages: list[str]) -> tuple[list[float], int]
     return [float(r["answers"]["answers"]["noul"]) for r in rs], sum((r.get("usage") or {}).get("input_tokens") or 0 for r in rs)
 
 
+def by_score(scores, ids: list[str]) -> list[str]:
+    """ids reordered by score, highest first; ties keep first-stage order."""
+    return [c for _, c in sorted(zip(scores, ids), key=lambda x: -x[0])]
+
+
 # ── metrics ────────────────────────────────────────────────────────────────
 
 def score(expected: list[str], retrieved: list[str]) -> dict:
@@ -147,10 +154,19 @@ def report(runs: dict[str, list[dict]], questions: list[str]) -> None:
                 print(f"  {delta[i]:+.2f}  {questions[i][:90]}")
 
 
+def load_env(path: str) -> None:
+    """KEY=value lines from .env; variables already in the shell win."""
+    if os.path.exists(path):
+        for line in open(path):
+            k, sep, v = line.strip().partition("=")
+            if sep and not k.startswith("#"):
+                os.environ.setdefault(k.strip(), v.strip().strip("'\""))
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--k", type=int, default=5, help="results scored per question")
-    ap.add_argument("--depth", type=int, default=10, help="candidates Jev rescores")
+    ap.add_argument("--depth", type=int, default=10, help="candidates each reranker rescores")
     ap.add_argument("--check", action="store_true", help="self-check, no model, no network")
     a = ap.parse_args()
     if a.check:
@@ -164,28 +180,36 @@ def main() -> None:
             qrels[qid].append(cid)
     passage = {c: f"{doc_label(f)}\n{h or ''}\n{t}".strip()
                for c, f, h, t in zip(corpus.chunk_id, corpus.filename, corpus.heading, corpus.text)}
+    load_env(os.path.join(os.path.dirname(DATA), ".env"))
     key = os.environ.get("TYPESAFE_API_KEY", "")
 
     print(f"{len(corpus)} chunks, {len(queries)} perguntas, k={a.k}, Jev no top {a.depth}"
           + ("" if key else "  (sem TYPESAFE_API_KEY: só a run sem Jev)"))
     hybrid = Hybrid(corpus)
-    runs: dict[str, list[dict]] = {"hybrid (sem jev)": []}
+    from sentence_transformers import CrossEncoder
+    reranker = CrossEncoder(RERANKER)
+    runs: dict[str, list[dict]] = {"hybrid (sem jev)": [], "hybrid + bge-reranker": []}
     if key:
         runs["hybrid + jev"] = []
-    tokens, t0 = 0, time.time()
+    tokens, t0, t_bge, t_jev = 0, time.time(), 0.0, 0.0
     for i, q in enumerate(queries, 1):
         cands = hybrid.search(q["question"], max(a.k, a.depth))
         expected = qrels[q["query_id"]]
         runs["hybrid (sem jev)"].append(score(expected, cands[:a.k]))
+        top = cands[:a.depth]
+        t = time.time()
+        s = reranker.predict([(q["question"], passage[c]) for c in top])
+        t_bge += time.time() - t
+        runs["hybrid + bge-reranker"].append(score(expected, (by_score(s, top) + cands[a.depth:])[:a.k]))
         if key:
-            top = cands[:a.depth]
+            t = time.time()
             s, used = jev_scores(key, q["question"], [passage[c] for c in top])
+            t_jev += time.time() - t
             tokens += used
-            jev = [c for _, c in sorted(zip(s, top), key=lambda x: -x[0])]
-            runs["hybrid + jev"].append(score(expected, (jev + cands[a.depth:])[:a.k]))
+            runs["hybrid + jev"].append(score(expected, (by_score(s, top) + cands[a.depth:])[:a.k]))
         print(f"\r  {i}/{len(queries)}", end="", flush=True)
-    print(f"\r  {len(queries)} perguntas em {time.time() - t0:.0f}s"
-          + (f", Jev: {tokens:,} tokens ≈ US$ {tokens * 0.042 / 1e6:.4f}" if key else ""))
+    print(f"\r  {len(queries)} perguntas em {time.time() - t0:.0f}s, bge-reranker: {t_bge:.0f}s on {reranker.device}"
+          + (f", Jev: {t_jev:.0f}s, {tokens:,} tokens ≈ US$ {tokens * 0.042 / 1e6:.4f}" if key else ""))
     report(runs, [q["question"] for q in queries])
 
 
@@ -194,6 +218,13 @@ def self_check() -> None:
     assert tokenize("Lei 8.666/93") == ["lei", "8666/93"]
     assert doc_label("PL_993_2026.pdf") == "PL 993/2026"
     assert rrf(["a", "b", "c"], ["c", "a", "b"])[0] == "a"
+    import tempfile
+    with tempfile.NamedTemporaryFile("w", suffix=".env", delete=False) as f:
+        f.write("# c\nBENCH_A='x'\nPATH=nope\n")
+    load_env(f.name)
+    assert os.environ.pop("BENCH_A") == "x" and os.environ["PATH"] != "nope"
+    os.unlink(f.name)
+    assert by_score([0.1, 0.9, 0.1], ["a", "b", "c"]) == ["b", "a", "c"]
     m = score(["x", "y"], ["x", "z", "y"])
     assert m["recall"] == 1.0 and m["mrr"] == 1.0 and round(m["ndcg"], 3) == 0.920, m
     assert score(["x"], ["a", "b"]) == {"ndcg": 0.0, "recall": 0.0, "mrr": 0.0, "hit": 0.0}
