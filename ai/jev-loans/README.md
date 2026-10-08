@@ -1,147 +1,146 @@
 # jev-loans
 
-POC of a personal-loan agent (everything mocked) that chats with the customer and takes out loans through tools, with a benchmark **with and without the jev router** across several Claude models.
+An experiment: **can jev (`typesafe-ai/jev`) pick which tool an agent should call better than the agent picks for itself?**
+
+The same Claude agent runs a loan-hiring conversation in two modes:
+
+- **direct** — the chat model sees all tools and decides on its own which one to call at each step.
+- **jev** — before each step, `typesafe-ai/jev` reads the conversation and the tool descriptions and picks the next action (a tool, or "just reply"). The chat model then executes that choice.
+
+Both modes run against the same scripted conversations, and we compare whether the right tools were called, in the right order and on the right turn, plus cost and latency.
+
+## Context: a personal-loan system
+
+Everything is mocked (`src/loans.js`): customers, credit bureau, offers with real math (Price table, IOF, CET), contracts and PIX payout. The agent is the chat assistant of a fictional bank, Lumen Crédito.
+
+Taking out a loan is a strict sequence, which is what makes tool choice interesting: skipping or reordering a step is a real bug (showing credit data before identity is verified, signing a contract the customer never confirmed).
+
+```
+CPF → find_customer / register_customer → send_verification_code → verify_identity
+    → run_credit_analysis → simulate_loan (n×) → submit_income_proof (if required)
+    → create_contract (after explicit confirmation + PIX key) → sign_contract (SMS code)
+```
+
+### Tools
+
+| Tool | What it does |
+|---|---|
+| `get_loan_info` | product rules: amounts, rates by risk tier, taxes, process |
+| `find_customer` | looks up the customer by CPF, starts the session |
+| `register_customer` | registers a new customer (name, birth date, phone, e-mail, income) |
+| `send_verification_code` | sends an SMS code to verify identity |
+| `verify_identity` | checks the code the customer typed (3 wrong attempts lock it) |
+| `update_income` | updates monthly income, invalidates the credit analysis |
+| `run_credit_analysis` | bureau + policy: approved (tier, rate, limits) or denied |
+| `simulate_loan` | amount × installments → offer with monthly payment, CET, total |
+| `submit_income_proof` | registers a payslip / statement when the offer requires it |
+| `create_contract` | contract from an offer + PIX key, sends a signing code |
+| `sign_contract` | signs with the SMS code and pays out via PIX |
+| `list_my_loans` | the customer's loans |
+| `get_installment_schedule` | full schedule of one loan |
+| `quote_early_payoff` | payoff amount today and interest saved |
+| `cancel_loan` | 7-day right of withdrawal |
+| `escalate_to_human` | hands off to a person (complaints, locked identity, out of scope) |
+
+### Example conversation
+
+Ana (CPF 111.111.111-11, good score) wants R$ 5,000. Tool calls in brackets; numbers are illustrative.
+
+> **Customer:** Hi, I need R$ 5000 to fix my car. My CPF is 111.111.111-11
+> `[find_customer] [send_verification_code]`
+> **Agent:** Hi Ana! I sent a 6-digit code by SMS to your phone ending in 1111. Can you type it here?
+>
+> **Customer:** The code is 123456
+> `[verify_identity] [run_credit_analysis]`
+> **Agent:** Verified ✅ You're pre-approved for up to R$ 50,000 at 1.49%/month. How many installments would you like?
+>
+> **Customer:** Simulate 5000 in 12 and in 24 installments
+> `[simulate_loan] [simulate_loan]`
+> **Agent:** 12× R$ 473.60 (CET 21.9%/yr, total R$ 5,683) or 24× R$ 258.30 (total R$ 6,199). Which one?
+>
+> **Customer:** The 12 installments. PIX key ana@example.com, go ahead.
+> `[create_contract]`
+> **Agent:** Contract created. I sent a signing code by SMS — type it to sign and receive the money.
+>
+> **Customer:** 123456
+> `[sign_contract]`
+> **Agent:** Signed! R$ 5,000 is on its way to ana@example.com. First installment due in 30 days.
 
 ## Setup
 
 ```bash
 npm install
+cp .env.example .env   # set AI_GATEWAY_API_KEY (or put it in ../.env)
 ```
 
-The AI Gateway key comes from `../.env` (`AI_GATEWAY_API_KEY`, shared with the cervejaria POC). A `.env` in this folder overrides `../.env`, for example the chat model:
-
-```bash
-# .env (optional)
-CHAT_MODEL=anthropic/claude-opus-5.5   # default: anthropic/claude-haiku-4.5
-ROUTER=off                             # jev off by default in the chat
-CACHE=on                               # prompt cache on by default in the chat (evals use --enable-cache instead)
-```
+`.env` options: `CHAT_MODEL` (default `anthropic/claude-haiku-4.5`), `ROUTER=off` to start the chat with jev off, `CACHE=on` to start it with prompt caching on.
 
 ## Services
 
 | Service | How to start | URL | Costs money? |
 |---|---|---|---|
-| Chat with the agent | `npm start` | http://localhost:4748 | yes, per message sent |
-| Eval replay (chat format) | `npm start` (same server) | http://localhost:4748/results | no, it only reads files |
+| Chat with the agent | `npm start` | http://localhost:4748 | yes, per message |
+| Eval replay | `npm start` (same server) | http://localhost:4748/results | no, reads saved runs |
 | promptfoo report | `npm run eval:view` | http://localhost:15500 | no |
-| Run the benchmark | `npm run eval` | — | **yes** (see below) |
-| Domain tests (rules and math) | `npm test` | — | no |
+| Benchmark | `npm run eval` | — | **yes** |
+| Domain tests | `npm test` | — | no |
 
-### Chat — http://localhost:4748
-
-- **route with jev** checkbox at the top: turns jev on/off per message.
-- **prompt cache** checkbox: turns prompt caching on/off per message (see [Prompt caching](#prompt-caching)).
-- Side panel: test customers (click to fill in), current step of the process, loans, and running metrics (time, tokens, cost) per mode.
-- The SMS code is always **`123456`**.
-
-Test customers:
+In the chat, checkboxes toggle jev and prompt cache per message. The SMS code is always **`123456`**. Test customers:
 
 | CPF | Customer | Scenario |
 |---|---|---|
-| 111.111.111-11 | Ana | score 820, income R$ 9k — tier A, up to R$ 50k |
-| 222.222.222-22 | Bruno | score 640, income R$ 3.5k — small monthly budget |
-| 333.333.333-33 | Carla | credit restriction — denied |
-| 444.444.444-44 | Diego | already has an active loan — reduced budget, early payoff |
+| 111.111.111-11 | Ana | tier A, up to R$ 50k |
+| 222.222.222-22 | Bruno | small monthly budget |
+| 333.333.333-33 | Carla | credit restriction, denied |
+| 444.444.444-44 | Diego | already has an active loan |
 | any other | — | registration flow |
 
-### Eval replay — http://localhost:4748/results
+## Running the benchmark
 
-- The selector at the top picks the run (every `npm run eval` is saved in `eval/runs/`).
-- Summary table: per provider, scenarios passed, right order, right turn, total cost, cost per pass and average time.
-- Left: the scenarios with ✓/✗ per provider. Right: each provider's conversation side by side, one row per turn, scrolling together.
-- Each column shows the model, cost (chat + router), time, the checks that failed, and the expected tool sequence (missing tools struck through in red).
-- In the conversation, turns with a timing rule show ✓ **right turn** or what went wrong; the red **Expected here but missing** box marks where an expected tool was **not called** or **called out of order**. Click a turn's tool line to see each call's input and output.
-
-### promptfoo — http://localhost:15500
-
-`npm run eval:view` opens promptfoo's standard report with every run so far (promptfoo keeps its history in `~/.promptfoo`).
-
-## Benchmark
-
-`eval/promptfooconfig.yaml` defines 6 providers × 10 scenarios (`eval/scenarios.js`): each model with and without jev.
-
-| Providers | Model |
-|---|---|
-| `haiku`, `haiku+jev` | anthropic/claude-haiku-4.5 |
-| `sonnet`, `sonnet+jev` | anthropic/claude-sonnet-5.5 |
-| `opus`, `opus+jev` | anthropic/claude-opus-5.5 |
-
-> ⚠️ **Every run calls the models and costs money.** Scenarios run one at a time (the mock backend is shared in-memory state).
-> Reference from earlier runs, per provider over the 10 scenarios: Haiku ≈ $0.25 and ~2–3 min; Opus ≈ $1.60 and ~5 min.
-> Measured without cache over the 10 scenarios: Sonnet ≈ $0.79, Sonnet+jev ≈ $0.35. The full suite with all 6 providers should land around **$4–5 and 20–25 min** (estimate).
-
-Options: `--providers <model>` runs that model with and without jev (`haiku`, `sonnet` or `opus`; comma-separate for more), `--enable-cache` turns prompt caching on, `-n N` runs only the first N scenarios.
+10 scripted scenarios (`eval/scenarios.js`) × each model with and without jev. **Every run calls the models and costs money** (full suite ≈ $4–5, 20–25 min).
 
 ```bash
-npm run eval -- --providers sonnet                  # sonnet and sonnet+jev, no cache
-npm run eval -- --providers sonnet --enable-cache   # sonnet and sonnet+jev, with cache
-npm run eval -- --providers haiku                   # haiku and haiku+jev
-npm run eval -- --providers opus                    # opus and opus+jev
-npm run eval                                        # all three models
-npm run eval -- -n 1 --providers opus               # first scenario only (cheap test)
+npm run eval -- -n 1 --providers haiku              # first scenario only (cheap smoke test)
+npm run eval -- --providers sonnet                  # sonnet and sonnet+jev
+npm run eval -- --providers sonnet --enable-cache   # same, with prompt caching
+npm run eval                                        # haiku, sonnet and opus
+npm run eval:summary                                # summary of the latest run
 ```
 
-### Prompt caching
+Runs are saved to `eval/runs/<date_time>.json` and show up in the replay at `/results`.
 
-Off by default. Add `--enable-cache` to turn it on for every provider in the run; the run file gets a `_cache` suffix (`eval/runs/<date_time>_cache.json`) so cached and uncached runs are easy to tell apart in the replay selector. Compare, for example, `npm run eval -- --providers sonnet` with `npm run eval -- --providers sonnet --enable-cache`.
+## Results
 
-It uses the AI Gateway's automatic caching (`providerOptions.gateway.caching: 'auto'`) on the chat model only; jev is not cached. The summary shows `cache` and `input_from_cache`, and cost already reflects cache pricing (writes ~1.25× the input price, reads ~0.1×). `CACHE=on` in `.env` only sets the chat's default and never affects evals.
+One run per model and cache setting, 10 scenarios each (runs from 2026-09-28, in `eval/runs/`). Cost is the total for the 10 scenarios, chat + jev.
 
-What to expect:
+### Without prompt cache
 
-- **Haiku 4.5 only caches prompts of at least 4,096 tokens.** Its average call here is ~3,400 tokens (~2,500 with jev), so most Haiku calls won't cache at all. Sonnet 5.5 and Opus 5.5 cache from 512 tokens.
-- **Changing the tool list breaks the cache.** Tool definitions come first in the cached prefix, and jev narrows or drops them per step, so jev modes get fewer cache hits than direct mode.
-- **Scenarios share the cache.** They run one after another with the same instructions and tools, so later scenarios can read what earlier ones wrote (entries live 5 minutes). That's realistic for production traffic, but it makes cost depend a little on run order.
+| Model | Mode | Pass | Right turn | Cost | Avg time / scenario |
+|---|---|---|---|---|---|
+| Haiku 4.5 | direct | 9/10 | 9/10 | $0.33 | 11.5 s |
+| Haiku 4.5 | jev | 9/10 | 9/10 | $0.26 | 15.9 s |
+| Sonnet 5.5 | direct | 10/10 | 10/10 | $0.79 | 13.2 s |
+| Sonnet 5.5 | jev | 10/10 | 10/10 | $0.35 | 19.2 s |
+| Opus 5.5 | direct | 9/10 | 9/10 | $1.69 | 24.7 s |
+| Opus 5.5 | jev | 8/10 | 8/10 | $0.70 | 32.4 s |
 
-Don't confuse this with `--no-cache` in the eval script: that disables promptfoo's own result cache, so every run really calls the models.
+### With prompt cache
 
-### Results
+| Model | Mode | Pass | Right turn | Cost | Avg time / scenario | Input from cache |
+|---|---|---|---|---|---|---|
+| Haiku 4.5 | direct | 9/10 | 9/10 | $0.29 | 13.0 s | 15% |
+| Haiku 4.5 | jev | 9/10 | 9/10 | $0.25 | 16.2 s | 6% |
+| Sonnet 5.5 | direct | 10/10 | 10/10 | $0.19 | 14.2 s | 95% |
+| Sonnet 5.5 | jev | 10/10 | 10/10 | $0.30 | 17.7 s | 38% |
+| Opus 5.5 | direct | 9/10 | 9/10 | $0.40 | 25.3 s | 94% |
+| Opus 5.5 | jev | 7/10 | 8/10 | $0.62 | 31.7 s | 38% |
 
-When it finishes, the run is saved to `eval/runs/<date_time>.json` and the summary is printed. To see the summary of an earlier run again:
+### Failures
 
-```bash
-npm run eval:summary                                      # latest run
-npm run eval:summary -- eval/runs/<date_time>.json
-```
-
-A scenario **passes** when every check passes:
-
-| Check | What it verifies |
+| Scenario | Failed in |
 |---|---|
-| `tool_order` (lenient) | the expected tools appear in order across the whole conversation (extra calls in between are allowed) |
-| `turn_order` (strict) | on each turn with a rule, the right tools were called **in that turn** (`expect`) and no forbidden one was (`forbid`), e.g. no credit analysis before the SMS code, no cancelling without confirmation |
-| `final_state` | the mock backend ends in the right state (e.g. the loan signed is the offer the customer chose, paid to the PIX key they gave) |
-| `cost` / `latency` | under $0.50 and under 60 s per scenario (a guard against runaway loops) |
+| `withdrawal_cancel` | Haiku direct and jev, both runs |
+| `otp_lockout` | Opus direct and jev, both runs |
+| `existing_loan_payoff` | Opus jev, both runs |
+| `happy_path` | Opus jev, with cache (75 s, over the 60 s limit) |
 
-Per-turn rules live in `eval/scenarios.js`: a turn is either the customer's text, or `{ say, expect, forbid }` where timing matters. The summary and the replay show **Right order** and **Right turn** separately, to compare the lenient view with the strict one. Tool errors and jev routes the model ignored (`route_ignored`) show up in the metrics but don't fail a scenario.
-
-## Structure
-
-```
-src/
-  loans.js     mock backend: customers, credit bureau, offers (Price table, IOF, CET), contracts, PIX
-  agent.js     agent tools, jev routing (on/off, forced/soft), time/token/cost metrics
-  server.js    HTTP server: chat, replay and saved runs
-public/
-  chat.html    chat UI
-  results.html eval replay UI
-eval/
-  promptfooconfig.yaml  providers (model × jev) and checks
-  scenarios.js          the 10 scripted scenarios
-  provider.js           promptfoo custom provider
-  summary.js            cost/pass table per provider
-  run.js                `npm run eval` runner: handles --providers and --enable-cache, names the run file, prints the summary
-  runs/                 one run per file (gitignored)
-test/
-  loans.test.js             domain tests (no model calls)
-  turn-check.test.js        per-turn rule and scenario tool names
-  scenarios-oracle.test.js  a scripted "ideal agent" passes every scenario on the real backend (proves the scenarios are passable)
-  history.test.js           the next turn receives earlier tool calls and results (mock model, no API calls)
-```
-
-## How jev fits in
-
-Without jev, the chat model picks which tool to call on its own. With jev, at each step `typesafe-ai/jev` picks the next action, applied in one of two ways (`jev_routing`, shown in the replay):
-
-- **forced** (default, Haiku): `toolChoice` makes the model call exactly the chosen tool.
-- **soft** (Sonnet 5.5 and Opus 5.5): they ignore a forced `toolChoice` through the gateway and the SDK aborts the turn, so they only see the chosen tool and may answer in text instead; when they do, that counts as `route_ignored`. The list lives in `SOFT_ROUTING_MODELS` in `src/agent.js`.
