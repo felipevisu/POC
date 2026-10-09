@@ -1,0 +1,12 @@
+{
+  "name": "form-playwright",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "ui": "playwright test --ui",
+    "headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
+  }
+}

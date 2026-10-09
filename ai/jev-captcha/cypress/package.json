@@ -1,0 +1,11 @@
+{
+  "name": "form-cypress",
+  "private": true,
+  "scripts": {
+    "test": "cypress run",
+    "open": "cypress open"
+  },
+  "devDependencies": {
+    "cypress": "^15.0.0"
+  }
+}
