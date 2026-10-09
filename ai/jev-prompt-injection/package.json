@@ -1,0 +1,17 @@
+{
+  "name": "jev-prompt-injection",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "bench": "node --env-file-if-exists=.env bench/run.js",
+    "bench:jev": "node --env-file-if-exists=.env bench/run.js --jev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.132.1"
+  }
+}
