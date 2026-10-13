@@ -17,16 +17,17 @@ function secureURL(entry){
   }
 }
 
-function createItem(comment) {
+function createItem(c) {
   const li = document.createElement('li')
-  const href = secureURL(comment.site)
+  const href = secureURL(c.site)
   const author = document.createElement(href ? 'a' : 'span')
+  const comment = document.createElement('span').textContent = c.comment
   if(href){
     author.href = href
     author.rel = 'noopener noreferrer nofollow'
   }
-  author.textContent = comment.author
-  li.append(author, ': ', comment.comment)
+  author.textContent = c.author
+  li.append(author, ': ', comment)
   return li
 }
 
