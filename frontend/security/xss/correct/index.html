@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab XSS - Vulnerable</title>
+</head>
+<body>
+    <h1>Comentaries Wall</h1>
+    <form method="get">
+        <input name="q" placeholder="Search">
+        <button>Search</button>
+    </form>
+    <p id="results"></p>
+
+    <ul id="comments"></ul>
+
+    <form id="form-comments">
+        <div>
+            <input name="author" placeholder="Your name" required>
+        </div>
+        <div>
+            <input name="site" placeholder="Your site (https://...)">
+        </div>
+        <div>
+            <textarea name="comment" placeholder="Comment" required></textarea>
+        </div>
+        <button>Send</button>
+    </form>
+
+    <script src="./main.js"></script>
+
+</body>
+</html>
