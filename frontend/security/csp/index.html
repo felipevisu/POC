@@ -9,6 +9,32 @@
   <p>Allowed inline script: <strong id="good">did not run</strong></p>
   <p>Injected inline script: <strong id="bad">did not run</strong></p>
 
+  <ul id="comments"></ul>
+
+  <script>
+    localStorage.setItem(
+      'comments', 
+      JSON.stringify(
+        [
+          {
+            name: "Felipe", 
+            comment: `<img src=x onerror="alert('XSS: ' + document.cookie)">`
+          }
+        ]
+      )
+    )
+
+    const comments = JSON.parse(localStorage.getItem('comments') || '[]')
+
+    function render() {
+      document.getElementById('comments').innerHTML = comments.map((c => 
+        `<li>${c.name}: ${c.comment}</li>`
+      )).join('')
+    }
+
+    render()
+  </script>
+
   <!-- This one is listed (by hash) in the server's CSP header -> runs -->
   <script>
     document.getElementById('good').textContent = 'ran';
