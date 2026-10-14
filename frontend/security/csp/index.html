@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>CSP PoC</title>
+</head>
+<body>
+  <h1>CSP PoC</h1>
+  <p>Allowed inline script: <strong id="good">did not run</strong></p>
+  <p>Injected inline script: <strong id="bad">did not run</strong></p>
+
+  <!-- This one is listed (by hash) in the server's CSP header -> runs -->
+  <script>
+    document.getElementById('good').textContent = 'ran';
+  </script>
+
+  <!-- This one is NOT in the header -> blocked, like an injected XSS script -->
+  <script>
+    document.getElementById('bad').textContent = 'ran';
+  </script>
+</body>
+</html>
