@@ -1,87 +1,87 @@
 # code-graph — trace-flow
 
-Skill do Claude Code que rastreia o fluxo de um dado num sistema legado **Java + Struts (1 ou 2)**: da URL da tela até o banco (JDBC) ou API REST externa, e de volta até o campo na JSP. O resultado é um grafo HTML interativo, em que cada nó aponta para `arquivo:linha` e traz a explicação do que acontece ali, as regras de negócio, os pontos de atenção e uma sugestão para a migração.
+A Claude Code skill that traces how a piece of data flows through a legacy **Java + Struts (1 or 2)** system: from the screen URL down to the database (JDBC) or an external REST API, and back up to the field in the JSP. The output is an interactive HTML graph where every node points to `file:line` and explains what happens there, the business rules involved, what to watch out for, and a suggestion for the migration.
 
-Feito para a migração do legado Struts para backend + frontend modernos: em vez de ler dezenas de classes para descobrir de onde vem um campo, você pede o trace e recebe o caminho e as regras.
+Built for migrating a Struts legacy app to a modern backend + frontend. Instead of reading dozens of classes to find out where a field comes from, you ask for a trace and get the path and the rules.
 
-## Instalação
+## Install
 
 ```bash
 cp -r .claude/skills/trace-flow ~/.claude/skills/
 ```
 
-Abra uma sessão nova do Claude Code depois de copiar. Para usar só num projeto, copie para `<projeto>/.claude/skills/`.
+Start a new Claude Code session after copying. To use it in a single project only, copy it to `<project>/.claude/skills/` instead.
 
-## Uso
+## Usage
 
-Na raiz do repositório legado:
+From the root of the legacy repository:
 
 ```bash
 claude
 ```
 
 ```
-/trace-flow http://servidor/app/cliente/detalhe.do?id=123 campo Saldo
+/trace-flow http://server/app/cliente/detalhe.do?id=123 field Saldo
 ```
 
-ou em texto livre: *"de onde vem o campo Saldo em /app/cliente/detalhe.do?id=123?"*
+or in plain words: *"where does the Saldo field on /app/cliente/detalhe.do?id=123 come from?"*
 
-- Use a URL completa do navegador. Parâmetros como `method=...` definem qual método da Action roda.
-- Prefira **um campo por vez**: o grafo fica menor e o trace, mais rápido.
-- A saída fica em `.trace-flow/<tela>/` (`graph.json` e `trace.html`), e o HTML abre no navegador.
+- Use the full URL from the browser. Parameters such as `method=...` decide which Action method runs.
+- Prefer **one field at a time**: the graph stays small and the trace is faster.
+- Output goes to `.trace-flow/<screen>/` (`graph.json` and `trace.html`), and the HTML opens in the browser.
 
-## Como funciona
+## How it works
 
-| Etapa | Quem faz |
+| Step | Done by |
 |---|---|
-| URL → Action, método, form, forwards, JSPs (Tiles, DispatchAction, wildcards do Struts 2) | `scripts/resolve_url.py` |
-| O que a tela exibe: tags `bean:`/`html:`/`logic:`/`s:`, EL, scriptlets, includes | `scripts/jsp_bindings.py` |
-| Action → Service → DAO → SQL/tabela ou API REST, ramos e transformações | Claude, guiado pela `SKILL.md` |
-| Explicações, regras de negócio, pontos de atenção e sugestão de migração | Claude, guiado pela `SKILL.md` |
-| Cada nó precisa existir no código (`arquivo:linha` + trecho literal) e ter explicação | `scripts/validate_graph.py`, que reprova até o grafo ficar correto |
-| `graph.json` → HTML interativo (Cytoscape + dagre) | `scripts/render.py` + `template/trace.html` |
+| URL → Action, method, form, forwards, JSPs (Tiles, DispatchAction, Struts 2 wildcards) | `scripts/resolve_url.py` |
+| What the screen renders: `bean:`/`html:`/`logic:`/`s:` tags, EL, scriptlets, includes | `scripts/jsp_bindings.py` |
+| Action → Service → DAO → SQL/table or REST API, plus branches and transformations | Claude, guided by `SKILL.md` |
+| Explanations, business rules, watch-outs and migration suggestions | Claude, guided by `SKILL.md` |
+| Every node must exist in the code (`file:line` + a literal anchor) and have an explanation | `scripts/validate_graph.py` fails the graph until it is correct |
+| `graph.json` → interactive HTML (Cytoscape + dagre) | `scripts/render.py` + `template/trace.html` |
 
-Os scripts usam só Python 3 (stdlib). Também podem ser rodados sozinhos para depurar:
+The scripts use only Python 3 (stdlib). They can also be run on their own for debugging:
 
 ```bash
 S=~/.claude/skills/trace-flow/scripts
-python3 $S/resolve_url.py "http://servidor/app/cliente/detalhe.do?id=1" --root .
-python3 $S/jsp_bindings.py caminho/da/tela.jsp
-python3 $S/validate_graph.py .trace-flow/<tela>/graph.json --root .
-python3 $S/render.py .trace-flow/<tela>/graph.json --root .
+python3 $S/resolve_url.py "http://server/app/cliente/detalhe.do?id=1" --root .
+python3 $S/jsp_bindings.py path/to/screen.jsp
+python3 $S/validate_graph.py .trace-flow/<screen>/graph.json --root .
+python3 $S/render.py .trace-flow/<screen>/graph.json --root .
 ```
 
-## Lendo o HTML
+## Reading the HTML
 
-- **Painel inicial:** resumo, regras de negócio, pontos de atenção e sugestões de migração. Cada item é clicável e leva ao nó.
-- **Grafo:** o fluxo vai da requisição (esquerda) à tela (direita), com cor por camada. Linha tracejada é um ramo (`if`); linha laranja é uma transformação do dado.
-- **Clique num nó:** destaca de onde o dado vem e para onde vai, e mostra a explicação, os dados que entram e saem, as regras, os pontos de atenção, a nota de migração e o código com a linha marcada. Clique no fundo para voltar ao painel inicial.
-- **Busca:** pula para o nó pelo nome.
+- **Overview panel:** summary, business rules, watch-outs and migration suggestions. Each item is clickable and jumps to its node.
+- **Graph:** the flow runs from the request (left) to the screen (right), colored by layer. A dashed line is a branch (`if`); an orange line is a data transformation.
+- **Click a node:** highlights where the data comes from and where it goes, and shows the explanation, data in and out, rules, watch-outs, migration note, and the code with the line marked. Click the background to return to the overview.
+- **Search:** jumps to a node by name.
 
-## Exemplo
+## Example
 
-`examples/legacy-app/` é um mini app Struts 1 (Tiles, JDBC, REST) com uma tela de cliente. `examples/expected/` tem o gabarito do trace do campo **Saldo**, escrito à mão para mostrar o resultado esperado:
+`examples/legacy-app/` is a tiny Struts 1 app (Tiles, JDBC, REST) with a customer screen. `examples/expected/` holds the reference trace for the **Saldo** (balance) field, written by hand to show the expected result:
 
 ```bash
 open examples/expected/trace.html
 ```
 
-Para ver a skill gerar o grafo sozinha e comparar com o gabarito:
+To watch the skill build the graph on its own and compare it with the reference:
 
 ```bash
 cd examples/legacy-app && claude
-# /trace-flow /app/cliente/detalhe.do?id=1 campo Saldo
+# /trace-flow /app/cliente/detalhe.do?id=1 field Saldo
 ```
 
-## Testes
+## Tests
 
 ```bash
 python3 -m unittest discover tests
 ```
 
-## Limitações conhecidas
+## Known limitations
 
-- Struts 2 por anotações (`@Action`) ou convention plugin não está em XML: a skill orienta o Claude a procurar por grep.
-- Módulos do Struts 1 com prefixo no `web.xml`: a URL casa pelo final do caminho, o que costuma bastar.
-- Análise só estática: o grafo mostra todos os ramos possíveis, não o que executou para um usuário específico.
-- Explicações e regras são escritas pela IA. O validador garante que cada nó existe no código, mas a interpretação deve ser revisada.
+- Struts 2 annotations (`@Action`) or the convention plugin are not in XML: the skill tells Claude to find them with grep.
+- Struts 1 modules with a prefix in `web.xml`: the URL is matched by path suffix, which is usually enough.
+- Static analysis only: the graph shows every possible branch, not the one that actually ran for a specific user.
+- Explanations and rules are written by the AI. The validator guarantees every node exists in the code, but the interpretation should be reviewed.

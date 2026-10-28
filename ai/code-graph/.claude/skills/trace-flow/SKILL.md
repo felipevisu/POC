@@ -42,10 +42,10 @@ Output dir: `.trace-flow/<slug-of-path>[-<field>]/` in the repo root (add `.trac
 
 5. **Record branches and transformations.** Every `if`/`switch`/ternary that changes *which* data or *how* it is computed becomes a `branch` edge labeled with the condition as written in code (`if (cliente.isPJ())`). Every formatting, conversion, calculation or merge becomes a `transform` edge labeled with what changed (`BigDecimal → "R$ 1.234,56"`, `saldo - bloqueado`). These are the business rules the migration must preserve; don't skip them.
 
-6. **Explain, don't just point at code.** The reader already has the code; what they lack is understanding. Write in the user's language (Portuguese if they wrote in Portuguese), in business terms, for someone who will rebuild this screen in a new stack. For every node:
-   - `explanation` (required): 1–3 sentences on what happens to the data here and why it matters. Not "calls dao.x()" but "busca saldo e bloqueado numa única consulta e decide, pelo tipo de pessoa, se desconta o bloqueado".
+6. **Explain, don't just point at code.** The reader already has the code; what they lack is understanding. Always write in English (even if the user or the code uses another language; keep code identifiers as they are), in business terms, for someone who will rebuild this screen in a new stack. For every node:
+   - `explanation` (required): 1–3 sentences on what happens to the data here and why it matters. Not "calls dao.x()" but "fetches balance and blocked amount in one query and, depending on the person type, decides whether to subtract the blocked amount".
    - `data_in` / `data_out`: the shape of the data entering and leaving (`id (String)` → `BigDecimal[] {SALDO, BLOQUEADO}`). Make the moment a number becomes formatted text, or a code becomes a label, explicit.
-   - `rules`: business rules decided at this node, one per item, stated as rules (`PF: SALDO − BLOQUEADO`).
+   - `rules`: business rules decided at this node, one per item, stated as rules (`Individual (PF): SALDO − BLOQUEADO`).
    - `attention`: what would bite a migration: unchecked nulls / `rs.next()`, silent defaults, hardcoded locale/dates/magic numbers, rules hidden in the wrong layer, SQL by string concatenation, swallowed exceptions, session state, N+1 queries. Only what you actually saw in the code.
    - `migration`: one concrete suggestion for the new architecture (endpoint shape, where the rule should live, what moves to the frontend).
    Then fill the graph-level `summary` and `insights` (`rules`, `attention`, `migration`, `unresolved`), linking items to nodes with `{"text": ..., "node": "nX"}` so they are clickable in the HTML. `insights.migration` should include a suggested endpoint contract for the traced data.
@@ -65,12 +65,12 @@ Output dir: `.trace-flow/<slug-of-path>[-<field>]/` in the repo root (add `.trac
 ```json
 {
   "entry": "/cliente/detalhe.do",
-  "field": "Saldo",
+  "field": "Saldo (balance)",
   "summary": "1–2 sentences: where the data comes from and the key rule",
   "insights": {
-    "rules": [{"text": "PF: saldo = SALDO − BLOQUEADO", "node": "n9"}],
-    "attention": [{"text": "rs.next() sem checagem: cliente sem conta quebra a tela", "node": "n4"}],
-    "migration": ["GET /clientes/{id}/saldo → { saldo, bloqueado, disponivel, tipoPessoa }"],
+    "rules": [{"text": "Individual (PF): balance = SALDO − BLOQUEADO", "node": "n9"}],
+    "attention": [{"text": "rs.next() result ignored: a customer without an account breaks the page", "node": "n4"}],
+    "migration": ["GET /customers/{id}/balance → { balance, blocked, available, personType }"],
     "unresolved": []
   },
   "nodes": [
@@ -82,12 +82,12 @@ Output dir: `.trace-flow/<slug-of-path>[-<field>]/` in the repo root (add `.trac
       "file": "src/main/java/com/acme/web/DetalheClienteAction.java",
       "line": 13,
       "anchor": "public ActionForward execute",
-      "explanation": "Ponto de entrada da tela: lê o id, pede o saldo ao service, formata como moeda e coloca no request.",
+      "explanation": "Entry point of the screen: reads the id, asks the service for the balance, formats it as currency and puts it in the request.",
       "data_in": "ClienteForm.id",
       "data_out": "request.saldoFormatado (String)",
       "rules": [],
-      "attention": ["Locale pt-BR fixo"],
-      "migration": "Vira o controller REST; a formatação vai para o frontend."
+      "attention": ["Hardcoded pt-BR locale"],
+      "migration": "Becomes the REST controller; formatting moves to the frontend."
     }
   ],
   "edges": [

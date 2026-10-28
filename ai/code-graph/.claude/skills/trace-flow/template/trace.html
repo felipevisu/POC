@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -60,10 +60,10 @@
 <header>
   <h1 id="entry"></h1>
   <div class="legend" id="legend"></div>
-  <input type="search" id="search" placeholder="Buscar nó (ex: saldo)" aria-label="Buscar nó">
+  <input type="search" id="search" placeholder="Search node (e.g. saldo)" aria-label="Search node">
 </header>
 <main>
-  <div id="cy" role="img" aria-label="Grafo do fluxo de dados"></div>
+  <div id="cy" role="img" aria-label="Data flow graph"></div>
   <aside id="panel"></aside>
 </main>
 <script>
@@ -123,14 +123,14 @@ function list(p, title, items, cls) {
 
 function overview() {
   const p = document.getElementById("panel"); p.replaceChildren();
-  p.append(el("h2", null, GRAPH.field ? `Campo: ${GRAPH.field}` : "Visão geral"));
+  p.append(el("h2", null, GRAPH.field ? `Field: ${GRAPH.field}` : "Overview"));
   p.append(el("div", "explanation", GRAPH.summary || ""));
   const ins = GRAPH.insights || {};
-  list(p, "Regras de negócio", ins.rules);
-  list(p, "Pontos de atenção", ins.attention, "attention");
-  list(p, "Para a migração", ins.migration);
-  list(p, "Não resolvido", ins.unresolved);
-  p.append(el("p", "empty", "Clique num nó para ver o que acontece ali e destacar o caminho. Clique no fundo para voltar aqui."));
+  list(p, "Business rules", ins.rules);
+  list(p, "Watch out", ins.attention, "attention");
+  list(p, "For the migration", ins.migration);
+  list(p, "Unresolved", ins.unresolved);
+  p.append(el("p", "empty", "Click a node to see what happens there and highlight its path. Click the background to come back here."));
 }
 
 function show(data) {
@@ -145,15 +145,15 @@ function show(data) {
   if (data.explanation) p.append(el("div", "explanation", data.explanation));
   if (data.data_in || data.data_out) {
     const io = el("div", "io");
-    if (data.data_in) io.append(el("b", null, "Entra"), el("span", null, data.data_in));
-    if (data.data_out) io.append(el("b", null, "Sai"), el("span", null, data.data_out));
-    p.append(el("h3", null, "Dados"), io);
+    if (data.data_in) io.append(el("b", null, "In"), el("span", null, data.data_in));
+    if (data.data_out) io.append(el("b", null, "Out"), el("span", null, data.data_out));
+    p.append(el("h3", null, "Data"), io);
   }
-  list(p, "Regras de negócio", data.rules);
-  list(p, "Atenção", data.attention, "attention");
-  if (data.migration) p.append(el("h3", null, "Para a migração"), el("div", "migration", data.migration));
+  list(p, "Business rules", data.rules);
+  list(p, "Watch out", data.attention, "attention");
+  if (data.migration) p.append(el("h3", null, "For the migration"), el("div", "migration", data.migration));
   if (data.snippet) {
-    p.append(el("h3", null, "Código"));
+    p.append(el("h3", null, "Code"));
     const pre = document.createElement("pre");
     data.snippet.lines.forEach((t, i) => pre.append(line(data.snippet.start + i, t, data.snippet.start + i === data.line)));
     p.append(pre);
