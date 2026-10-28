@@ -1,0 +1,290 @@
+{
+  "entry": "/cliente/detalhe.do",
+  "field": "Saldo",
+  "summary": "Saldo vem de CONTA.SALDO; para PF subtrai CONTA.BLOQUEADO, para PJ não. Formatado como moeda pt-BR na Action.",
+  "nodes": [
+    {
+      "id": "n1",
+      "kind": "url",
+      "layer": "controller",
+      "label": "GET /cliente/detalhe.do?id=",
+      "file": "WebContent/WEB-INF/struts-config.xml",
+      "line": 11,
+      "anchor": "/cliente/detalhe",
+      "explanation": "Mapeamento no struts-config.xml: a URL /cliente/detalhe.do aciona DetalheClienteAction, com o formulário clienteForm em escopo de request. O id do cliente chega como parâmetro da URL e é populado no form pelo Struts.",
+      "data_in": "?id=<id do cliente> (query string)",
+      "data_out": "ClienteForm.id preenchido"
+    },
+    {
+      "id": "n2",
+      "kind": "action",
+      "layer": "controller",
+      "label": "DetalheClienteAction.execute",
+      "file": "src/main/java/com/acme/web/DetalheClienteAction.java",
+      "line": 13,
+      "anchor": "public ActionForward execute",
+      "explanation": "Ponto de entrada da tela. Lê o id do form, pede o nome e o saldo ao service, formata o saldo como moeda e o coloca no request para a JSP exibir. É a única Action envolvida neste campo.",
+      "data_in": "ClienteForm.id",
+      "data_out": "request: saldoFormatado (String), cotacao; form.nome",
+      "migration": "Vira o controller REST. Toda a montagem de dados aqui deve ir para o service; a formatação, para o frontend."
+    },
+    {
+      "id": "n3",
+      "kind": "service",
+      "layer": "service",
+      "label": "ClienteService.saldoDisponivel",
+      "file": "src/main/java/com/acme/service/ClienteService.java",
+      "line": 15,
+      "anchor": "saldoDisponivel",
+      "explanation": "Calcula o saldo disponível. Busca saldo e bloqueado em uma única consulta e decide, conforme o tipo de pessoa, se desconta o bloqueado ou não.",
+      "data_in": "id (String)",
+      "data_out": "BigDecimal: saldo disponível",
+      "rules": [
+        "PF: SALDO − BLOQUEADO",
+        "PJ: SALDO integral"
+      ],
+      "migration": "Núcleo da regra de negócio: manter no backend novo com testes para PF e PJ."
+    },
+    {
+      "id": "n4",
+      "kind": "dao",
+      "layer": "data",
+      "label": "ClienteDAO.saldoEBloqueado",
+      "file": "src/main/java/com/acme/dao/ClienteDAO.java",
+      "line": 17,
+      "anchor": "saldoEBloqueado",
+      "explanation": "Executa o SELECT em CONTA filtrando pelo id do cliente e devolve um array de dois BigDecimal: [0]=SALDO, [1]=BLOQUEADO.",
+      "data_in": "id (String)",
+      "data_out": "BigDecimal[] { SALDO, BLOQUEADO }",
+      "attention": [
+        "Chama rs.next() e ignora o retorno: se não houver conta, getBigDecimal lança exceção.",
+        "Assume uma única conta por cliente."
+      ],
+      "migration": "Repositório/consulta equivalente; tratar 'cliente sem conta' explicitamente (404 ou saldo 0, decidir com o negócio)."
+    },
+    {
+      "id": "n5",
+      "kind": "sql",
+      "layer": "data",
+      "label": "SELECT SALDO, BLOQUEADO FROM CONTA",
+      "file": "src/main/java/com/acme/dao/ClienteDAO.java",
+      "line": 7,
+      "anchor": "SELECT SALDO, BLOQUEADO FROM CONTA",
+      "explanation": "SQL estático em constante (SQL_SALDO). Usa PreparedStatement com parâmetro, então não há risco de SQL injection aqui.",
+      "data_out": "colunas SALDO, BLOQUEADO"
+    },
+    {
+      "id": "n6",
+      "kind": "table",
+      "layer": "db",
+      "label": "CONTA.SALDO",
+      "explanation": "Coluna com o saldo contábil da conta. Lida via rs.getBigDecimal(\"SALDO\") e vira s[0] no service.",
+      "data_out": "BigDecimal"
+    },
+    {
+      "id": "n7",
+      "kind": "table",
+      "layer": "db",
+      "label": "CONTA.BLOQUEADO",
+      "explanation": "Valor bloqueado na conta (ex.: judicial, cheque a compensar). Só é usado para pessoa física.",
+      "data_out": "BigDecimal"
+    },
+    {
+      "id": "n8",
+      "kind": "dao",
+      "layer": "data",
+      "label": "ClienteDAO.isPJ",
+      "file": "src/main/java/com/acme/dao/ClienteDAO.java",
+      "line": 26,
+      "anchor": "isPJ",
+      "explanation": "Decide se o cliente é pessoa jurídica olhando apenas o tamanho do id: 14 caracteres = CNPJ. Não consulta o banco, apesar de estar no DAO.",
+      "data_in": "id (String)",
+      "data_out": "boolean",
+      "rules": [
+        "id com 14 caracteres → PJ",
+        "qualquer outro tamanho → PF"
+      ],
+      "attention": [
+        "Frágil: id com máscara ('12.345.678/0001-90') tem 18 caracteres e seria tratado como PF.",
+        "Regra de domínio escondida na camada de dados."
+      ],
+      "migration": "Usar um campo explícito de tipo de pessoa, se existir no banco; senão, isolar a regra numa função de domínio testada."
+    },
+    {
+      "id": "n9",
+      "kind": "transform",
+      "layer": "service",
+      "label": "saldo - bloqueado (PF)",
+      "file": "src/main/java/com/acme/service/ClienteService.java",
+      "line": 20,
+      "anchor": "subtract",
+      "explanation": "Para pessoa física, o saldo exibido é o saldo menos o valor bloqueado.",
+      "data_in": "SALDO, BLOQUEADO",
+      "data_out": "SALDO − BLOQUEADO",
+      "rules": [
+        "Saldo disponível PF = SALDO − BLOQUEADO"
+      ]
+    },
+    {
+      "id": "n10",
+      "kind": "transform",
+      "layer": "controller",
+      "label": "formata moeda pt-BR",
+      "file": "src/main/java/com/acme/web/DetalheClienteAction.java",
+      "line": 18,
+      "anchor": "format(saldo)",
+      "explanation": "Converte o BigDecimal em texto de moeda brasileira (ex.: 1234.5 → \"R$ 1.234,50\"). A partir daqui o dado deixa de ser número.",
+      "data_in": "BigDecimal",
+      "data_out": "String \"R$ 1.234,50\"",
+      "attention": [
+        "new Locale(\"pt\",\"BR\") fixo: não respeita o idioma do usuário."
+      ],
+      "migration": "Remover do backend. O endpoint devolve número; o frontend formata."
+    },
+    {
+      "id": "n11",
+      "kind": "other",
+      "layer": "controller",
+      "label": "request.saldoFormatado",
+      "file": "src/main/java/com/acme/web/DetalheClienteAction.java",
+      "line": 19,
+      "anchor": "setAttribute(\"saldoFormatado\"",
+      "explanation": "Coloca o texto formatado no request com o nome 'saldoFormatado'. É esse nome que a JSP procura.",
+      "data_out": "request attribute saldoFormatado"
+    },
+    {
+      "id": "n12",
+      "kind": "field",
+      "layer": "view",
+      "label": "Saldo (detalhe.jsp)",
+      "file": "WebContent/WEB-INF/jsp/cliente/detalhe.jsp",
+      "line": 4,
+      "anchor": "name=\"saldoFormatado\"",
+      "explanation": "A JSP imprime o atributo saldoFormatado com <bean:write>, sem nenhuma transformação adicional.",
+      "data_in": "request.saldoFormatado (String)"
+    }
+  ],
+  "edges": [
+    {
+      "from": "n1",
+      "to": "n2",
+      "kind": "calls"
+    },
+    {
+      "from": "n2",
+      "to": "n3",
+      "kind": "calls"
+    },
+    {
+      "from": "n3",
+      "to": "n4",
+      "kind": "calls"
+    },
+    {
+      "from": "n4",
+      "to": "n5",
+      "kind": "calls"
+    },
+    {
+      "from": "n5",
+      "to": "n6",
+      "kind": "reads"
+    },
+    {
+      "from": "n5",
+      "to": "n7",
+      "kind": "reads"
+    },
+    {
+      "from": "n6",
+      "to": "n3",
+      "kind": "maps",
+      "label": "rs.getBigDecimal(\"SALDO\") → s[0]",
+      "explanation": "A coluna SALDO vira a posição 0 do array retornado pelo DAO."
+    },
+    {
+      "from": "n7",
+      "to": "n9",
+      "kind": "maps",
+      "label": "rs.getBigDecimal(\"BLOQUEADO\") → s[1]"
+    },
+    {
+      "from": "n3",
+      "to": "n8",
+      "kind": "calls"
+    },
+    {
+      "from": "n8",
+      "to": "n9",
+      "kind": "branch",
+      "label": "!isPJ(id)",
+      "explanation": "Quando o cliente NÃO é PJ, o service desconta o bloqueado."
+    },
+    {
+      "from": "n8",
+      "to": "n10",
+      "kind": "branch",
+      "label": "isPJ(id): s[0] sem desconto",
+      "explanation": "Quando é PJ, o service retorna s[0] direto, sem desconto."
+    },
+    {
+      "from": "n9",
+      "to": "n10",
+      "kind": "returns"
+    },
+    {
+      "from": "n10",
+      "to": "n11",
+      "kind": "transform",
+      "label": "BigDecimal → \"R$ 1.234,56\""
+    },
+    {
+      "from": "n11",
+      "to": "n12",
+      "kind": "renders"
+    }
+  ],
+  "insights": {
+    "rules": [
+      {
+        "text": "Pessoa física: saldo exibido = SALDO − BLOQUEADO",
+        "node": "n9"
+      },
+      {
+        "text": "Pessoa jurídica: saldo exibido = SALDO, sem descontar bloqueio",
+        "node": "n8"
+      },
+      {
+        "text": "PJ é identificado pelo tamanho do id (14 caracteres = CNPJ), não por um campo do banco",
+        "node": "n8"
+      },
+      {
+        "text": "Valor exibido em moeda brasileira (R$, vírgula decimal)",
+        "node": "n10"
+      }
+    ],
+    "attention": [
+      {
+        "text": "rs.next() sem checar retorno: cliente sem conta gera erro em vez de saldo zero",
+        "node": "n4"
+      },
+      {
+        "text": "Formatação acontece no servidor; a tela recebe texto pronto, não número",
+        "node": "n10"
+      },
+      {
+        "text": "isPJ fica no DAO mas não acessa o banco: lugar errado para a regra",
+        "node": "n8"
+      }
+    ],
+    "migration": [
+      "Endpoint sugerido: GET /clientes/{id}/saldo → { saldo: number, bloqueado: number, disponivel: number, tipoPessoa: 'PF'|'PJ' }",
+      "Retornar número cru e formatar no frontend (Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}))",
+      {
+        "text": "Levar a regra PF/PJ para o domínio do backend e cobrir com teste dos dois casos",
+        "node": "n3"
+      }
+    ],
+    "unresolved": []
+  }
+}

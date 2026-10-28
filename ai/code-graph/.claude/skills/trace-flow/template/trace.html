@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trace Flow</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.5.0/cytoscape-dagre.min.js"></script>
+<style>
+  :root {
+    --bg: #f7f7f5; --panel: #ffffff; --text: #1d1d1b; --muted: #6b6b66; --line: #d9d9d4;
+    --code-bg: #f1f1ee; --hl: #fff2b3;
+    --view: #2f7d6d; --controller: #3b63c4; --service: #8a55c2; --data: #c26a2e; --db: #a83a3a; --external: #5f6b7a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161615; --panel: #1f1f1d; --text: #ececea; --muted: #9a9a94; --line: #34342f;
+      --code-bg: #262624; --hl: #4a4220;
+      --view: #5cb8a4; --controller: #7c9cf0; --service: #b78ae6; --data: #e6995f; --db: #e07070; --external: #9aa6b5;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161615; --panel: #1f1f1d; --text: #ececea; --muted: #9a9a94; --line: #34342f;
+    --code-bg: #262624; --hl: #4a4220;
+    --view: #5cb8a4; --controller: #7c9cf0; --service: #b78ae6; --data: #e6995f; --db: #e07070; --external: #9aa6b5;
+  }
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 system-ui, sans-serif; height: 100vh; display: grid; grid-template-rows: auto 1fr; }
+  header { padding: 10px 16px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; }
+  header h1 { font-size: 17px; flex: 1 1 300px; margin: 0; font-family: ui-monospace, monospace; }
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; }
+  .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; background: var(--c); vertical-align: -1px; }
+  input[type=search] { padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--text); min-width: 200px; }
+  main { display: grid; grid-template-columns: 1fr 420px; min-height: 0; }
+  #cy { min-height: 0; }
+  aside { border-left: 1px solid var(--line); background: var(--panel); overflow: auto; padding: 16px; }
+  aside h2 { font-size: 18px; margin: 0 0 4px; word-break: break-word; }
+  .meta { color: var(--muted); font-size: 12px; margin-bottom: 10px; }
+  .meta a { color: inherit; }
+  .explanation { white-space: pre-wrap; margin: 8px 0 12px; }
+  aside h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 14px 0 4px; }
+  aside ul { margin: 0; padding-left: 18px; }
+  aside li { margin: 3px 0; }
+  aside li a { color: inherit; text-decoration: underline dotted; text-underline-offset: 3px; }
+  .io { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; font-size: 13px; }
+  .io b { color: var(--muted); font-weight: 500; }
+  .attention li::marker { content: "⚠ "; }
+  .migration { background: var(--code-bg); border-radius: 6px; padding: 6px 10px; margin: 4px 0; }
+  pre { background: var(--code-bg); padding: 8px 0; border-radius: 6px; overflow: auto; font-size: 12px; margin: 8px 0; }
+  pre div { padding: 0 10px; white-space: pre; }
+  pre div.hl { background: var(--hl); }
+  pre span.ln { color: var(--muted); display: inline-block; width: 3.5em; user-select: none; }
+  .empty { color: var(--muted); }
+  @media (max-width: 800px) { main { grid-template-columns: 1fr; grid-template-rows: 60vh auto; } aside { border-left: 0; border-top: 1px solid var(--line); } }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="entry"></h1>
+  <div class="legend" id="legend"></div>
+  <input type="search" id="search" placeholder="Buscar nó (ex: saldo)" aria-label="Buscar nó">
+</header>
+<main>
+  <div id="cy" role="img" aria-label="Grafo do fluxo de dados"></div>
+  <aside id="panel"></aside>
+</main>
+<script>
+const GRAPH = /*__GRAPH__*/null;
+const LAYERS = ["view", "controller", "service", "data", "db", "external"];
+const SHAPES = { sql: "barrel", table: "barrel", external_api: "hexagon", branch: "diamond", transform: "cut-rectangle", field: "tag", jsp: "rectangle", url: "ellipse" };
+const css = n => getComputedStyle(document.documentElement).getPropertyValue("--" + n).trim();
+
+document.getElementById("entry").textContent = GRAPH.entry;
+document.title = "Trace " + GRAPH.entry;
+const legend = document.getElementById("legend");
+for (const l of LAYERS) { const s = document.createElement("span"); s.textContent = l; s.style.setProperty("--c", css(l)); legend.append(s); }
+
+cytoscape.use(cytoscapeDagre);
+const cy = cytoscape({
+  container: document.getElementById("cy"),
+  elements: [
+    ...GRAPH.nodes.map(n => ({ data: { ...n, color: css(n.layer) || css("muted"), shape: SHAPES[n.kind] || "round-rectangle" } })),
+    ...GRAPH.edges.map((e, i) => ({ data: { id: "e" + i, source: e.from, target: e.to, ...e } })),
+  ],
+  layout: { name: "dagre", rankDir: "LR", nodeSep: 60, rankSep: 180 },
+  wheelSensitivity: 0.3,
+  style: [
+    { selector: "node", style: { label: "data(label)", shape: "data(shape)", "background-color": "data(color)", color: css("text"),
+      "font-size": 11, "text-wrap": "wrap", "text-max-width": 150, "text-valign": "bottom", "text-margin-y": 4, width: 26, height: 26 } },
+    { selector: "edge", style: { width: 1.5, "line-color": css("line"), "target-arrow-color": css("line"), "target-arrow-shape": "triangle",
+      "curve-style": "bezier", label: "data(label)", "font-size": 9, color: css("muted"), "text-rotation": "autorotate", "text-background-color": css("bg"), "text-background-opacity": 1 } },
+    { selector: "edge[kind = 'branch']", style: { "line-style": "dashed" } },
+    { selector: "edge[kind = 'transform']", style: { "line-color": css("data"), "target-arrow-color": css("data") } },
+    { selector: ".dim", style: { opacity: 0.12 } },
+    { selector: "node:selected", style: { "border-width": 3, "border-color": css("text") } },
+  ],
+});
+
+function line(no, text, hl) {
+  const d = document.createElement("div"); if (hl) d.className = "hl";
+  const ln = document.createElement("span"); ln.className = "ln"; ln.textContent = no;
+  d.append(ln, text); return d;
+}
+
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+// items: strings or {text, node}; a node ref becomes a link that focuses it in the graph
+function list(p, title, items, cls) {
+  if (!items || !items.length) return;
+  p.append(el("h3", null, title));
+  const ul = el("ul", cls);
+  for (const it of items) {
+    const li = el("li"), text = typeof it === "string" ? it : it.text;
+    if (it.node && cy.getElementById(it.node).length) {
+      const a = el("a", null, text); a.href = "#"; a.onclick = ev => { ev.preventDefault(); focus(cy.getElementById(it.node)); }; li.append(a);
+    } else li.textContent = text;
+    ul.append(li);
+  }
+  p.append(ul);
+}
+
+function overview() {
+  const p = document.getElementById("panel"); p.replaceChildren();
+  p.append(el("h2", null, GRAPH.field ? `Campo: ${GRAPH.field}` : "Visão geral"));
+  p.append(el("div", "explanation", GRAPH.summary || ""));
+  const ins = GRAPH.insights || {};
+  list(p, "Regras de negócio", ins.rules);
+  list(p, "Pontos de atenção", ins.attention, "attention");
+  list(p, "Para a migração", ins.migration);
+  list(p, "Não resolvido", ins.unresolved);
+  p.append(el("p", "empty", "Clique num nó para ver o que acontece ali e destacar o caminho. Clique no fundo para voltar aqui."));
+}
+
+function show(data) {
+  const p = document.getElementById("panel"); p.replaceChildren();
+  p.append(el("h2", null, data.label));
+  const meta = el("div", "meta", [data.kind, data.layer].filter(Boolean).join(" · "));
+  if (data.file) {
+    const a = el("a", null, `${data.file}:${data.line}`); a.href = `vscode://file${data.abs || data.file}:${data.line}`;
+    meta.append(document.createElement("br"), a);
+  }
+  p.append(meta);
+  if (data.explanation) p.append(el("div", "explanation", data.explanation));
+  if (data.data_in || data.data_out) {
+    const io = el("div", "io");
+    if (data.data_in) io.append(el("b", null, "Entra"), el("span", null, data.data_in));
+    if (data.data_out) io.append(el("b", null, "Sai"), el("span", null, data.data_out));
+    p.append(el("h3", null, "Dados"), io);
+  }
+  list(p, "Regras de negócio", data.rules);
+  list(p, "Atenção", data.attention, "attention");
+  if (data.migration) p.append(el("h3", null, "Para a migração"), el("div", "migration", data.migration));
+  if (data.snippet) {
+    p.append(el("h3", null, "Código"));
+    const pre = document.createElement("pre");
+    data.snippet.lines.forEach((t, i) => pre.append(line(data.snippet.start + i, t, data.snippet.start + i === data.line)));
+    p.append(pre);
+    pre.querySelector(".hl")?.scrollIntoView({ block: "center" });
+  }
+}
+
+function focus(node) {
+  const path = node.predecessors().union(node.successors()).union(node);
+  cy.elements().addClass("dim"); path.removeClass("dim");
+  show(node.data());
+}
+cy.on("tap", "node", e => focus(e.target));
+cy.on("tap", "edge", e => show({ label: e.target.data("label") || e.target.data("kind"), kind: e.target.data("kind"), explanation: e.target.data("explanation") }));
+cy.on("tap", e => { if (e.target === cy) { cy.elements().removeClass("dim"); overview(); } });
+overview();
+
+document.getElementById("search").addEventListener("input", e => {
+  const q = e.target.value.toLowerCase(); if (!q) return cy.elements().removeClass("dim");
+  const hit = cy.nodes().filter(n => n.data("label").toLowerCase().includes(q));
+  if (hit.length) { cy.$(":selected").unselect(); hit[0].select(); focus(hit[0]); cy.animate({ center: { eles: hit[0] } }); }
+});
+</script>
+</body>
+</html>

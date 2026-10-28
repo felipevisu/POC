@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tiles-definitions>
+  <definition name="base" path="/WEB-INF/jsp/layout.jsp"/>
+  <definition name="cliente.detalhe" extends="base">
+    <put name="body" value="/WEB-INF/jsp/cliente/detalhe.jsp"/>
+  </definition>
+</tiles-definitions>

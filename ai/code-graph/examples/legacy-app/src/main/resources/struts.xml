@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<struts>
+  <package name="pedido" namespace="/pedido" extends="struts-default">
+    <action name="ver_*" class="com.acme.web.PedidoAction" method="{1}">
+      <result name="success">/WEB-INF/jsp/cliente/detalhe.jsp</result>
+    </action>
+  </package>
+</struts>
