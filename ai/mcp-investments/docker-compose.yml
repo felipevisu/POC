@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mcp-investments-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: investments
+      POSTGRES_PASSWORD: investments
+      POSTGRES_DB: investments
+    ports:
+      - "5434:5432"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - mcp-investments-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U investments -d investments"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  mcp-server:
+    build: ./mcp-server
+    container_name: mcp-investments-mcp
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://investments:investments@postgres:5432/investments
+      PORT: 3000
+    ports:
+      - "3004:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  mcp-investments-data:
