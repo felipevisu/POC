@@ -1,0 +1,55 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.3.6 Chrome/140.0.7339.249 Electron/38.8.0 Safari/537.36" version="29.3.6">
+  <diagram name="Page-1" id="3GFCpJBekPWcjZDxGuMT">
+    <mxGraphModel dx="1025" dy="1210" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="7vKtHSzbUwhHfzPhyecm-8" edge="1" parent="1" source="7vKtHSzbUwhHfzPhyecm-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="7vKtHSzbUwhHfzPhyecm-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7vKtHSzbUwhHfzPhyecm-9" connectable="0" parent="7vKtHSzbUwhHfzPhyecm-8" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Write" vertex="1">
+          <mxGeometry relative="1" x="0.0504" y="-2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7vKtHSzbUwhHfzPhyecm-10" edge="1" parent="1" source="7vKtHSzbUwhHfzPhyecm-1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="7vKtHSzbUwhHfzPhyecm-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7vKtHSzbUwhHfzPhyecm-11" connectable="0" parent="7vKtHSzbUwhHfzPhyecm-10" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Read" vertex="1">
+          <mxGeometry relative="1" x="0.0228" y="-3" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7vKtHSzbUwhHfzPhyecm-1" parent="1" style="image;aspect=fixed;perimeter=ellipsePerimeter;html=1;align=center;shadow=0;dashed=0;spacingTop=3;image=img/lib/active_directory/generic_server.svg;" value="Account Service" vertex="1">
+          <mxGeometry height="103.57" width="58" x="360" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="7vKtHSzbUwhHfzPhyecm-12" edge="1" parent="1" source="7vKtHSzbUwhHfzPhyecm-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="7vKtHSzbUwhHfzPhyecm-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7vKtHSzbUwhHfzPhyecm-2" parent="1" style="image;html=1;image=img/lib/clip_art/computers/Database_128x128.png" value="Database&lt;div&gt;Event Store&lt;/div&gt;" vertex="1">
+          <mxGeometry height="80" width="80" x="660" y="272" as="geometry" />
+        </mxCell>
+        <mxCell id="7vKtHSzbUwhHfzPhyecm-13" edge="1" parent="1" source="7vKtHSzbUwhHfzPhyecm-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="7vKtHSzbUwhHfzPhyecm-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7vKtHSzbUwhHfzPhyecm-3" parent="1" style="image;aspect=fixed;perimeter=ellipsePerimeter;html=1;align=center;shadow=0;dashed=0;spacingTop=3;image=img/lib/active_directory/generic_server.svg;" value="Projection" vertex="1">
+          <mxGeometry height="103.57" width="58" x="671" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="7vKtHSzbUwhHfzPhyecm-6" edge="1" parent="1" source="7vKtHSzbUwhHfzPhyecm-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="7vKtHSzbUwhHfzPhyecm-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7vKtHSzbUwhHfzPhyecm-7" connectable="0" parent="7vKtHSzbUwhHfzPhyecm-6" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="HTTP Request" vertex="1">
+          <mxGeometry relative="1" x="0.1361" y="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7vKtHSzbUwhHfzPhyecm-4" parent="1" style="image;aspect=fixed;perimeter=ellipsePerimeter;html=1;align=center;shadow=0;dashed=0;spacingTop=3;image=img/lib/active_directory/laptop_client.svg;" value="User" vertex="1">
+          <mxGeometry height="83" width="74.7" x="70" y="270.29" as="geometry" />
+        </mxCell>
+        <mxCell id="7vKtHSzbUwhHfzPhyecm-5" parent="1" style="image;html=1;image=img/lib/clip_art/computers/Database_128x128.png" value="Database&lt;div&gt;MongoDB&lt;/div&gt;" vertex="1">
+          <mxGeometry height="80" width="80" x="660" y="660" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

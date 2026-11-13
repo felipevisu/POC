@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Event Sourcing Bank</title>
+<style>
+  :root {
+    --bg: #f4f2ee; --panel: #ffffff; --ink: #1c1b19; --muted: #6f6a62; --line: #e4e0d8;
+    --accent: #5b3df5; --accent-ink: #fff; --credit: #13795b; --debit: #b4321f;
+    --es: #c2410c; --es-soft: #fff1e8; --pg: #2563eb; --pg-soft: #eaf1ff; --snap: #fdf6d8;
+    --flash: #fff59d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #131211; --panel: #1d1c1a; --ink: #eceae6; --muted: #9a958c; --line: #2f2d2a;
+      --accent: #8b74ff; --credit: #4ade80; --debit: #f87171;
+      --es: #fb923c; --es-soft: #2a1d14; --pg: #60a5fa; --pg-soft: #15202f; --snap: #2b2714;
+      --flash: #4b4413; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 14px/1.45 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { display: grid; grid-template-columns: minmax(360px, 1fr) minmax(0, 1.25fr); min-height: 100vh; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+
+  /* side headers: make it obvious these are two different worlds */
+  .side-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .side-head .kicker { font: 600 11px/1 ui-monospace, Menlo, monospace; letter-spacing: .12em;
+    text-transform: uppercase; padding: 5px 8px; border-radius: 6px; }
+  .side-head p { margin: 0; font-size: 12px; color: var(--muted); flex-basis: 100%; }
+
+  /* left: customer-facing bank app */
+  .app { padding: 16px; background: var(--bg); }
+  .app .brand { background: linear-gradient(135deg, var(--accent), #2b1a9e); color: #fff; border: 0; }
+  .app .brand .kicker { background: rgba(255,255,255,.18); color: #fff; }
+  .app .brand p, .app .brand label { color: rgba(255,255,255,.8); }
+  .app .brand input, .app .brand select { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.25); color: #fff; }
+  .app .brand input::placeholder { color: rgba(255,255,255,.6); }
+  .app .brand option { color: #000; }
+  .app .brand button { background: #fff; color: var(--accent); }
+
+  /* right: engineering console, cool gray so it reads as a separate tool, not the app */
+  .console { --bg: #e8ecf1; --panel: #ffffff; --ink: #141925; --muted: #4b5568; --line: #d2d8e1;
+    --es-soft: #fff1e8; --pg-soft: #eaf1ff; --snap: #fdf3c4; --flash: #fff59d; --credit: #0f6b4f;
+    background: var(--bg); color: var(--ink); padding: 16px; border-left: 2px solid #b9c1cd; }
+  @media (prefers-color-scheme: dark) {
+    .console { --bg: #1b1f27; --panel: #252a34; --ink: #f1f3f7; --muted: #b4bccb; --line: #3a414e;
+      --es-soft: #3a2616; --pg-soft: #1a2a44; --snap: #3a3416; --flash: #5a5014; --credit: #4ade80;
+      border-left-color: #000; }
+  }
+  .console .side-head .kicker { background: #141925; color: #9fe870; }
+  .console .side-head h1 { font-family: ui-monospace, Menlo, monospace; font-size: 18px; }
+  @media (max-width: 900px) { .console { border-left: 0; border-top: 6px solid #000; } }
+  h1, h2, h3 { margin: 0; font-weight: 650; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+  .stack { display: flex; flex-direction: column; gap: 12px; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  input, select, button { font: inherit; color: inherit; border-radius: 9px; border: 1px solid var(--line);
+    background: var(--bg); padding: 8px 10px; min-width: 0; }
+  input, select { flex: 1; }
+  button { background: var(--accent); color: var(--accent-ink); border: 0; font-weight: 600; cursor: pointer; }
+  button:hover { filter: brightness(1.08); }
+  .balance { font-size: 34px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .muted { color: var(--muted); font-size: 12px; }
+  .ops { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .ops button { background: var(--bg); color: var(--ink); border: 1px solid var(--line); font-size: 12px;
+    padding: 8px 4px; }
+  .ops button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  pre { margin: 0; white-space: pre-wrap; word-break: break-word; font: 12px/1.4 ui-monospace, Menlo, monospace; }
+  .resp { background: var(--bg); border-radius: 9px; padding: 10px; max-height: 180px; overflow: auto; }
+  .resp.err { color: var(--debit); }
+  .stmt { list-style: none; margin: 0; padding: 0; }
+  .stmt li { display: flex; justify-content: space-between; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line); }
+  .amt { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+  .credit { color: var(--credit); } .debit { color: var(--debit); }
+
+  .inspector { display: grid; grid-template-columns: 1fr; gap: 16px; align-content: start; }
+  .db { border-top: 4px solid; }
+  .db.es { border-color: var(--es); } .db.pg { border-color: var(--pg); }
+  .db h3 { font-size: 15px; } .db h3 small { font-weight: 400; color: var(--muted); }
+  .tag { display: inline-block; padding: 1px 7px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+  .es .tag { background: var(--es-soft); color: var(--es); } .pg .tag { background: var(--pg-soft); color: var(--pg); }
+  /* desktop: page never scrolls; app column and each db table scroll on their own */
+  @media (min-width: 901px) {
+    body { height: 100vh; overflow: hidden; }
+    main { height: 100vh; }
+    .app { overflow-y: auto; }
+    .console { overflow: hidden; grid-template-rows: auto auto minmax(0, 1fr) minmax(0, 1fr); }
+    .db { min-height: 0; display: flex; flex-direction: column; }
+    .db .tbl { flex: 1 1 auto; min-height: 0; max-height: none; }
+  }
+  .tbl { overflow: auto; max-height: 38vh; border: 1px solid var(--line); border-radius: 9px; }
+  table { border-collapse: collapse; width: 100%; font: 12px/1.35 ui-monospace, Menlo, monospace; }
+  th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; white-space: nowrap; }
+  th { position: sticky; top: 0; background: var(--panel); color: var(--muted); font-weight: 600; }
+  td.json { white-space: normal; min-width: 180px; color: var(--muted); }
+  tr.snap td { background: var(--snap); }
+  tr.new td { animation: flash 2.5s ease-out; }
+  @keyframes flash { from { background: var(--flash); } }
+  @media (prefers-reduced-motion: reduce) { tr.new td { animation: none; outline: 1px solid var(--flash); } }
+  .lag { font-weight: 600; } .lag.ok { color: var(--credit); } .lag.behind { color: var(--es); }
+  .flow { grid-column: 1 / -1; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+  .flow .step { padding: 4px 10px; border-radius: 99px; background: var(--bg); border: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<main>
+  <!-- ===== left: fake bank app ===== -->
+  <section class="app stack" aria-label="Bank app (customer view)">
+    <div class="card stack brand">
+      <div class="side-head">
+        <span class="kicker">Customer view</span>
+        <h1>Event Sourcing Bank</h1>
+        <p>What the account holder sees: a normal banking app.</p>
+      </div>
+      <div class="row">
+        <label for="acc" class="muted">Account</label>
+        <select id="acc"></select>
+      </div>
+      <form id="open" class="row">
+        <input name="account_number" placeholder="new account nº" required aria-label="New account number">
+        <input name="owner" placeholder="owner" required aria-label="Owner">
+        <button>Open</button>
+      </form>
+    </div>
+
+    <div class="card stack">
+      <h2>Balance <span class="muted">(read model · Postgres)</span></h2>
+      <div class="balance" id="balance">—</div>
+      <div class="muted" id="owner"></div>
+    </div>
+
+    <div class="card stack">
+      <h2>Operation <span class="muted">(command → KurrentDB)</span></h2>
+      <div class="ops" id="ops" role="group" aria-label="Operation type"></div>
+      <form id="cmd" class="stack">
+        <input name="amount" type="number" step="0.01" min="0.01" placeholder="amount" required aria-label="Amount">
+        <div id="fields" class="stack"></div>
+        <button id="send">Send</button>
+      </form>
+      <div class="resp" id="resp" aria-live="polite"><pre class="muted">Responses show version, replayed_events and snapshot_taken.</pre></div>
+    </div>
+
+    <div class="card stack">
+      <h2>Statement <span class="muted">(read model)</span></h2>
+      <ul class="stmt" id="stmt"></ul>
+    </div>
+  </section>
+
+  <!-- ===== right: database inspector ===== -->
+  <section class="console inspector" aria-label="Behind the scenes: database logs">
+    <div class="side-head" style="grid-column: 1 / -1">
+      <span class="kicker">Behind the scenes</span>
+      <h1>Database logs</h1>
+      <p>Not part of the app. Raw contents of the two databases, refreshed every second, so you can follow each operation through the system.</p>
+    </div>
+    <div class="card flow">
+      <span class="step">① POST command</span>→
+      <span class="step" style="color:var(--es)">② event appended to KurrentDB</span>→
+      <span class="step">③ projection subscription</span>→
+      <span class="step" style="color:var(--pg)">④ row in Postgres</span>
+      <span style="margin-left:auto">Projection: <span id="lag" class="lag">…</span></span>
+    </div>
+
+    <div class="card stack db es">
+      <h3>KurrentDB <small>event store · write side · $all, newest first</small></h3>
+      <div class="muted">Streams <span class="tag">account-{n}</span> hold events;
+        <span class="tag">snapshot-account-{n}</span> rows (highlighted) hold snapshots.</div>
+      <div class="tbl"><table id="es"></table></div>
+    </div>
+
+    <div class="card stack db pg">
+      <h3>Postgres <small>read model · projection output</small></h3>
+      <div class="row">
+        <label for="pg-pick" class="muted">Table</label>
+        <select id="pg-pick" style="flex:0 1 220px">
+          <option value="transactions">transactions (newest first)</option>
+          <option value="accounts">accounts</option>
+          <option value="checkpoint">checkpoint</option>
+        </select>
+        <span class="muted" id="pg-count"></span>
+      </div>
+      <div class="tbl"><table id="pg"></table></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (v) => String(v ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const money = (n) => Number(n).toLocaleString(undefined, { style: "currency", currency: "BRL" });
+const CREDITS = ["MoneyDeposited", "PixReceived", "TransferReceived"];
+let commands = {}, op = "deposit";
+const seen = { es: new Set(), tx: new Set() };
+let firstPaint = true;
+
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  const body = await r.json().catch(() => ({}));
+  if (!r.ok) throw Object.assign(new Error(body.detail ?? r.statusText), { body });
+  return body;
+}
+const post = (path, data) => api(path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(data) });
+
+function showResp(obj, isErr) {
+  $("#resp").className = "resp" + (isErr ? " err" : "");
+  $("#resp").innerHTML = `<pre>${esc(JSON.stringify(obj, null, 2))}</pre>`;
+}
+
+function renderOps() {
+  $("#ops").innerHTML = Object.keys(commands)
+    .map((c) => `<button type="button" data-op="${c}" aria-pressed="${c === op}">${c}</button>`).join("");
+  $("#fields").innerHTML = commands[op]
+    .map((f) => `<input name="${f}" placeholder="${f}" required aria-label="${f}">`).join("");
+}
+
+function table(el, rows, cols, rowClass = () => "", key) {
+  const set = key && seen[key.set];
+  el.innerHTML = `<thead><tr>${cols.map((c) => `<th>${c}</th>`).join("")}</tr></thead><tbody>${rows.map((r) => {
+    const k = key && key.of(r);
+    const isNew = set && !set.has(k) && !firstPaint;
+    set && set.add(k);
+    return `<tr class="${rowClass(r)}${isNew ? " new" : ""}">${cols.map((c) => {
+      const v = r[c];
+      return typeof v === "object" && v !== null ? `<td class="json">${esc(JSON.stringify(v))}</td>` : `<td>${esc(v)}</td>`;
+    }).join("")}</tr>`;
+  }).join("")}</tbody>`;
+}
+
+async function refresh() {
+  try {
+    const [es, pg] = await Promise.all([api("/debug/eventstore"), api("/debug/readdb")]);
+    // left: account picker, balance, statement (all from the read model)
+    const sel = $("#acc"), cur = sel.value;
+    const opts = pg.accounts.map((a) => `<option value="${esc(a.account_number)}">${esc(a.account_number)} · ${esc(a.owner)}</option>`).join("");
+    if (sel.dataset.opts !== opts) { sel.innerHTML = opts; sel.dataset.opts = opts; if (cur) sel.value = cur; }
+    const acc = pg.accounts.find((a) => a.account_number === sel.value);
+    $("#balance").textContent = acc ? money(acc.balance) : "—";
+    $("#owner").textContent = acc ? `${acc.owner} · projected up to version ${acc.version}` : "Open an account to start";
+    $("#stmt").innerHTML = pg.transactions.filter((t) => t.account_number === sel.value).map((t) => {
+      const credit = CREDITS.includes(t.type), d = Object.values(t.details).join(" · ");
+      return `<li><span>${esc(t.type)}<br><span class="muted">${esc(d)} ${esc(new Date(t.created_at).toLocaleTimeString())}</span></span>
+        <span class="amt ${t.type === "AccountOpened" ? "" : credit ? "credit" : "debit"}">${t.type === "AccountOpened" ? "" : (credit ? "+" : "−") + money(t.amount)}<br>
+        <span class="muted">${money(t.balance_after)}</span></span></li>`;
+    }).join("") || `<li class="muted">No transactions yet</li>`;
+
+    // right: raw databases
+    table($("#es"), es, ["commit_position", "stream", "position", "type", "data"],
+      (r) => (r.stream.startsWith("snapshot-") ? "snap" : ""), { set: "es", of: (r) => r.commit_position + r.stream });
+    const pick = $("#pg-pick").value;
+    const pgRows = pick === "checkpoint" ? [pg.checkpoint] : pg[pick];
+    const PG_COLS = {
+      transactions: ["commit_position", "account_number", "type", "amount", "balance_after", "details", "created_at"],
+      accounts: ["account_number", "owner", "balance", "version"],
+      checkpoint: ["commit_position"],
+    };
+    // flash tracking only for transactions; switching tables shouldn't flash everything
+    table($("#pg"), pgRows, PG_COLS[pick], undefined,
+      pick === "transactions" ? { set: "tx", of: (r) => r.event_id } : undefined);
+    if (pick !== "transactions") pg.transactions.forEach((t) => seen.tx.add(t.event_id));
+    $("#pg-count").textContent = `${pgRows.length} row${pgRows.length === 1 ? "" : "s"}`;
+    const ck = pg.checkpoint.commit_position;
+    const head = es.find((e) => !e.stream.startsWith("snapshot-"))?.commit_position;
+    const lagEl = $("#lag");
+    const caughtUp = head == null || ck === head;
+    lagEl.textContent = caughtUp ? "caught up" : `behind (checkpoint ${ck ?? "null"} < head ${head})`;
+    lagEl.className = "lag " + (caughtUp ? "ok" : "behind");
+    firstPaint = false;
+  } catch (e) {
+    $("#lag").textContent = "inspector error: " + e.message;
+  }
+}
+
+$("#ops").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-op]");
+  if (b) { op = b.dataset.op; renderOps(); }
+});
+$("#acc").addEventListener("change", refresh);
+$("#pg-pick").addEventListener("change", refresh);
+
+$("#open").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target));
+  try {
+    showResp(await post("/accounts", data));
+    e.target.reset();
+  } catch (err) { showResp(err.body ?? err.message, true); }
+  await refresh();
+  if ($("#acc").querySelector(`option[value="${CSS.escape(data.account_number)}"]`)) $("#acc").value = data.account_number;
+});
+
+$("#cmd").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const acc = $("#acc").value;
+  if (!acc) return showResp("Open an account first", true);
+  const data = Object.fromEntries(new FormData(e.target));
+  try { showResp(await post(`/accounts/${encodeURIComponent(acc)}/${op}`, data)); }
+  catch (err) { showResp(err.body ?? err.message, true); }
+  refresh();
+});
+
+(async () => {
+  commands = await api("/commands");
+  renderOps();
+  await refresh();
+  setInterval(refresh, 1000);  // shortcut: polling; SSE/websocket if you want push
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+services:
+  eventstore:
+    # arm64 (Apple Silicon) build; on Intel/amd64 run: KURRENTDB_IMAGE=kurrentplatform/kurrentdb:26.0.4
+    image: ${KURRENTDB_IMAGE:-kurrentplatform/kurrentdb:26.0.4-experimental-arm64-10.0-noble}
+    environment:
+      KURRENTDB_INSECURE: "true"
+      KURRENTDB_RUN_PROJECTIONS: None
+      KURRENTDB_MEM_DB: "false"
+    ports: ["2113:2113"]   # UI at http://localhost:2113
+    healthcheck:
+      test: curl -sf http://localhost:2113/health/live || exit 1
+      interval: 3s
+      retries: 30
+
+  read-db:
+    image: postgres:16
+    environment: { POSTGRES_USER: rd, POSTGRES_PASSWORD: rd, POSTGRES_DB: readmodel }
+    volumes: [./sql/readmodel.sql:/docker-entrypoint-initdb.d/init.sql]
+    ports: ["5440:5432"]
+    healthcheck: { test: pg_isready -U rd, interval: 2s, retries: 20 }
+
+  account-service:
+    build: ./account-service
+    environment:
+      EVENTSTORE_URI: kurrentdb://eventstore:2113?Tls=false
+      READ_DSN: postgresql://rd:rd@read-db/readmodel
+      SNAPSHOT_EVERY: "5"
+    ports: ["8000:8000"]
+    volumes: [./account-service/static:/app/static]  # edit the dashboard without rebuilding
+    depends_on:
+      eventstore: { condition: service_healthy }
+      read-db: { condition: service_healthy }
+
+  projection-service:
+    build: ./projection-service
+    environment:
+      EVENTSTORE_URI: kurrentdb://eventstore:2113?Tls=false
+      READ_DSN: postgresql://rd:rd@read-db/readmodel
+    depends_on:
+      eventstore: { condition: service_healthy }
+      read-db: { condition: service_healthy }
