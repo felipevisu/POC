@@ -1,0 +1,121 @@
+task,temperature,run,output
+factual,0.0,1,Canberra
+factual,0.0,2,Canberra
+factual,0.0,3,Canberra
+factual,0.0,4,Canberra
+factual,0.0,5,Canberra
+factual,0.0,6,Canberra
+factual,0.0,7,Canberra
+factual,0.0,8,Canberra
+factual,0.0,9,Canberra
+factual,0.0,10,Canberra
+factual,0.5,1,Canberra
+factual,0.5,2,Canberra
+factual,0.5,3,Canberra
+factual,0.5,4,Canberra
+factual,0.5,5,Canberra
+factual,0.5,6,Canberra
+factual,0.5,7,Canberra
+factual,0.5,8,Canberra
+factual,0.5,9,Canberra
+factual,0.5,10,Canberra
+factual,1.0,1,Canberra
+factual,1.0,2,Canberra
+factual,1.0,3,Canberra
+factual,1.0,4,Canberra
+factual,1.0,5,Canberra
+factual,1.0,6,Canberra
+factual,1.0,7,Canberra
+factual,1.0,8,Canberra
+factual,1.0,9,Canberra
+factual,1.0,10,Canberra
+factual,1.5,1,Canberra
+factual,1.5,2,Canberra
+factual,1.5,3,Canberra
+factual,1.5,4,Canberra
+factual,1.5,5,Canberra
+factual,1.5,6,Canberra
+factual,1.5,7,Canberra
+factual,1.5,8,Canberra
+factual,1.5,9,Canberra
+factual,1.5,10,Canberra
+creative,0.0,1,"Brew Joy, Sip Life."
+creative,0.0,2,"Brew Joy, Sip Happiness."
+creative,0.0,3,"Brew Joy, Sip Moments."
+creative,0.0,4,"Brew Joy, Sip Moments."
+creative,0.0,5,"Brew Joy, Sip Moments."
+creative,0.0,6,"Brew Joy, Sip Life."
+creative,0.0,7,"Brew Joy, Sip Moments."
+creative,0.0,8,"Brew Joy, Sip Moments."
+creative,0.0,9,"Brew Joy, Sip Moments."
+creative,0.0,10,"Brew Joy, Sip Life."
+creative,0.5,1,"Brew Joy, Sip Moments."
+creative,0.5,2,"Brew Joy, Sip Moments."
+creative,0.5,3,"Brew Joy, Sip Life."
+creative,0.5,4,"Brew Joy, Sip Life."
+creative,0.5,5,"Brewed Awakenings, One Cup at a Time."
+creative,0.5,6,"Brew Joy, Sip Happiness."
+creative,0.5,7,"Brew Joy, Sip Life."
+creative,0.5,8,"Brew Joy, Sip Moments."
+creative,0.5,9,Brewed to Brighten Your Day.
+creative,0.5,10,"Brew Joy, Sip Happiness."
+creative,1.0,1,"Brew Joy, Sip Moments."
+creative,1.0,2,"Brew Moments, Savor Life."
+creative,1.0,3,"Brew Joy, Sip Life."
+creative,1.0,4,"Brewed Bold, Served Fresh."
+creative,1.0,5,"Brew Joy, Sip Life."
+creative,1.0,6,Brewed to brighten your day.
+creative,1.0,7,"Brew Joy, Sip Life."
+creative,1.0,8,Brew Bliss in Every Sip
+creative,1.0,9,"Brew Joy, Sip Moments."
+creative,1.0,10,"Brew Joy, Sip Life."
+creative,1.5,1,Brew Joy in Every Cup.
+creative,1.5,2,Brew Joy in Every Cup.
+creative,1.5,3,Brewed Bliss in Every Cup.
+creative,1.5,4,Brew Joy in Every Cup.
+creative,1.5,5,Brewed Joy in Every Sip.
+creative,1.5,6,"Brew Moments, Savor Life."
+creative,1.5,7,"Brew joy, sip bliss."
+creative,1.5,8,"Brew Joy, One Cup at a Time."
+creative,1.5,9,"Brew joy, sip moments."
+creative,1.5,10,"Brew Moments, Savor Life."
+json,0.0,1,"{""sentiment"": ""negative""}"
+json,0.0,2,"{""sentiment"": ""negative""}"
+json,0.0,3,"{""sentiment"": ""negative""}"
+json,0.0,4,"{""sentiment"": ""negative""}"
+json,0.0,5,"{""sentiment"": ""negative""}"
+json,0.0,6,"{""sentiment"": ""negative""}"
+json,0.0,7,"{""sentiment"": ""negative""}"
+json,0.0,8,"{""sentiment"": ""negative""}"
+json,0.0,9,"{""sentiment"": ""negative""}"
+json,0.0,10,"{""sentiment"": ""negative""}"
+json,0.5,1,"{""sentiment"": ""negative""}"
+json,0.5,2,"{""sentiment"": ""negative""}"
+json,0.5,3,"{""sentiment"": ""negative""}"
+json,0.5,4,"{""sentiment"": ""negative""}"
+json,0.5,5,"{""sentiment"": ""negative""}"
+json,0.5,6,"{""sentiment"": ""negative""}"
+json,0.5,7,"{""sentiment"": ""negative""}"
+json,0.5,8,"{""sentiment"": ""negative""}"
+json,0.5,9,"{""sentiment"": ""negative""}"
+json,0.5,10,"{""sentiment"": ""negative""}"
+json,1.0,1,"{""sentiment"": ""negative""}"
+json,1.0,2,"{""sentiment"": ""negative""}"
+json,1.0,3,"{""sentiment"": ""negative""}"
+json,1.0,4,"{""sentiment"": ""negative""}"
+json,1.0,5,"{""sentiment"": ""negative""}"
+json,1.0,6,"{""sentiment"": ""negative""}"
+json,1.0,7,"{""sentiment"": ""negative""}"
+json,1.0,8,"{""sentiment"": ""negative""}"
+json,1.0,9,"{""sentiment"": ""negative""}"
+json,1.0,10,"{""sentiment"": ""negative""}"
+json,1.5,1,"{""sentiment"": ""negative""}"
+json,1.5,2,"{""sentiment"": ""negative""}"
+json,1.5,3,"{""sentiment"": ""negative""}"
+json,1.5,4,"{""sentiment"": ""negative""}"
+json,1.5,5,"{""sentiment"": ""negative""}"
+json,1.5,6,"{""sentiment"": ""negative""}"
+json,1.5,7,"{""sentiment"": ""negative""}"
+json,1.5,8,"{""sentiment"": ""negative""}"
+json,1.5,9,"{""sentiment"": ""negative""}"
+json,1.5,10,"{""sentiment"": ""negative""}"
